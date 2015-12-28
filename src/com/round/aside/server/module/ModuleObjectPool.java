@@ -5,6 +5,8 @@ import java.util.Map;
 
 import com.round.aside.server.module.accountmanager.AccountManagerModuleFactoryImpl;
 import com.round.aside.server.module.accountmanager.IAccountManager;
+import com.round.aside.server.module.netsecurity.INetSecurity;
+import com.round.aside.server.module.netsecurity.NetSecurityModuleFactoryImpl;
 
 /**
  * 模块对象池，用于对外暴露接口供第三方使用获取模块对象，隐藏了模块实现和工厂实现。
@@ -19,6 +21,7 @@ public final class ModuleObjectPool {
 
     static {
         mModuleFactoryMap.put(IAccountManager.class.getSimpleName(), new AccountManagerModuleFactoryImpl());
+        mModuleFactoryMap.put(INetSecurity.class.getSimpleName(), new NetSecurityModuleFactoryImpl());
     }
 
     private ModuleObjectPool() {

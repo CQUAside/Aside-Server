@@ -8,7 +8,7 @@ import com.round.aside.server.util.StringUtil;
  * @author A Shuai
  * 
  */
-public class AccountManagerImpl implements IAccountManager {
+public final class AccountManagerImpl implements IAccountManager {
 
     @Override
     public boolean isExistAccount(String mAccount) {

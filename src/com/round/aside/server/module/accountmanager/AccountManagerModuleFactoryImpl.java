@@ -8,7 +8,7 @@ import com.round.aside.server.module.IModuleFactory;
  * @author A Shuai
  * 
  */
-public class AccountManagerModuleFactoryImpl implements IModuleFactory<IAccountManager> {
+public final class AccountManagerModuleFactoryImpl implements IModuleFactory<IAccountManager> {
 
     @Override
     public IAccountManager createModule(Object o1, Object... objects) {

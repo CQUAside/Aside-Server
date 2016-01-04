@@ -17,6 +17,6 @@ public interface IAccountManager extends IModule {
      *            待查询账号
      * @return true为合法
      */
-    boolean isExistAccount(String mAccount);
+    boolean isLegalRegisteredAccount(String mAccount);
 
 }

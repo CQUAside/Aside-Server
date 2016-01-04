@@ -11,7 +11,7 @@ import com.round.aside.server.util.StringUtil;
 public final class AccountManagerImpl implements IAccountManager {
 
     @Override
-    public boolean isExistAccount(String mAccount) {
+    public boolean isLegalRegisteredAccount(String mAccount) {
         if (StringUtil.isEmpty(mAccount)) {
             return false;
         }

@@ -1,5 +1,6 @@
 package com.round.aside.server.module.accountmanager;
 
+import com.round.aside.server.entity.RegisterResultEntity;
 import com.round.aside.server.module.IModule;
 
 /**
@@ -18,5 +19,16 @@ public interface IAccountManager extends IModule {
      * @return true为合法
      */
     boolean isLegalRegisteredAccount(String mAccount);
+
+    /**
+     * 两参数的注册账号接口
+     * 
+     * @param mAccount
+     *            账号
+     * @param mPassword
+     *            密码
+     * @return
+     */
+    RegisterResultEntity registerAccount(String mAccount, String mPassword);
 
 }

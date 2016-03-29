@@ -12,12 +12,21 @@ import com.round.aside.server.module.IModule;
 public interface IDatabaseManager extends IModule{
 
     /**
-     * 插入一条用户信息
+     * 插入用户ID
      * 
+     * @param mUserID 待插入的用户ID
+     * @return 
+     */
+    int insertUserID(int mUserID);
+    
+    /**
+     * 更新用户信息
+     * 
+     * @param mUserID
      * @param mAccount
      * @param mPassword
      * @return
      */
-    int insertUser(String mAccount, String mPassword);
+    int updateUser(int mUserID, String mAccount, String mPassword);
     
 }

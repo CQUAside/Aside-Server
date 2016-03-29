@@ -45,11 +45,11 @@ public final class ModuleObjectPool {
      *            待获取模块的除第一个参数以外的其他构造参数，是一个变长参数，可为0个至无限个
      * @return 构造完成的模块对象
      */
-    public static <T extends IModule> T getModuleObject(Class<?> mModuleName, Object o1, Object... objects) {
+    public static <T extends IModule> T getModuleObject(Class<T> mModuleName, Object o1, Object... objects) {
         @SuppressWarnings("unchecked")
         IModuleFactory<T> mModuleFactory = (IModuleFactory<T>) mModuleFactoryMap.get(mModuleName.getSimpleName());
         if (mModuleFactory == null) {
-            throw new IllegalArgumentException("The module class isn't a legal class.");
+            throw new IllegalArgumentException("The module class isn't a legal class or not register.");
         }
         return mModuleFactory.createModule(o1, objects);
     }

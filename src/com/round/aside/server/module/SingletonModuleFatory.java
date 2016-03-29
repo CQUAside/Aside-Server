@@ -9,7 +9,7 @@ package com.round.aside.server.module;
  */
 public abstract class SingletonModuleFatory<T extends IModule> implements IModuleFactory<T> {
 
-    public T mInstance;
+    private final T mInstance;
 
     public SingletonModuleFatory(T t) {
         if (t == null) {

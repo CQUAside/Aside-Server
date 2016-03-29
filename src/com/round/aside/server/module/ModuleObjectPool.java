@@ -5,6 +5,10 @@ import java.util.Map;
 
 import com.round.aside.server.module.accountmanager.AccountManagerModuleFactoryImpl;
 import com.round.aside.server.module.accountmanager.IAccountManager;
+import com.round.aside.server.module.dbmanager.DatabaseManagerModuleFactoryImpl;
+import com.round.aside.server.module.dbmanager.IDatabaseManager;
+import com.round.aside.server.module.generator.GeneratorModuleFactoryImpl;
+import com.round.aside.server.module.generator.IGenerator;
 import com.round.aside.server.module.netsecurity.INetSecurity;
 import com.round.aside.server.module.netsecurity.NetSecurityModuleFactoryImpl;
 
@@ -22,6 +26,8 @@ public final class ModuleObjectPool {
     static {
         mModuleFactoryMap.put(IAccountManager.class.getSimpleName(), new AccountManagerModuleFactoryImpl());
         mModuleFactoryMap.put(INetSecurity.class.getSimpleName(), new NetSecurityModuleFactoryImpl());
+        mModuleFactoryMap.put(IDatabaseManager.class.getSimpleName(), new DatabaseManagerModuleFactoryImpl());
+        mModuleFactoryMap.put(IGenerator.class.getSimpleName(), new GeneratorModuleFactoryImpl());
     }
 
     private ModuleObjectPool() {
@@ -37,13 +43,13 @@ public final class ModuleObjectPool {
      *            待获取模块的第一个构造参数，可为null
      * @param objects
      *            待获取模块的除第一个参数以外的其他构造参数，是一个变长参数，可为0个至无限个
-     * @return 待构造的模块对象
+     * @return 构造完成的模块对象
      */
     public static <T extends IModule> T getModuleObject(Class<?> mModuleName, Object o1, Object... objects) {
         @SuppressWarnings("unchecked")
         IModuleFactory<T> mModuleFactory = (IModuleFactory<T>) mModuleFactoryMap.get(mModuleName.getSimpleName());
         if (mModuleFactory == null) {
-            throw new IllegalArgumentException("the module class isn't legal class.");
+            throw new IllegalArgumentException("The module class isn't a legal class.");
         }
         return mModuleFactory.createModule(o1, objects);
     }

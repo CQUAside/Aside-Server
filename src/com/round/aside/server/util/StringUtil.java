@@ -6,7 +6,7 @@ package com.round.aside.server.util;
  * @author A Shuai
  * 
  */
-public class StringUtil {
+public final class StringUtil {
 
     private StringUtil() {
     }

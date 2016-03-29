@@ -13,7 +13,7 @@ public final class GeneratorModuleFactoryImpl implements IModuleFactory<IGenerat
 
     @Override
     public IGenerator createModule(Object o1, Object... objects) {
-        return new GenetatorImpl();
+        return new GeneratorImpl();
     }
 
 }

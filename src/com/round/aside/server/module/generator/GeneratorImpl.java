@@ -13,7 +13,7 @@ import java.util.Random;
  * @date 2016-3-28
  *
  */
-public final class GenetatorImpl implements IGenerator{
+public final class GeneratorImpl implements IGenerator{
 
     private static final String PICID_FORMAT = "%s%8d%4d";
     

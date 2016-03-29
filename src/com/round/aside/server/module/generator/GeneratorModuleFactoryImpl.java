@@ -7,9 +7,9 @@ import com.round.aside.server.module.IModuleFactory;
  * 
  * @author A Shuai
  * @date 2016-3-28
- *
+ * 
  */
-public final class GeneratorModuleFactoryImpl implements IModuleFactory<IGenerator>{
+public final class GeneratorModuleFactoryImpl implements IModuleFactory<IGenerator> {
 
     @Override
     public IGenerator createModule(Object o1, Object... objects) {

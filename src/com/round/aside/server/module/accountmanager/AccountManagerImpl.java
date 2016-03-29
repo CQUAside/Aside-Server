@@ -58,8 +58,10 @@ public final class AccountManagerImpl implements IAccountManager {
         case StatusCode.S1000:
             break;
         case StatusCode.EX2011:
-        case StatusCode.EX2012:
+        case StatusCode.EX2013:
             return new RegisterResultEntity(mStatusCode);
+        default:
+            throw new IllegalStateException("Illegal Status Code!");
         }
 
         return new RegisterResultEntity(StatusCode.S1000, mUserID, "");

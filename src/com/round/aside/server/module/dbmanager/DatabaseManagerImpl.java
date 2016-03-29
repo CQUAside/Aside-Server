@@ -61,7 +61,7 @@ public final class DatabaseManagerImpl implements IDatabaseManager{
             mPreState.executeUpdate();
         } catch (Exception e){
             e.printStackTrace();
-            return StatusCode.EX2012;
+            return StatusCode.EX2013;
         } finally {
             if(mPreState != null){
                 try{

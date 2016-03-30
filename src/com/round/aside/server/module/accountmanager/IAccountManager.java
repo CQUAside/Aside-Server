@@ -28,9 +28,10 @@ public interface IAccountManager extends IModule {
      *            账号
      * @param mPassword
      *            密码
-     * @return 此次注册操作的结果，其中包含了各种情况下对应的状态码，有且只有四中结果码，分别为
-     * {@link StatusCode#S1000}成功码， {@link StatusCode#EX2011}Connection获取失败异常， {@link StatusCode#EX2012}SQL插入异常，
-     * {@link StatusCode#EX2013}SQL更新异常。
+     * @return 此次注册操作的结果，其中包含了各种情况下对应的状态码，有且只有四中结果码，分别为 {@link StatusCode#S1000}
+     *         成功码， {@link StatusCode#EX2011}Connection获取失败异常，
+     *         {@link StatusCode#EX2012}SQL插入异常， {@link StatusCode#EX2013}
+     *         SQL更新异常。
      */
     RegisterResultEntity registerAccount(String mAccount, String mPassword);
 

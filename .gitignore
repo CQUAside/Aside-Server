@@ -57,3 +57,8 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# Ignore all JUnit testcase files
+test/com/round/aside/test/*.*
+# Except test/com/round/aside/test/package-info.java
+!test/com/round/aside/test/package-info.java

@@ -3,6 +3,7 @@
     <wb-module deploy-name="Aside-Server">
         <wb-resource deploy-path="/" source-path="/WebRoot" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/test"/>
         <property name="context-root" value="Aside-Server"/>
         <property name="java-output-path" value="/Aside-Server/build/classes"/>
     </wb-module>

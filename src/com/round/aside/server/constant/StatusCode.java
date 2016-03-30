@@ -1,5 +1,7 @@
 package com.round.aside.server.constant;
 
+import com.round.aside.server.module.accountmanager.IAccountManager;
+
 /**
  * <P>状态码常量类
  * 
@@ -8,7 +10,8 @@ package com.round.aside.server.constant;
  * <P>目前的分类标准为<code>S前缀</code>为<code>Success</code>成功码，
  * <code>EX前缀</code>为<code>Exception</code>异常码，
  * <code>ER前缀</code>为<code>Error</code>错误码，
- * <code>F前缀</code>为<code>Fail</code>失败码
+ * <code>F前缀</code>为<code>Fail</code>失败码，
+ * <code>L后缀</code>为<code>Limited</code>有限制使用场景的状态码，其余为通用码。
  * 
  * @author A Shuai
  * @date 2016-3-29
@@ -23,41 +26,75 @@ public final class StatusCode {
      */
     public static final int S1000 = 1000;
 
+    
     /**
-     * 数据库连接异常
+     * 基础异常码，指API调用过程中出现了异常，但是无需对调用方告知，只需简单通知其发生了异常即可
      */
     public static final int EX2000 = 2000;
     
     /**
-     * 从数据库连接池中获取Connection异常
+     * 数据库连接异常
      */
-    public static final int EX2011 = 2011;
+    public static final int EX2001 = 2001;
     
     /**
-     * 数据库插入异常
+     * 从数据库连接池中获取Connection异常
      */
     public static final int EX2012 = 2012;
     
     /**
-     * 数据库更新异常
+     * 数据库插入异常
      */
     public static final int EX2013 = 2013;
     
     /**
-     * 数据库删除异常
+     * 数据库更新异常
      */
     public static final int EX2014 = 2014;
     
     /**
-     * 数据库查询异常
+     * 数据库删除异常
      */
     public static final int EX2015 = 2015;
     
+    /**
+     * 数据库查询异常
+     */
+    public static final int EX2016 = 2016;
+    
     
     /**
-     * 数据库因为已经有同值的主键导致新主键插入失败
+     * 基础错误码
+     */
+    public static final int ER5000 = 5000;
+    
+    /**
+     * 非法参数错误，即调用参数不合法
+     */
+    public static final int ER5001 = 5001;
+    
+    
+    /**
+     * 基础失败码
+     */
+    public static final int F8000 = 8000;
+    
+    /**
+     * 数据库中Unique约束的id字段插入失败
      */
     public static final int F8001 = 8001;
+    
+    /**
+     * 数据库中Unique约束的account字段插入失败
+     */
+    public static final int F8002 = 8002;
+    
+    /**
+     * 账号注册模块中注册账号接口的账号重复，限用于
+     * {@link IAccountManager#registerAccount(String, String)}方法和
+     * {@link IAccountManager#registerAccount(String, String)}方法
+     */
+    public static final int F8003L = 8003;
 
 
 }

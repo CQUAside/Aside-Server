@@ -1,11 +1,12 @@
 package com.round.aside.server.module.accountmanager;
 
-import com.round.aside.server.constant.StatusCode;
 import com.round.aside.server.entity.RegisterResultEntity;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.dbmanager.IDatabaseManager;
 import com.round.aside.server.module.generator.IGenerator;
 import com.round.aside.server.util.StringUtil;
+
+import static com.round.aside.server.constant.StatusCode.*;
 
 /**
  * 账号管理模块超级接口的实现类
@@ -25,6 +26,9 @@ public final class AccountManagerImpl implements IAccountManager {
 
     @Override
     public RegisterResultEntity registerAccount(String mAccount, String mPassword) {
+        if(StringUtil.isEmpty(mAccount) || StringUtil.isEmpty(mPassword)){
+            return new RegisterResultEntity(ER5001);
+        }
 
         IGenerator mGenerator = ModuleObjectPool.getModuleObject(IGenerator.class, null);
         IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
@@ -36,35 +40,28 @@ public final class AccountManagerImpl implements IAccountManager {
             while(true){
 
                 mUserID = mGenerator.generateUserID(1000);
-                mStatusCode = mDBManager.insertUserID(mUserID);
+                mStatusCode = mDBManager.insertUser(mUserID, mAccount, mPassword);
 
                 switch(mStatusCode){
-                case StatusCode.S1000:
+                case S1000:
                     break LOOP;
-                case StatusCode.F8001:
-                    //这次生成了同值的主键，需重新生成直至插入成功为止
+                case F8001:
+                    //userid产生了冲突，需重新生成直至插入成功为止
                     continue;
-                case StatusCode.EX2011:
-                case StatusCode.EX2012:
-                    return new RegisterResultEntity(mStatusCode);
+                case F8002:
+                    return new RegisterResultEntity(F8003L);
+                case EX2012:
+                case EX2013:
+                    return new RegisterResultEntity(EX2000);
+                case ER5001:
+                    return new RegisterResultEntity(ER5001);
                 default:
                     throw new IllegalStateException("Illegal Status Code!");
                 }
 
             }
 
-        mStatusCode = mDBManager.updateUser(mUserID, mAccount, mPassword);
-        switch(mStatusCode){
-        case StatusCode.S1000:
-            break;
-        case StatusCode.EX2011:
-        case StatusCode.EX2013:
-            return new RegisterResultEntity(mStatusCode);
-        default:
-            throw new IllegalStateException("Illegal Status Code!");
-        }
-
-        return new RegisterResultEntity(StatusCode.S1000, mUserID, "");
+        return new RegisterResultEntity(S1000, mUserID, "");
     }
 
 }

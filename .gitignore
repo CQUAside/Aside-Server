@@ -59,6 +59,15 @@ Temporary Items
 .apdisk
 
 # Ignore all JUnit testcase files
-test/com/round/aside/test/*.*
+test/com/round/aside/test/*
 # Except test/com/round/aside/test/package-info.java
 !test/com/round/aside/test/package-info.java
+
+WebRoot/LogoImg/*
+!WebRoot/LogoImg/.gitkeep
+
+WebRoot/OriginalImg/*
+!WebRoot/OriginalImg/.gitkeep
+
+WebRoot/ThumbImg/*
+!WebRoot/ThumbImg/.gitkeep

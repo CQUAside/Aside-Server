@@ -3,12 +3,18 @@ package com.round.aside.server.module;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.round.aside.server.module.VIPCertificate.IVIPCertificate;
+import com.round.aside.server.module.VIPCertificate.VIPCertificateModuleFactoryImpl;
 import com.round.aside.server.module.accountmanager.AccountManagerModuleFactoryImpl;
 import com.round.aside.server.module.accountmanager.IAccountManager;
 import com.round.aside.server.module.dbmanager.DatabaseManagerModuleFactoryImpl;
 import com.round.aside.server.module.dbmanager.IDatabaseManager;
 import com.round.aside.server.module.generator.GeneratorModuleFactoryImpl;
 import com.round.aside.server.module.generator.IGenerator;
+import com.round.aside.server.module.imageio.IImageIO;
+import com.round.aside.server.module.imageio.ImageIOModuleFactoryImpl;
+import com.round.aside.server.module.imagepath.IImagePath;
+import com.round.aside.server.module.imagepath.ImagePathModuleFactoryImpl;
 import com.round.aside.server.module.netsecurity.INetSecurity;
 import com.round.aside.server.module.netsecurity.NetSecurityModuleFactoryImpl;
 
@@ -28,6 +34,9 @@ public final class ModuleObjectPool {
         mModuleFactoryMap.put(INetSecurity.class.getSimpleName(), new NetSecurityModuleFactoryImpl());
         mModuleFactoryMap.put(IDatabaseManager.class.getSimpleName(), new DatabaseManagerModuleFactoryImpl());
         mModuleFactoryMap.put(IGenerator.class.getSimpleName(), new GeneratorModuleFactoryImpl());
+        mModuleFactoryMap.put(IImagePath.class.getSimpleName(), new ImagePathModuleFactoryImpl());
+        mModuleFactoryMap.put(IImageIO.class.getSimpleName(), new ImageIOModuleFactoryImpl());
+        mModuleFactoryMap.put(IVIPCertificate.class.getSimpleName(), new VIPCertificateModuleFactoryImpl());
     }
 
     private ModuleObjectPool() {

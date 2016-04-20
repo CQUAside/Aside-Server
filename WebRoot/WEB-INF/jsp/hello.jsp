@@ -7,7 +7,7 @@
 <title>Insert title here</title>
 </head>
 <body>
-hello!<h1>${message}</h1>
+hello!
 <a href="user/preLogin">登录</a><a href="user/preRegister">注册</a>
 </body>
 </html>

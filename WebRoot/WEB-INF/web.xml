@@ -44,12 +44,22 @@
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
+  <servlet>
+    <servlet-name>RegisteSimpleServlet</servlet-name>
+    <servlet-class>com.round.aside.server.servlet.RegisteSimpleServlet</servlet-class>
+  </servlet>
+
+
 
 	<servlet-mapping>
 		<servlet-name>springmvc</servlet-name>
 		<!-- 拦截所有,设置为/，例如：/user/add /user/add.action此方法可以实现REST风格的url 但是此方法会导致静态文件(jpg,js,css)被拦截后不能正常显示.需要特殊处理. -->
 		<url-pattern>/</url-pattern>
 	</servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>RegisteSimpleServlet</servlet-name>
+    <url-pattern>/servlet/RegisteSimpleServlet</url-pattern>
+  </servlet-mapping>
 
 
 	<filter>

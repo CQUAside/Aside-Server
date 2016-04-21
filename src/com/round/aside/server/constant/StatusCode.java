@@ -105,5 +105,4 @@ public final class StatusCode {
      */
     public static final int F8004 = 8004;
 
-
 }

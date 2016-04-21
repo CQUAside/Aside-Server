@@ -95,6 +95,14 @@ public final class StatusCode {
      * {@link IAccountManager#registerAccount(String, String)}方法
      */
     public static final int F8003L = 8003;
-
+    
+    /**
+     * 邮件发送方的地址
+     */
+    public static final String sendEmailAddress=" ";
+    /**
+     * 邮件发送方密码
+     */
+    public static final String sendEmailPassword=" ";
 
 }

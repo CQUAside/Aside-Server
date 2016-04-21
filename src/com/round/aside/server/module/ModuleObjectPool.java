@@ -7,6 +7,9 @@ import com.round.aside.server.module.VIPCertificate.IVIPCertificate;
 import com.round.aside.server.module.VIPCertificate.VIPCertificateModuleFactoryImpl;
 import com.round.aside.server.module.accountmanager.AccountManagerModuleFactoryImpl;
 import com.round.aside.server.module.accountmanager.IAccountManager;
+import com.round.aside.server.module.admanager.AdvertisementManagerImpl;
+import com.round.aside.server.module.admanager.AdvertisementManagerModuleFactoryImpl;
+import com.round.aside.server.module.admanager.IAdvertisementManager;
 import com.round.aside.server.module.dbmanager.DatabaseManagerModuleFactoryImpl;
 import com.round.aside.server.module.dbmanager.IDatabaseManager;
 import com.round.aside.server.module.generator.GeneratorModuleFactoryImpl;
@@ -17,6 +20,8 @@ import com.round.aside.server.module.imagepath.IImagePath;
 import com.round.aside.server.module.imagepath.ImagePathModuleFactoryImpl;
 import com.round.aside.server.module.netsecurity.INetSecurity;
 import com.round.aside.server.module.netsecurity.NetSecurityModuleFactoryImpl;
+import com.round.aside.server.module.personalAdsmanager.IPersonalAdsManager;
+import com.round.aside.server.module.personalAdsmanager.PersonalAdsManagerModuleFactoryImpl;
 
 /**
  * 模块对象池，用于对外暴露接口供第三方使用获取模块对象，隐藏了模块实现和工厂实现。
@@ -24,6 +29,7 @@ import com.round.aside.server.module.netsecurity.NetSecurityModuleFactoryImpl;
  * @author A Shuai
  * 
  */
+@SuppressWarnings("unchecked")
 public final class ModuleObjectPool {
 
     private static final Map<String, IModuleFactory<? extends IModule>> mModuleFactoryMap = 
@@ -37,6 +43,8 @@ public final class ModuleObjectPool {
         mModuleFactoryMap.put(IImagePath.class.getSimpleName(), new ImagePathModuleFactoryImpl());
         mModuleFactoryMap.put(IImageIO.class.getSimpleName(), new ImageIOModuleFactoryImpl());
         mModuleFactoryMap.put(IVIPCertificate.class.getSimpleName(), new VIPCertificateModuleFactoryImpl());
+        mModuleFactoryMap.put(IAdvertisementManager.class.getSimpleName(), new AdvertisementManagerModuleFactoryImpl());
+        mModuleFactoryMap.put(IPersonalAdsManager.class.getSimpleName(), new PersonalAdsManagerModuleFactoryImpl());
     }
 
     private ModuleObjectPool() {

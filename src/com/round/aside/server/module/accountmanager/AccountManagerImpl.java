@@ -66,6 +66,7 @@ public final class AccountManagerImpl implements IAccountManager {
 
             }
 
+        mGenerator.release();
         return new RegisterResultEntity(S1000, mUserID, "");
     }
     
@@ -104,6 +105,8 @@ public final class AccountManagerImpl implements IAccountManager {
                 }
 
             }
+        
+        mGenerator.release();
         return new RegisterResultEntity(S1000, mUserID, "");
     }
 

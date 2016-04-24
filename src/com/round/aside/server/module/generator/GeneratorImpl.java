@@ -9,7 +9,7 @@ import java.util.Random;
 import com.round.aside.server.module.IModuleFactoryRecycle;
 
 /**
- * ID生成器模块接口的普通实现类
+ * 生成器模块接口的普通实现类
  * 
  * @author A Shuai
  * @date 2016-3-28

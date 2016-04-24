@@ -4,7 +4,7 @@ import com.round.aside.server.module.IModule;
 import com.round.aside.server.module.IRecyclableModule;
 
 /**
- * ID生成器模块的超级接口
+ * 生成器模块的超级接口
  * 
  * @author A Shuai
  * @date 2016-3-28

@@ -9,7 +9,7 @@ import java.util.Random;
 import com.round.aside.server.module.IModuleFactoryRecycle;
 
 /**
- * 命名生成器模块接口的可回收复用的实现类
+ * 生成器模块接口的可回收复用的实现类
  * 
  * @author A Shuai
  * @date 2016-4-24

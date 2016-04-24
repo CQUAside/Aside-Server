@@ -121,7 +121,7 @@ public interface IDatabaseManager extends IModule {
 
     /**
      * 
-    * @param mUserID
+     * @param mUserID
      *            用户ID，Unique值，范围为1-99999999
      * @param mAccount
      *            用户账号，Unique值，不能为空

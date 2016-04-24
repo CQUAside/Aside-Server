@@ -1,6 +1,7 @@
 package com.round.aside.server.module.generator;
 
 import com.round.aside.server.module.IModule;
+import com.round.aside.server.module.IRecyclableModule;
 
 /**
  * ID生成器模块的超级接口
@@ -9,7 +10,7 @@ import com.round.aside.server.module.IModule;
  * @date 2016-3-28
  * 
  */
-public interface IGenerator extends IModule {
+public interface IGenerator extends IModule, IRecyclableModule<IGenerator> {
 
     /**
      * 生成一个UserID，随机值取值范围为<code>1-99999999</code>

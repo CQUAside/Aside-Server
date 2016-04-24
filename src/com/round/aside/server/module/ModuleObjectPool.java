@@ -7,7 +7,6 @@ import com.round.aside.server.module.VIPCertificate.IVIPCertificate;
 import com.round.aside.server.module.VIPCertificate.VIPCertificateModuleFactoryImpl;
 import com.round.aside.server.module.accountmanager.AccountManagerModuleFactoryImpl;
 import com.round.aside.server.module.accountmanager.IAccountManager;
-import com.round.aside.server.module.admanager.AdvertisementManagerImpl;
 import com.round.aside.server.module.admanager.AdvertisementManagerModuleFactoryImpl;
 import com.round.aside.server.module.admanager.IAdvertisementManager;
 import com.round.aside.server.module.dbmanager.DatabaseManagerModuleFactoryImpl;
@@ -29,7 +28,6 @@ import com.round.aside.server.module.personalAdsmanager.PersonalAdsManagerModule
  * @author A Shuai
  * 
  */
-@SuppressWarnings("unchecked")
 public final class ModuleObjectPool {
 
     private static final Map<String, IModuleFactory<? extends IModule>> mModuleFactoryMap = 

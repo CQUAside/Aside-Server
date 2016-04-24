@@ -30,6 +30,7 @@ public interface IAccountManager extends IModule {
      * @return 此次注册操作的结果，其中包含了各种情况下对应的状态
      */
     RegisterResultEntity registerAccount(String mAccount, String mPassword);
+    
     /**
      * 
      * @param mAccount
@@ -45,6 +46,7 @@ public interface IAccountManager extends IModule {
      * @return 此次注册操作的结果，其中包含了各种情况下对应的状态
      */
     RegisterResultEntity registerAccount(String mAccount, String mPassword,String NickName,String Email,String PhoneNum);
+    
     /**
      * 
      * @param mAccount
@@ -56,12 +58,14 @@ public interface IAccountManager extends IModule {
      * @return 此次注册操作的结果，其中包含了各种情况下对应的状态
      */
     RegisterResultEntity login(String mAccount,String mPassword,long period);
+    
     /**
      * 
      * @param token
      * @return 此次注册操作的结果，其中包含了各种情况下对应的状态
      */
     RegisterResultEntity tokenLogin(String token);
+    
     /**
      * 
      * @param mUserID
@@ -71,6 +75,7 @@ public interface IAccountManager extends IModule {
      * @return true表示发送验证邮箱，否则发送失败
      */       
     boolean activationEmail(int mUserID,String email);
+    
     /**
      * 
      * @param mUserID
@@ -88,6 +93,7 @@ public interface IAccountManager extends IModule {
      * @return 表示发送找回密码邮件，否则发送失败
      */
     boolean findPassword(int mUserID);
+    
     /**
      * 
      * @param mUserID

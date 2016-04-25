@@ -1,13 +1,9 @@
 package com.round.aside.server.module.personalAdsmanager;
 
-import java.text.SimpleDateFormat;
-
-import com.round.aside.server.entity.AdvertisementEntity;
 import com.round.aside.server.entity.InformAdsEntity;
 import com.round.aside.server.entity.InformUsersEntity;
 import com.round.aside.server.entity.PersonalCollectionEntity;
 import com.round.aside.server.module.ModuleObjectPool;
-import com.round.aside.server.module.dbmanager.DatabaseManagerImpl;
 import com.round.aside.server.module.dbmanager.IDatabaseManager;
 
 /**

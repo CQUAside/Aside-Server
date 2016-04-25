@@ -1,8 +1,6 @@
 package com.round.aside.server.module.personalAdsmanager;
 
-import com.round.aside.server.entity.AdvertisementEntity;
 import com.round.aside.server.module.IModule;
-import com.round.aside.server.module.IModuleFactory;
 
 /**
  * 用户个人广告管理模块超级接口类

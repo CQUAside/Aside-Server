@@ -1,7 +1,5 @@
 package com.round.aside.server.module.imageio;
 
-import java.io.OutputStream;
-
 import com.round.aside.server.module.imageio.ImageIOResultEnum.imgRWResultEnum;
 
 /**

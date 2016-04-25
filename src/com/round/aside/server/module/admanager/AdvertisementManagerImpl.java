@@ -3,7 +3,6 @@ package com.round.aside.server.module.admanager;
 import static com.round.aside.server.constant.StatusCode.*;
 import com.round.aside.server.entity.AdvertisementEntity;
 import com.round.aside.server.module.ModuleObjectPool;
-import com.round.aside.server.module.dbmanager.DatabaseManagerImpl;
 import com.round.aside.server.module.dbmanager.IDatabaseManager;
 import com.round.aside.server.module.dbmanager.DatabaseManagerImpl.AdAndStatusCode;
 

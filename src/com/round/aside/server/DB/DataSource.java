@@ -3,23 +3,24 @@ package com.round.aside.server.DB;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import com.round.aside.server.constant.DBConfig;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-
-import static com.round.aside.server.constant.DBConfig.*;
 
 public class DataSource {
 
     private static HikariDataSource ds;
 
     private static final String DB_FROMAT = "jdbc:mysql://%s:%s/%s?useUnicode=true&amp;characterEncoding=UTF-8";
+    
+    private static final DBConfig DBCONFIG_INSTANCE = DBConfig.getInstance();
 
     public static void init() {
         HikariConfig config = new HikariConfig();
         config.setDriverClassName("com.mysql.jdbc.Driver");
-        config.setJdbcUrl(String.format(DB_FROMAT, DB_SERVER_IP, DB_SERVER_PORT, DB_SERVER_NAME));
-        config.setUsername(DB_SERVER_ACCOUNT);
-        config.setPassword(DB_SERVER_PASSWORD);
+        config.setJdbcUrl(String.format(DB_FROMAT, DBCONFIG_INSTANCE.getDBIP(), DBCONFIG_INSTANCE.getDBPort(), DBCONFIG_INSTANCE.getDBName()));
+        config.setUsername(DBCONFIG_INSTANCE.getDBAccount());
+        config.setPassword(DBCONFIG_INSTANCE.getDBPassword());
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");

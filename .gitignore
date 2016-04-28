@@ -72,5 +72,6 @@ WebRoot/OriginalImg/*
 WebRoot/ThumbImg/*
 !WebRoot/ThumbImg/.gitkeep
 
-# Ignore DB Config file
-src/com/round/aside/server/constant/DBConfig.java
+# Ignore config XML files in config folder
+WebRoot/config/*
+!WebRoot/config/.gitkeep

@@ -13,7 +13,7 @@ import com.round.aside.server.module.IRecyclableModule;
 public interface IGenerator extends IModule, IRecyclableModule<IGenerator> {
 
     /**
-     * 生成一个UserID，随机值取值范围为<code>1-99999999</code>
+     * 随机生成一个UserID，随机值取值范围为大于0的int整形数<code>1-2147483648</code>
      * 
      * @param mInitSeed
      *            初始种子，具体实现可用可不用
@@ -22,8 +22,8 @@ public interface IGenerator extends IModule, IRecyclableModule<IGenerator> {
     int generateUserID(int mInitSeed);
 
     /**
-     * 生成一个图片ID，图片ID的生成格式为“年月日小时分钟秒+8位UserID+4位随机数”。 末尾的随机数生成范围为
-     * <code>1-9999</code>。例如生成结果为<code>20160104103055235+00000001+0135</code>。
+     * 生成一个图片ID，图片ID的生成格式为“年月日小时分钟秒+10位UserID+4位随机数”。 末尾的随机数生成范围为
+     * <code>1-9999</code>。例如生成结果为<code>20160104103055235+0000000001+0135</code>。
      * 凡是不足位数的要补零凑足。
      * 
      * @param mUserID
@@ -33,5 +33,14 @@ public interface IGenerator extends IModule, IRecyclableModule<IGenerator> {
      * @return 随机生成的图片ID
      */
     String generatePicID(int mUserID, int mInitSeed);
+    
+    /**
+     * 随机生成一个Token令牌
+     * 
+     * @param mUserID
+     *            用户ID
+     * @return Token令牌字符串
+     */
+    String generateToken(int mUserID);
 
 }

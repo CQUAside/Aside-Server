@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Random;
+import java.util.UUID;
 
 import com.round.aside.server.module.IModuleFactoryRecycle;
 
@@ -19,7 +20,7 @@ public final class RecyclableGeneratorImpl implements IGenerator{
 
     private IModuleFactoryRecycle<IGenerator> mRecycleCallback;
     
-    private static final String PICID_FORMAT = "%s%8d%4d";
+    private static final String PICID_FORMAT = "%s%10d%4d";
     
     private final Random mRandom;
     private final DateFormat mDateFormat;
@@ -31,13 +32,17 @@ public final class RecyclableGeneratorImpl implements IGenerator{
     
     @Override
     public int generateUserID(int mInitSeed) {
-        mRandom.setSeed(mInitSeed);
-        return mRandom.nextInt(100000000);
+        int result = 0;
+        do {
+            result = UUID.randomUUID().toString().hashCode();
+        } while (result == 0);
+
+        return Math.abs(result);
     }
 
     @Override
     public String generatePicID(int mUserID, int mInitSeed) {
-        mRandom.setSeed(mInitSeed);
+        mRandom.setSeed(System.currentTimeMillis());
         
         String mTimeStr = mDateFormat.format(new Date());
         return String.format(Locale.getDefault(), PICID_FORMAT, mTimeStr, mUserID, mRandom.nextInt(10000));
@@ -51,6 +56,11 @@ public final class RecyclableGeneratorImpl implements IGenerator{
     @Override
     public void registerModuleFactoryRecycle(IModuleFactoryRecycle<IGenerator> mRecycle) {
         mRecycleCallback = mRecycle;
+    }
+
+    @Override
+    public String generateToken(int mUserID) {
+        return null;
     }
 
 }

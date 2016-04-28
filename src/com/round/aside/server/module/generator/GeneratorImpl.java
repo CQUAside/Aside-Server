@@ -44,4 +44,9 @@ public final class GeneratorImpl implements IGenerator {
         
     }
 
+    @Override
+    public String generateToken(int mUserID) {
+        return null;
+    }
+
 }

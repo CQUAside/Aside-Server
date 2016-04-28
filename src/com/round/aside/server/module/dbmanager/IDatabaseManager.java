@@ -21,6 +21,17 @@ import static com.round.aside.server.constant.StatusCode.*;
 public interface IDatabaseManager extends IModule {
 
     /**
+     * 检查指定的用户名是否已存在
+     * 
+     * @param mAccount
+     *            待检查的用户名
+     * @return 表征结果的状态码，分别有{@link #S1000}SQL执行正常且未重复，{@link #R6002}SQL执行正常且已重复，
+     *         {@link #EX2012}Connection获取失败异常，{@link #EX2013}SQL查询执行异常，
+     *         {@link #ER5001}调用参数非法。
+     */
+    int checkAccountExistence(String mAccount);
+    
+    /**
      * 新插入一条用户信息记录，但只插入用户ID，账号和密码三个字段，其余字段使用Update方法进行更新式填充
      * 
      * @param mUserID

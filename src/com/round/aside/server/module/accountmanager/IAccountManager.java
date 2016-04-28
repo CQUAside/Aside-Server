@@ -3,6 +3,8 @@ package com.round.aside.server.module.accountmanager;
 import com.round.aside.server.entity.RegisterResultEntity;
 import com.round.aside.server.module.IModule;
 
+import static com.round.aside.server.constant.StatusCode.*;
+
 /**
  * 账号管理模块超级接口
  * 
@@ -16,9 +18,10 @@ public interface IAccountManager extends IModule {
      * 
      * @param mAccount
      *            待查询账号
-     * @return true为合法
+     * @return 结果状态码，合法的结果值有几种，分别为{@link #S1000}完全合法，{@link #S1001}部分合法，未发现非法情况，
+     *         {@link #R6002}账号重复，{@link #R6001}用户名命名非法，{@link #ER5001}参数为空。
      */
-    boolean isLegalRegisteredAccount(String mAccount);
+    int checkRegisteredAccountLegal(String mAccount);
 
     /**
      * 两参数的注册账号接口

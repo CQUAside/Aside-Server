@@ -10,6 +10,7 @@ import com.round.aside.server.module.accountmanager.IAccountManager;
  * <P>目前的分类标准为<code>S前缀</code>为<code>Success</code>成功码，
  * <code>EX前缀</code>为<code>Exception</code>异常码，
  * <code>ER前缀</code>为<code>Error</code>错误码，
+ * <code>R前缀</code>为<code>Result</code>结果码，
  * <code>F前缀</code>为<code>Fail</code>失败码，
  * <code>L后缀</code>为<code>Limited</code>有限制使用场景的状态码，其余为通用码。
  * 
@@ -25,6 +26,11 @@ public final class StatusCode {
      * 成功码
      */
     public static final int S1000 = 1000;
+    
+    /**
+     * 由于一些原因未完成全部检查，只做了部分检查且检查通过
+     */
+    public static final int S1001 = 1001;
 
     
     /**
@@ -73,6 +79,20 @@ public final class StatusCode {
      */
     public static final int ER5001 = 5001;
     
+    /**
+     * 基础结果码
+     */
+    public static final int R6000 = 6000;
+
+    /**
+     * 用户名命名非法
+     */
+    public static final int R6001 = 6001;
+
+    /**
+     * 用户名已存在
+     */
+    public static final int R6002 = 6002;
     
     /**
      * 基础失败码

@@ -84,7 +84,7 @@ public class RegisteSimpleServlet extends HttpServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String mAccount = request.getParameter("username");
+        String mAccount = request.getParameter("account");
         String mPassword = request.getParameter("password");
         
         IAccountManager mAccountManager = ModuleObjectPool.getModuleObject(IAccountManager.class, null);

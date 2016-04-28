@@ -7,6 +7,9 @@ import com.round.aside.server.module.dbmanager.IDatabaseManager;
 import com.round.aside.server.module.generator.IGenerator;
 import com.round.aside.server.util.StringUtil;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.mail.*;
 import javax.mail.internet.*;
 
@@ -22,11 +25,31 @@ import static com.round.aside.server.constant.Constants.*;
 public final class AccountManagerImpl implements IAccountManager {
 
     @Override
-    public boolean isLegalRegisteredAccount(String mAccount) {
+    public int checkRegisteredAccountLegal(String mAccount) {
         if (StringUtil.isEmpty(mAccount)) {
-            return false;
+            return ER5001;
         }
-        return true;
+
+        Pattern mPattern = Pattern.compile("([a-zA-Z]+[a-zA-Z0-9[_]]+)");
+        Matcher mMatcher = mPattern.matcher(mAccount);
+        if (!mMatcher.matches()) {
+            return R6001;
+        }
+
+        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
+
+        int mStatusCode = mDBManager.checkAccountExistence(mAccount);
+        switch (mStatusCode) {
+        case S1000:
+        case R6002:
+        case ER5001:
+            return mStatusCode;
+        case EX2012:
+        case EX2013:
+            return S1001;
+        default:
+            throw new IllegalStateException("Illegal status code!");
+        }
     }
 
     @Override

@@ -25,6 +25,8 @@ import static com.round.aside.server.constant.StatusCode.*;
  */
 public final class DatabaseManagerImpl implements IDatabaseManager{
 
+    private static final String CHECK_ACCOUNT_EXIST_FORMAT = "select userid from aside_user where account = ?";
+    
     private static final String INSERT_USER_FORMAT = "INSERT into aside_user(userid, account, password) values(?, ?, ?)";
     
     //上传广告时要用的SQL语句
@@ -59,6 +61,52 @@ public final class DatabaseManagerImpl implements IDatabaseManager{
     private static final String UPDATE_USER_REGISTER="UPDATE  aside_user set registerid=? where userid=?";
     private static final String UPDATE_USER_STATUS="UPDATE  aside_user set status=? where userid=?";
     
+    @Override
+    public int checkAccountExistence(String mAccount) {
+        if (StringUtil.isEmpty(mAccount)) {
+            return ER5001;
+        }
+
+        Connection mConnection = DataSource.getConnection();
+        if (mConnection == null) {
+            return EX2012;
+        }
+
+        PreparedStatement mPreState = null;
+        ResultSet mResultSet = null;
+
+        boolean mExistence = false;
+        try {
+            mPreState = mConnection.prepareStatement(CHECK_ACCOUNT_EXIST_FORMAT);
+            mPreState.setString(1, mAccount);
+            mResultSet = mPreState.executeQuery();
+
+            while (mResultSet.next()) {
+                mExistence = true;
+                break;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return EX2013;
+        } finally {
+            if (mPreState != null) {
+                try {
+                    mPreState.close();
+                } catch (Exception e1) {
+                }
+            }
+            if (mResultSet != null) {
+                try {
+                    mResultSet.close();
+                } catch (Exception e1) {
+                }
+            }
+        }
+
+        return mExistence ? R6002 : S1000;
+    }
+
     @Override
     public int insertUser(int mUserID, String mAccount, String mPassword) {
         if(mUserID <= 0 || mUserID > 99999999 || StringUtil.isEmpty(mAccount) || StringUtil.isEmpty(mPassword)){

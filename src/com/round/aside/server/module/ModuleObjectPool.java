@@ -23,7 +23,7 @@ import com.round.aside.server.module.personalAdsmanager.IPersonalAdsManager;
 import com.round.aside.server.module.personalAdsmanager.PersonalAdsManagerModuleFactoryImpl;
 
 /**
- * 模块对象池，用于对外暴露接口供第三方使用获取模块对象，隐藏了模块实现和工厂实现。
+ * 模块对象池，用于对外暴露接口供第三方使用获取模块对象，隐藏了模块实现和工厂实现。工厂方法模式。
  * 
  * @author A Shuai
  * 

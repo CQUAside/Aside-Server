@@ -5,7 +5,10 @@ import com.round.aside.server.entity.RegisterResultEntity;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.dbmanager.IDatabaseManager;
 import com.round.aside.server.module.generator.IGenerator;
+import com.round.aside.server.util.AssistUtils;
 import com.round.aside.server.util.StringUtil;
+import com.round.aside.server.util.VerifyUtils;
+
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -50,6 +53,36 @@ public final class AccountManagerImpl implements IAccountManager {
         default:
             throw new IllegalStateException("Illegal status code!");
         }
+    }
+
+    @Override
+    public int sendPhoneAuthcode(String mPhone) {
+        if (StringUtil.isEmpty(mPhone)) {
+            return ER5001;
+        }
+        if (!VerifyUtils.isPhoneNumber(mPhone)) {
+            return ER5002;
+        }
+
+        String mAuthCode = AssistUtils.sendPhoneAuth(mPhone);
+        if (StringUtil.isEmpty(mAuthCode) || mAuthCode.length() != 4) {
+            return R6003;
+        }
+
+        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
+        int mStatusCode = mDBManager.stashRegisterPhoneAuthcode(mPhone, mAuthCode);
+
+        switch (mStatusCode) {
+        case S1000:
+        case ER5001:
+            return mStatusCode;
+        case EX2012:
+        case EX2013:
+            return R6003;
+        default:
+            throw new IllegalStateException("Illegal Status Code!");
+        }
+
     }
 
     @Override

@@ -63,7 +63,6 @@ public final class GeneratorModuleFactoryImpl implements IModuleFactory<IGenerat
             mLock.lock();
             try {
                 if (mModuleObjectList.size() < MAX_CAPACITY) {
-                    System.out.println("回收成功");
                     mModuleObjectList.add(mModule);
                 }
             } catch (Exception e) {

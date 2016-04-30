@@ -22,6 +22,15 @@ public interface IAccountManager extends IModule {
      *         {@link #R6002}账号重复，{@link #R6001}用户名命名非法，{@link #ER5001}参数为空。
      */
     int checkRegisteredAccountLegal(String mAccount);
+    
+    /**
+     * 发送账号注册时的手机验证码
+     * 
+     * @param mPhone
+     *            手机号码
+     * @return 结果状态码
+     */
+    int sendPhoneAuthcode(String mPhone);
 
     /**
      * 两参数的注册账号接口

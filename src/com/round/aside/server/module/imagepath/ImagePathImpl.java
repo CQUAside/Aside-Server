@@ -8,7 +8,7 @@ import com.round.aside.server.util.MD5Utils;
  * @author Ghost_White
  * 
  */
-public final class ImagePathImpl implements IImagePath {   
+public final class ImagePathImpl implements IImagePath {
 
     @Override
     public String logoImgPath(int userId, String imgId) {        //优化：写成一个函数

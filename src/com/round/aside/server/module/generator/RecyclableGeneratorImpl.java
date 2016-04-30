@@ -1,5 +1,6 @@
 package com.round.aside.server.module.generator;
 
+import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -7,7 +8,10 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.UUID;
 
+import sun.misc.BASE64Encoder;
+
 import com.round.aside.server.module.IModuleFactoryRecycle;
+import com.round.aside.server.util.MD5Utils;
 
 /**
  * 生成器模块接口的可回收复用的实现类
@@ -21,13 +25,22 @@ public final class RecyclableGeneratorImpl implements IGenerator{
     private IModuleFactoryRecycle<IGenerator> mRecycleCallback;
     
     private static final String PICID_FORMAT = "%s%10d%4d";
+    private static final String ORITOKEN_FORMAT = "%10d-%s";
     
     private final Random mRandom;
+    
+    private final Date mDate;
     private final DateFormat mDateFormat;
+    
+    private final BASE64Encoder mBase64En;
     
     public RecyclableGeneratorImpl(){
         mRandom = new Random();
+        
+        mDate = new Date();
         mDateFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS", Locale.getDefault());
+        
+        mBase64En = new BASE64Encoder();
     }
     
     @Override
@@ -44,7 +57,8 @@ public final class RecyclableGeneratorImpl implements IGenerator{
     public String generatePicID(int mUserID, int mInitSeed) {
         mRandom.setSeed(System.currentTimeMillis());
         
-        String mTimeStr = mDateFormat.format(new Date());
+        mDate.setTime(System.currentTimeMillis());
+        String mTimeStr = mDateFormat.format(mDate);
         return String.format(Locale.getDefault(), PICID_FORMAT, mTimeStr, mUserID, mRandom.nextInt(10000));
     }
     
@@ -59,8 +73,17 @@ public final class RecyclableGeneratorImpl implements IGenerator{
     }
 
     @Override
-    public String generateToken(int mUserID) {
-        return null;
+    public String generateToken(int mUserID, long mTime) {
+        mDate.setTime(mTime);
+        String mTemp = MD5Utils.encryptionInfoByMd5(String.format(
+                Locale.getDefault(), ORITOKEN_FORMAT, mUserID,
+                mDateFormat.format(mDate)));
+        try {
+            return mBase64En.encode(mTemp.getBytes("utf-8"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            throw new IllegalStateException("Don't support utf-8 charset!");
+        }
     }
 
 }

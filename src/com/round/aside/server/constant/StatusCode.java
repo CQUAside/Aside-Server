@@ -80,6 +80,11 @@ public final class StatusCode {
     public static final int ER5001 = 5001;
     
     /**
+     * 参数不是一个合法的手机号
+     */
+    public static final int ER5002 = 5002;
+    
+    /**
      * 基础结果码
      */
     public static final int R6000 = 6000;
@@ -93,6 +98,11 @@ public final class StatusCode {
      * 用户名已存在
      */
     public static final int R6002 = 6002;
+    
+    /**
+     * 手机号验证码发送失败
+     */
+    public static final int R6003 = 6003;
     
     /**
      * 基础失败码

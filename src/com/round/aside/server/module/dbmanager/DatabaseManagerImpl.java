@@ -107,6 +107,41 @@ public final class DatabaseManagerImpl implements IDatabaseManager {
         return mExistence ? R6002 : S1000;
     }
 
+    private static final String INSERT_PHONEAUTH_FORMAT = "insert into aside_authcode(phone, authcode, pastdue_time) values(?, ?, ?)";
+
+    @Override
+    public int stashRegisterPhoneAuthcode(String mPhone, String mAuthcode) {
+        if (StringUtil.isEmpty(mPhone) || StringUtil.isEmpty(mAuthcode) || mAuthcode.length() != 4) {
+            return ER5001;
+        }
+
+        Connection mConnection = DataSource.getConnection();
+        if (mConnection == null) {
+            return EX2012;
+        }
+
+        PreparedStatement mPreState = null;
+        try {
+            mPreState = mConnection.prepareStatement(INSERT_PHONEAUTH_FORMAT);
+            mPreState.setString(1, mPhone);
+            mPreState.setString(2, mAuthcode);
+            mPreState.setLong(3, System.currentTimeMillis() + 5 * 60 * 1000);
+            mPreState.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return EX2013;
+        } finally {
+            if (mPreState != null) {
+                try {
+                    mPreState.close();
+                } catch (Exception e1) {
+                }
+            }
+        }
+
+        return S1000;
+    }
+
     @Override
     public int insertUser(int mUserID, String mAccount, String mPassword) {
         if (mUserID <= 0 || StringUtil.isEmpty(mAccount) || StringUtil.isEmpty(mPassword)) {

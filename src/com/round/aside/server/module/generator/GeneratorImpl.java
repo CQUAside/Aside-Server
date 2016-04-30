@@ -45,7 +45,7 @@ public final class GeneratorImpl implements IGenerator {
     }
 
     @Override
-    public String generateToken(int mUserID) {
+    public String generateToken(int mUserID, long mTime) {
         return null;
     }
 

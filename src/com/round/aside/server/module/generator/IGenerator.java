@@ -35,12 +35,14 @@ public interface IGenerator extends IModule, IRecyclableModule<IGenerator> {
     String generatePicID(int mUserID, int mInitSeed);
     
     /**
-     * 随机生成一个Token令牌
+     * 随机生成一个Token令牌。可使用用户ID及指定时间参与计算生成
      * 
      * @param mUserID
      *            用户ID
+     * @param mTime
+     *            当前时间
      * @return Token令牌字符串
      */
-    String generateToken(int mUserID);
+    String generateToken(int mUserID, long mTime);
 
 }

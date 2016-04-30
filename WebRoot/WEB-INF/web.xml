@@ -1,95 +1,98 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
-	id="WebApp_ID" version="3.0">
-	<display-name>Aside-Server</display-name>
-	<welcome-file-list>
-		<welcome-file>index.html</welcome-file>
-		<welcome-file>index.htm</welcome-file>
-		<welcome-file>index.jsp</welcome-file>
-		<welcome-file>default.html</welcome-file>
-		<welcome-file>default.htm</welcome-file>
-		<welcome-file>default.jsp</welcome-file>
-	</welcome-file-list>
+    xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+    id="WebApp_ID" version="3.0">
+    <display-name>Aside-Server</display-name>
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+        <welcome-file>index.htm</welcome-file>
+        <welcome-file>index.jsp</welcome-file>
+        <welcome-file>default.html</welcome-file>
+        <welcome-file>default.htm</welcome-file>
+        <welcome-file>default.jsp</welcome-file>
+    </welcome-file-list>
 
-	<!-- log4j -->
-	<context-param>
-		<param-name>log4jConfigLocation</param-name>
-		<param-value>classpath:resources/log4j.properties</param-value>
-	</context-param>
-	<listener>
-		<listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
-	</listener>
+    <!-- log4j -->
+    <context-param>
+        <param-name>log4jConfigLocation</param-name>
+        <param-value>classpath:resources/log4j.properties</param-value>
+    </context-param>
+    <listener>
+        <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
+    </listener>
 
-	<!-- configure the springIOC -->
-	<context-param>
-		<param-name>contextConfigLocation</param-name>
-		<param-value>classpath:resources/applicationContext.xml</param-value>
-	</context-param>
-	<listener>
-		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-	</listener>
-
-
-	<!-- SpringMVC的配置 -->
-	<!--configure the setting of springmvcDispatcherServlet and configure the 
-		mapping -->
-	<servlet>
-		<servlet-name>springmvc</servlet-name>
-		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
-		<init-param>
-			<param-name>contextConfigLocation</param-name>
-			<param-value>classpath:resources/springmvc-servlet.xml</param-value>
-		</init-param>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-  <servlet>
-    <servlet-name>RegisteSimpleServlet</servlet-name>
-    <servlet-class>com.round.aside.server.servlet.RegisteSimpleServlet</servlet-class>
-  </servlet>
-  <servlet>
-    <description>This is the description of my J2EE component</description>
-    <display-name>This is the display name of my J2EE component</display-name>
-    <servlet-name>CheckAccountLegalServlet</servlet-name>
-    <servlet-class>com.round.aside.server.servlet.CheckAccountLegalServlet</servlet-class>
-  </servlet>
+    <!-- configure the springIOC -->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:resources/applicationContext.xml</param-value>
+    </context-param>
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
 
 
+    <!-- SpringMVC的配置 -->
+    <!--configure the setting of springmvcDispatcherServlet and configure 
+        the mapping -->
+    <servlet>
+        <servlet-name>springmvc</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:resources/springmvc-servlet.xml</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet>
+        <servlet-name>CheckAccountLegalServlet</servlet-name>
+        <servlet-class>com.round.aside.server.servlet.CheckAccountLegalServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>RegisterAccountServlet</servlet-name>
+        <servlet-class>com.round.aside.server.servlet.RegisterAccountServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>SendRegisterPhoneAuthCodeServlet</servlet-name>
+        <servlet-class>com.round.aside.server.servlet.SendRegisterPhoneAuthCodeServlet</servlet-class>
+    </servlet>
 
 
+    <servlet-mapping>
+        <servlet-name>springmvc</servlet-name>
+        <!-- 拦截所有,设置为/，例如：/user/add /user/add.action此方法可以实现REST风格的url 但是此方法会导致静态文件(jpg,js,css)被拦截后不能正常显示.需要特殊处理. -->
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CheckAccountLegalServlet</servlet-name>
+        <url-pattern>/servlet/CheckAccountLegalServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>RegisterAccountServlet</servlet-name>
+        <url-pattern>/servlet/RegisterAccountServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SendRegisterPhoneAuthCodeServlet</servlet-name>
+        <url-pattern>/servlet/SendRegisterPhoneAuthCodeServlet</url-pattern>
+    </servlet-mapping>
 
-	<servlet-mapping>
-		<servlet-name>springmvc</servlet-name>
-		<!-- 拦截所有,设置为/，例如：/user/add /user/add.action此方法可以实现REST风格的url 但是此方法会导致静态文件(jpg,js,css)被拦截后不能正常显示.需要特殊处理. -->
-		<url-pattern>/</url-pattern>
-	</servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>RegisteSimpleServlet</servlet-name>
-    <url-pattern>/servlet/RegisteSimpleServlet</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>CheckAccountLegalServlet</servlet-name>
-    <url-pattern>/servlet/CheckAccountLegalServlet</url-pattern>
-  </servlet-mapping>
 
-
-	<filter>
-		<filter-name>characterEncodingFilter</filter-name>
-		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
-		<init-param>
-			<param-name>encoding</param-name>
-			<param-value>UTF-8</param-value>
-		</init-param>
-		<init-param>
-			<param-name>forceEncoding</param-name>
-			<param-value>true</param-value>
-		</init-param>
-	</filter>
-	<filter-mapping>
-		<filter-name>characterEncodingFilter</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
+    <filter>
+        <filter-name>characterEncodingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+        <init-param>
+            <param-name>forceEncoding</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>characterEncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
 
 

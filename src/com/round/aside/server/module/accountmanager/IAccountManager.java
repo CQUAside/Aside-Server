@@ -33,31 +33,19 @@ public interface IAccountManager extends IModule {
     int sendPhoneAuthcode(String mPhone);
 
     /**
-     * 两参数的注册账号接口
+     * 注册账号接口
      * 
      * @param mAccount
      *            账号，不能为空
      * @param mPassword
      *            密码，不能为空
+     * @param mPhone
+     *            账号，不能为空
+     * @param mAuthcode
+     *            密码，不能为空
      * @return 此次注册操作的结果，其中包含了各种情况下对应的状态
      */
-    RegisterResultEntity registerAccount(String mAccount, String mPassword);
-    
-    /**
-     * 
-     * @param mAccount
-     * 			账号，不能为空
-     * @param mPassword
-     * 		             密码，不能为空
-     * @param NickName
-     *          昵称，可为空
-     * @param Email
-     *          邮箱，可为空
-     * @param PhoneNum
-     *          电话，可为空
-     * @return 此次注册操作的结果，其中包含了各种情况下对应的状态
-     */
-    RegisterResultEntity registerAccount(String mAccount, String mPassword,String NickName,String Email,String PhoneNum);
+    RegisterResultEntity registerAccount(String mAccount, String mPassword, String mPhone, String mAuthcode);
     
     /**
      * 

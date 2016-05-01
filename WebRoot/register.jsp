@@ -33,9 +33,9 @@
 
     function onConfirmPasswordBlur() {
         var password = document.getElementById("password").value;
-        var conpawo = document.getElementById("conpawo").value;
+        var confirm_password = document.getElementById("confirm_password").value;
 
-        if (password === conpawo) {
+        if (password === confirm_password) {
             return;
         } else {
             alert("两次密码输入不同，请重新输入");
@@ -68,6 +68,35 @@
             }
         });
     }
+    
+    function onRegisterClick(){
+        var account = document.getElementById("account").value;
+        var password = document.getElementById("password").value;
+        var confirm_password = document.getElementById("confirm_password").value;
+        var phone = document.getElementById("phone").value;
+        var authcode = document.getElementById("authcode").value;
+        
+        if(password !== confirm_password){
+            alert("两次输入密码不相同");
+            return;
+        }
+        
+        htmlobj = $.ajax({
+            url : 'servlet/RegisterAccountServlet',
+            data : {
+                account : account,
+                password : password,
+                phone : phone,
+                authcode : authcode,
+            },
+            type : 'post',
+            async : true,
+            success : function(data) {
+                var bean = JSON.parse(data);
+                
+            }
+        });
+    }
 </script>
 <title>注册</title>
 </head>
@@ -84,7 +113,7 @@
                     <td><input type="password" name="password" id="password" placeholder="密码" ></td>
                 </tr>
                 <tr>
-                    <td><input type="password" name="conpawo" id="conpawo" placeholder="确认密码" onblur="onConfirmPasswordBlur()" ></td>
+                    <td><input type="password" name="confirm_password" id="confirm_password" placeholder="确认密码" onblur="onConfirmPasswordBlur()" ></td>
                 </tr>
                 <tr>
                     <td><input type="text" name="phone" id="phone" placeholder="手机号码"></td><td><input type="button" value="发送验证码" onclick="onSendAuthCode()" ></td>
@@ -93,7 +122,7 @@
                     <td><input type="text" name="authcode" id="authcode" placeholder="验证码"></td>
                 </tr>
                 <tr>
-                    <td><input type="button" value="注册" onclick="" ></td>
+                    <td><input type="button" value="注册" onclick="onRegisterClick()" ></td>
                     <td><input type="button" value="清空" onclick="" ></td>
                 </tr>
             </tbody>

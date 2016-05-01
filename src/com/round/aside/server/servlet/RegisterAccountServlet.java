@@ -58,12 +58,14 @@ public class RegisterAccountServlet extends HttpServlet {
 
         String mAccount = request.getParameter("account");
         String mPassword = request.getParameter("password");
+        String mPhone = request.getParameter("phone");
+        String mAuthcode = request.getParameter("authcode");
         
         IAccountManager mAccountManager = ModuleObjectPool.getModuleObject(IAccountManager.class, null);
-        RegisterResultEntity mRegisterResult = mAccountManager.registerAccount(mAccount, mPassword);
+        RegisterResultEntity mRegisterResult = mAccountManager.registerAccount(mAccount, mPassword, mPhone, mAuthcode);
         
         if(mRegisterResult.getStatusCode() == S1000){ 
-            response.sendRedirect("/Aside-Server/WEB-INF/jsp/hello.jsp");
+            
         } else {
             
         }

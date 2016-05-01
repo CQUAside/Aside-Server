@@ -88,8 +88,9 @@ public final class AccountManagerImpl implements IAccountManager {
     }
 
     @Override
-    public RegisterResultEntity registerAccount(String mAccount, String mPassword) {
-        if(StringUtil.isEmpty(mAccount) || StringUtil.isEmpty(mPassword)){
+    public RegisterResultEntity registerAccount(String mAccount,
+            String mPassword, String mPhone, String mAuthcode) {
+        if (StringUtil.isEmpty(mAccount) || StringUtil.isEmpty(mPassword)) {
             return new RegisterResultEntity(ER5001);
         }
 
@@ -99,30 +100,29 @@ public final class AccountManagerImpl implements IAccountManager {
         int mUserID = -1;
         int mStatusCode;
 
-        LOOP:
-            while(true){
+        LOOP: while (true) {
 
-                mUserID = mGenerator.generateUserID(0);
-                mStatusCode = mDBManager.insertUser(mUserID, mAccount, mPassword);
+            mUserID = mGenerator.generateUserID(0);
+            mStatusCode = mDBManager.insertUser(mUserID, mAccount, mPassword);
 
-                switch(mStatusCode){
-                case S1000:
-                    break LOOP;
-                case F8001:
-                    //userid产生了冲突，需重新生成直至插入成功为止
-                    continue;
-                case F8002:
-                    return new RegisterResultEntity(F8003L);
-                case EX2012:
-                case EX2013:
-                    return new RegisterResultEntity(EX2000);
-                case ER5001:
-                    return new RegisterResultEntity(ER5001);
-                default:
-                    throw new IllegalStateException("Illegal Status Code!");
-                }
-
+            switch (mStatusCode) {
+            case S1000:
+                break LOOP;
+            case F8001:
+                // userid产生了冲突，需重新生成直至插入成功为止
+                continue;
+            case F8002:
+                return new RegisterResultEntity(F8003L);
+            case EX2012:
+            case EX2013:
+                return new RegisterResultEntity(EX2000);
+            case ER5001:
+                return new RegisterResultEntity(ER5001);
+            default:
+                throw new IllegalStateException("Illegal Status Code!");
             }
+
+        }
 
         mGenerator.release();
         mDBManager.release();
@@ -156,7 +156,7 @@ public final class AccountManagerImpl implements IAccountManager {
             }
 
         }
-        
+
         mDBManager.release();
         return new RegisterResultEntity(S1000, mUserID, "");
     }
@@ -174,7 +174,7 @@ public final class AccountManagerImpl implements IAccountManager {
         String to = email;
         String smtp = "smtp.sina.cn";
         IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
-        mStatus = mDBManager.selectUserStatus(mUserID);// 获取用户邮箱的状态吗，看是否以验证过；
+        mStatus = mDBManager.selectUserStatus(mUserID);// 获取用户邮箱的状态码，看是否以验证过；
         switch (mStatus) {
         case 0:
             System.out.print("邮箱已经验证过了");
@@ -186,7 +186,7 @@ public final class AccountManagerImpl implements IAccountManager {
         String registerID = "" + Math.random() * Math.random();
         mStatusCode = mDBManager.updateUserRegister(mUserID, registerID);
         mDBManager.release();
-        
+
         if (mStatusCode != S1000) {
             return false;
         }
@@ -214,7 +214,8 @@ public final class AccountManagerImpl implements IAccountManager {
 
             // Now set the actual message
             message.setText("This is actual message");
-            message.setContent("<a href= url  ></a>点击下面，完成注册</br>" + url, "text/html;charset=utf-8");
+            message.setContent("<a href= url  ></a>点击下面，完成注册</br>" + url,
+                    "text/html;charset=utf-8");
             // Send message
             message.setSentDate(new Date());
             message.saveChanges();
@@ -231,7 +232,8 @@ public final class AccountManagerImpl implements IAccountManager {
 
     @Override
     public boolean validationctivationEmail(int mUserID, String VerificationCode) {
-        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
+        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
         if (mDBManager.selectUserRegister(mUserID, VerificationCode) == S1000) {
             mDBManager.updateUserStatus(mUserID);
             mDBManager.release();
@@ -275,14 +277,16 @@ public final class AccountManagerImpl implements IAccountManager {
             message.setFrom(new InternetAddress(SEND_EMAIL_ADDRESS));
 
             // Set To: header field of the header.
-            message.addRecipient(Message.RecipientType.TO, new InternetAddress(email));
+            message.addRecipient(Message.RecipientType.TO, new InternetAddress(
+                    email));
 
             // Set Subject: header field
             message.setSubject("网站激活");
 
             // Now set the actual message
             message.setText("This is actual message");
-            message.setContent("<h2>下面是你的验证码</h2></br>" + registerID, "text/html;charset=utf-8");
+            message.setContent("<h2>下面是你的验证码</h2></br>" + registerID,
+                    "text/html;charset=utf-8");
             // Send message
             message.setSentDate(new Date());
             message.saveChanges();

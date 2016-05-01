@@ -1,5 +1,6 @@
 package com.round.aside.server.module;
 
+import com.round.aside.server.module.dbmanager.IDatabaseManager;
 import com.round.aside.server.module.generator.IGenerator;
 
 /**
@@ -9,9 +10,9 @@ import com.round.aside.server.module.generator.IGenerator;
  * @date 2016-4-24
  * 
  * @param <T>
- *            类型参数T为可回收复用的模块对象，目前支持的模块类有{@link IGenerator}
+ *            类型参数T为可回收复用的模块对象，目前支持的模块类有{@link IGenerator}，{@link IDatabaseManager}
  */
-public interface IModuleFactoryRecycle<T extends IModule> {
+public interface IModuleFactoryRecycleCallback<T extends IModule> {
 
     /**
      * 通知回收参数指定的模块对象。该方法存在多线程并发调用的可能，需注意必要的同步措施。

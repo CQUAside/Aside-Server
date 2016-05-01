@@ -10,7 +10,7 @@ import java.util.UUID;
 
 import sun.misc.BASE64Encoder;
 
-import com.round.aside.server.module.IModuleFactoryRecycle;
+import com.round.aside.server.module.IModuleFactoryRecycleCallback;
 import com.round.aside.server.util.MD5Utils;
 
 /**
@@ -22,7 +22,7 @@ import com.round.aside.server.util.MD5Utils;
  */
 public final class RecyclableGeneratorImpl implements IGenerator{
 
-    private IModuleFactoryRecycle<IGenerator> mRecycleCallback;
+    private IModuleFactoryRecycleCallback<IGenerator> mRecycleCallback;
     
     private static final String PICID_FORMAT = "%s%10d%4d";
     private static final String ORITOKEN_FORMAT = "%10d-%s";
@@ -68,7 +68,7 @@ public final class RecyclableGeneratorImpl implements IGenerator{
     }
 
     @Override
-    public void registerModuleFactoryRecycle(IModuleFactoryRecycle<IGenerator> mRecycle) {
+    public void registerModuleFactoryRecycle(IModuleFactoryRecycleCallback<IGenerator> mRecycle) {
         mRecycleCallback = mRecycle;
     }
 
@@ -84,6 +84,11 @@ public final class RecyclableGeneratorImpl implements IGenerator{
             e.printStackTrace();
             throw new IllegalStateException("Don't support utf-8 charset!");
         }
+    }
+
+    @Override
+    public boolean onReuse() {
+        return true;
     }
 
 }

@@ -6,7 +6,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.round.aside.server.module.IModuleFactory;
-import com.round.aside.server.module.IModuleFactoryRecycle;
+import com.round.aside.server.module.IModuleFactoryRecycleCallback;
 
 /**
  * 生成器模块工厂实现类
@@ -15,7 +15,7 @@ import com.round.aside.server.module.IModuleFactoryRecycle;
  * @date 2016-3-28
  * 
  */
-public final class GeneratorModuleFactoryImpl implements IModuleFactory<IGenerator>, IModuleFactoryRecycle<IGenerator> {
+public final class GeneratorModuleFactoryImpl implements IModuleFactory<IGenerator>, IModuleFactoryRecycleCallback<IGenerator> {
 
     private static final int MAX_CAPACITY = 5;
 
@@ -27,13 +27,6 @@ public final class GeneratorModuleFactoryImpl implements IModuleFactory<IGenerat
         mLock = new ReentrantLock();
     }
 
-    /**
-     * 无回收复用式的构造对象
-     */
-//    @Override
-//    public IGenerator createModule(Object o1, Object... objects) {
-//        return new GeneratorImpl();
-//    }
 
     @Override
     public IGenerator createModule(Object o1, Object... objects) {
@@ -42,6 +35,7 @@ public final class GeneratorModuleFactoryImpl implements IModuleFactory<IGenerat
             try {
                 if (mModuleObjectList.size() != 0) {
                     IGenerator mGenerator = mModuleObjectList.remove(0);
+                    mGenerator.onReuse();
                     return mGenerator;
                 }
             } catch (Exception e) {

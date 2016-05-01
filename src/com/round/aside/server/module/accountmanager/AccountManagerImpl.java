@@ -42,6 +42,7 @@ public final class AccountManagerImpl implements IAccountManager {
         IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
 
         int mStatusCode = mDBManager.checkAccountExistence(mAccount);
+        mDBManager.release();
         switch (mStatusCode) {
         case S1000:
         case R6002:
@@ -71,6 +72,7 @@ public final class AccountManagerImpl implements IAccountManager {
 
         IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
         int mStatusCode = mDBManager.stashRegisterPhoneAuthcode(mPhone, mAuthCode);
+        mDBManager.release();
 
         switch (mStatusCode) {
         case S1000:
@@ -123,46 +125,7 @@ public final class AccountManagerImpl implements IAccountManager {
             }
 
         mGenerator.release();
-        return new RegisterResultEntity(S1000, mUserID, "");
-    }
-    
-    @Override
-    public RegisterResultEntity registerAccount(String mAccount,
-            String mPassword, String NickName, String Email, String PhoneNum) {
-
-        if (StringUtil.isEmpty(mAccount) || StringUtil.isEmpty(mPassword)) {
-            return new RegisterResultEntity(ER5001);
-        }
-        IGenerator mGenerator = ModuleObjectPool.getModuleObject(IGenerator.class, null);
-        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
-
-        int mUserID = -1;
-        int mStatusCode;
-        LOOP: while (true) {
-
-            mUserID = mGenerator.generateUserID(0);
-            mStatusCode = mDBManager.insertUser(mUserID, mAccount, mPassword, NickName, Email, PhoneNum);
-
-            switch (mStatusCode) {
-            case S1000:
-                break LOOP;
-            case F8001:
-                // userid产生了冲突，需重新生成直至插入成功为止
-                continue;
-            case F8002:
-                return new RegisterResultEntity(F8003L);
-            case EX2012:
-            case EX2013:
-                return new RegisterResultEntity(EX2000);
-            case ER5001:
-                return new RegisterResultEntity(ER5001);
-            default:
-                throw new IllegalStateException("Illegal Status Code!");
-            }
-
-        }
-
-        mGenerator.release();
+        mDBManager.release();
         return new RegisterResultEntity(S1000, mUserID, "");
     }
 
@@ -193,6 +156,8 @@ public final class AccountManagerImpl implements IAccountManager {
             }
 
         }
+        
+        mDBManager.release();
         return new RegisterResultEntity(S1000, mUserID, "");
     }
 
@@ -220,6 +185,8 @@ public final class AccountManagerImpl implements IAccountManager {
         }
         String registerID = "" + Math.random() * Math.random();
         mStatusCode = mDBManager.updateUserRegister(mUserID, registerID);
+        mDBManager.release();
+        
         if (mStatusCode != S1000) {
             return false;
         }
@@ -267,8 +234,10 @@ public final class AccountManagerImpl implements IAccountManager {
         IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
         if (mDBManager.selectUserRegister(mUserID, VerificationCode) == S1000) {
             mDBManager.updateUserStatus(mUserID);
+            mDBManager.release();
             return true;
         } else {
+            mDBManager.release();
             return false;
         }
     }
@@ -293,6 +262,7 @@ public final class AccountManagerImpl implements IAccountManager {
         String[] registerIDTemp = randomTemp.split(".");
         String registerID = registerIDTemp[0];
         mStatusCode = mDBManager.updateUserRegister(mUserID, registerID);
+        mDBManager.release();
         if (mStatusCode != S1000) {
             return false;
         }
@@ -332,8 +302,10 @@ public final class AccountManagerImpl implements IAccountManager {
         IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
         if (mDBManager.selectUserRegister(mUserID, verificationCode) == S1000) {
             mDBManager.updateUserStatus(mUserID);
+            mDBManager.release();
             return true;
         } else {
+            mDBManager.release();
             return false;
         }
     }

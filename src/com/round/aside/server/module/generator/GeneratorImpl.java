@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Random;
 
-import com.round.aside.server.module.IModuleFactoryRecycle;
+import com.round.aside.server.module.IModuleFactoryRecycleCallback;
 
 /**
  * 生成器模块接口的普通实现类
@@ -40,13 +40,18 @@ public final class GeneratorImpl implements IGenerator {
     }
 
     @Override
-    public void registerModuleFactoryRecycle(IModuleFactoryRecycle<IGenerator> mRecycle) {
+    public void registerModuleFactoryRecycle(IModuleFactoryRecycleCallback<IGenerator> mRecycle) {
         
     }
 
     @Override
     public String generateToken(int mUserID, long mTime) {
         return null;
+    }
+
+    @Override
+    public boolean onReuse() {
+        return false;
     }
 
 }

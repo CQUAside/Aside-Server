@@ -3,9 +3,8 @@ package com.round.aside.server.module.admanager;
 import static com.round.aside.server.constant.StatusCode.*;
 import com.round.aside.server.entity.AdvertisementEntity;
 import com.round.aside.server.module.ModuleObjectPool;
+import com.round.aside.server.module.dbmanager.AdAndStatusCode;
 import com.round.aside.server.module.dbmanager.IDatabaseManager;
-import com.round.aside.server.module.dbmanager.DatabaseManagerImpl.AdAndStatusCode;
-
 
 /**
  * 广告管理模块超级接口的实现类
@@ -13,104 +12,127 @@ import com.round.aside.server.module.dbmanager.DatabaseManagerImpl.AdAndStatusCo
  * @author ZhengJiaqin
  * @date 2016-04-18
  */
-public class AdvertisementManagerImpl implements IAdvertisementManager{
+public class AdvertisementManagerImpl implements IAdvertisementManager {
 
     @Override
     public int uploadAD(AdvertisementEntity ad) {
-        IDatabaseManager datamanager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
-        return datamanager.insertAD(ad);
+        IDatabaseManager datamanager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
+        int result = datamanager.insertAD(ad);
+        datamanager.release();
+        return result;
     }
 
     @Override
     public int checkAD(int adID) {
-        IDatabaseManager datamanager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
+        IDatabaseManager datamanager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
         int status = 0;
         AdAndStatusCode ad = new AdAndStatusCode();
         ad = datamanager.queryAD(adID);
 
-        if(ad.getStatusCode() != 0)
-            return ad.getStatusCode();
-        else
-        {
+        int result;
+
+        if (ad.getStatusCode() != 0)
+            result = ad.getStatusCode();
+        else {
             status = ad.getStatus();
-            if(status == 1 || status == 2 || status == 3)
-                return F8004;
-            else if(status == 0)
-            {
+            if (status == 1 || status == 2 || status == 3) {
+                result = F8004;
+                datamanager.release();
+                return result;
+            } else if (status == 0) {
                 status = 1;
                 ad.setStatus(status);
             }
-            return datamanager.updateAD(adID, ad);
+            result = datamanager.updateAD(adID, ad);
         }
+
+        datamanager.release();
+        return result;
     }
 
     @Override
     public int abolishAD(int adID, int userID) {
         int status = 0;
         int userid = 0;
-        IDatabaseManager datamanager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
+        int result;
+
+        IDatabaseManager datamanager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
         AdAndStatusCode ad = new AdAndStatusCode();
         ad = datamanager.queryAD(adID);
-        if(ad.getStatusCode() != 0)
-            return ad.getStatusCode();
-        else
-        {
+        if (ad.getStatusCode() != 0) {
+            result = ad.getStatusCode();
+        } else {
             status = ad.getStatus();
             userid = ad.getUserID();
-            if(userid != userID)
+            if (userid != userID) {
+                datamanager.release();
                 return ER5001;
-            if(status == 0 || status == 2 || status == 3)
+            }
+            if (status == 0 || status == 2 || status == 3) {
+                datamanager.release();
                 return F8004;
-            else if(status == 1)
-            {
+            } else if (status == 1) {
                 status = 2;
                 ad.setStatus(status);
             }
-            return datamanager.updateAD(adID, ad);
+            result = datamanager.updateAD(adID, ad);
         }
-
+        datamanager.release();
+        return result;
     }
 
     @Override
     public int deleteAD(int adID) {
-        IDatabaseManager datamanager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
-        return datamanager.deleteAD(adID);
+        IDatabaseManager datamanager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
+        int result = datamanager.deleteAD(adID);
+        datamanager.release();
+        return result;
     }
 
     @Override
     public int addAdAttention(int adID, int increaseCount) {
         int collectCount = 0;
-        IDatabaseManager datamanager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
+        int result;
+        IDatabaseManager datamanager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
         AdAndStatusCode ad = new AdAndStatusCode();
         ad = datamanager.queryAD(adID);
-        if(ad.getStatusCode() != 0)
-            return ad.getStatusCode();
-        else{
+        if (ad.getStatusCode() != 0) {
+            result = ad.getStatusCode();
+        } else {
             collectCount = ad.getCollectCount();
             collectCount = collectCount + increaseCount;
             ad.setCollectCount(collectCount);
-            return datamanager.updateAD(adID, ad);
+            result = datamanager.updateAD(adID, ad);
         }
+        datamanager.release();
+        return result;
     }
 
     @Override
     public int addAdView(int adID, int increaseCount) {
         int clickCount = 0;
+        int result;
+
         AdAndStatusCode ad = new AdAndStatusCode();
-        IDatabaseManager datamanager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
+        IDatabaseManager datamanager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
         ad = datamanager.queryAD(adID);
-        if(ad.getStatusCode() !=0)
-            return ad.getStatusCode();
-        else
-        {
-            clickCount =ad.getClickCount();
+        if (ad.getStatusCode() != 0) {
+            result = ad.getStatusCode();
+        } else {
+            clickCount = ad.getClickCount();
             clickCount = clickCount + increaseCount;
             ad.setClickCount(clickCount);
-            return datamanager.updateAD(adID, ad);
+            result = datamanager.updateAD(adID, ad);
         }
+
+        datamanager.release();
+        return result;
     }
-
-
-
 
 }

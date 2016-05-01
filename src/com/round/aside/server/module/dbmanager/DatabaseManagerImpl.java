@@ -12,6 +12,7 @@ import com.round.aside.server.entity.AdvertisementEntity;
 import com.round.aside.server.entity.InformAdsEntity;
 import com.round.aside.server.entity.InformUsersEntity;
 import com.round.aside.server.entity.PersonalCollectionEntity;
+import com.round.aside.server.module.IModuleFactoryRecycleCallback;
 import com.round.aside.server.util.StringUtil;
 
 import static com.round.aside.server.constant.StatusCode.*;
@@ -53,7 +54,6 @@ public final class DatabaseManagerImpl implements IDatabaseManager {
     // 用户举报广告时，向举报广告表插入一个举报记录
     public static final String insertInformAdsql = "insert into aside_informAds(UserID, AdID) values(?, ?)";
 
-    private static final String INSERT_USER_FULL_FORMAT = "INSERT into aside_user(userid, account, password,nickname,email,phonenum) values(?, ?, ?,?,?)";
     private static final String SELECT_USER_FORMAT = "SELECT userid from aside_user where account=? and password=?";
     private static final String SELECT_USER_STATUS = "SELECT　status from aside_user where userid=?";
     private static final String SELECT_USER_REGISTER = "SELECT　registerid from aside_user where userid=?";
@@ -346,55 +346,6 @@ public final class DatabaseManagerImpl implements IDatabaseManager {
 
     }
 
-    public static class AdAndStatusCode {
-        int Status;
-        int ClickCount;
-        int CollectCount;
-        int UserID;
-        int StatusCode;
-
-        public int getStatusCode() {
-            return StatusCode;
-        }
-
-        public void setStatusCode(int statusCode) {
-            StatusCode = statusCode;
-        }
-
-        public int getStatus() {
-            return Status;
-        }
-
-        public void setStatus(int status) {
-            Status = status;
-        }
-
-        public int getClickCount() {
-            return ClickCount;
-        }
-
-        public void setClickCount(int clickCount) {
-            ClickCount = clickCount;
-        }
-
-        public int getCollectCount() {
-            return CollectCount;
-        }
-
-        public void setCollectCount(int collectCount) {
-            CollectCount = collectCount;
-        }
-
-        public int getUserID() {
-            return UserID;
-        }
-
-        public void setUserID(int userID) {
-            UserID = userID;
-        }
-
-    }
-
     @Override
     public int insertCollection(PersonalCollectionEntity personalCollection) {
         if (personalCollection.getAdID() <= 0
@@ -543,55 +494,6 @@ public final class DatabaseManagerImpl implements IDatabaseManager {
         } catch (SQLException e) {
             e.printStackTrace();
             return EX2013;
-        }
-
-        return S1000;
-    }
-
-    @Override
-    public int insertUser(int mUserID, String mAccount, String mPassword,
-            String NickName, String Email, String PhoneNum) {
-        if (mUserID <= 0 || mUserID > 99999999 || StringUtil.isEmpty(mAccount)
-                || StringUtil.isEmpty(mPassword)) {
-            return ER5001;
-        }
-
-        Connection mConnection = DataSource.getConnection();
-        if (mConnection == null) {
-            return EX2012;
-        }
-
-        PreparedStatement mPreState = null;
-        try {
-            mPreState = mConnection.prepareStatement(INSERT_USER_FULL_FORMAT);
-            mPreState.setInt(1, mUserID);
-            mPreState.setString(2, mAccount);
-            mPreState.setString(3, mPassword);
-            mPreState.setString(4, NickName);
-            mPreState.setString(5, Email);
-            mPreState.setString(6, PhoneNum);
-            mPreState.executeUpdate();
-        } catch (SQLIntegrityConstraintViolationException e) {
-            String mExMsg = e.getMessage();
-            if (mExMsg.indexOf("userid") != -1) {
-                return F8001;
-            } else if (mExMsg.indexOf("account") != -1) {
-                return F8002;
-            } else {
-                e.printStackTrace();
-                throw new IllegalStateException(
-                        "This is a improper exception, please check your code!");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return EX2013;
-        } finally {
-            if (mPreState != null) {
-                try {
-                    mPreState.close();
-                } catch (Exception e1) {
-                }
-            }
         }
 
         return S1000;
@@ -803,6 +705,22 @@ public final class DatabaseManagerImpl implements IDatabaseManager {
             }
         }
         return email;
+    }
+
+    @Override
+    public void release() {
+        
+    }
+
+    @Override
+    public void registerModuleFactoryRecycle(
+            IModuleFactoryRecycleCallback<IDatabaseManager> mRecycle) {
+        
+    }
+
+    @Override
+    public boolean onReuse() {
+        return false;
     }
 
 }

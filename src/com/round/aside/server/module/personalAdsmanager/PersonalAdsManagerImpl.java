@@ -13,21 +13,27 @@ import com.round.aside.server.module.dbmanager.IDatabaseManager;
  * @date 2016-04-18
  * 
  */
-public class PersonalAdsManagerImpl implements IPersonalAdsManager{
+public class PersonalAdsManagerImpl implements IPersonalAdsManager {
 
     @Override
     public int collectAds(int userID, int adID) {
         PersonalCollectionEntity collection = new PersonalCollectionEntity();
         collection.setAdID(adID);
         collection.setUserID(userID);
-        IDatabaseManager datamanager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
-        return datamanager.insertCollection(collection);
+        IDatabaseManager datamanager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
+        int result = datamanager.insertCollection(collection);
+        datamanager.release();
+        return result;
     }
 
     @Override
     public int cancelCollectAds(int userID, int adID) {
-        IDatabaseManager datamanager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
-        return datamanager.deleteCollecion(adID, userID);
+        IDatabaseManager datamanager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
+        int result = datamanager.deleteCollecion(adID, userID);
+        datamanager.release();
+        return result;
     }
 
     @Override
@@ -36,8 +42,11 @@ public class PersonalAdsManagerImpl implements IPersonalAdsManager{
         inform.setUserID(userID);
         inform.setInformedUserID(informedUserID);
         inform.setInformReason(informReason);
-        IDatabaseManager datamanager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
-        return datamanager.insertInformUser(inform);
+        IDatabaseManager datamanager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
+        int result = datamanager.insertInformUser(inform);
+        datamanager.release();
+        return result;
     }
 
     @Override
@@ -45,10 +54,11 @@ public class PersonalAdsManagerImpl implements IPersonalAdsManager{
         InformAdsEntity inform = new InformAdsEntity();
         inform.setAdID(adID);
         inform.setUserID(userID);
-        IDatabaseManager datamanager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
-        return datamanager.insertInformAd(inform);
+        IDatabaseManager datamanager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
+        int result = datamanager.insertInformAd(inform);
+        datamanager.release();
+        return result;
     }
-
-
 
 }

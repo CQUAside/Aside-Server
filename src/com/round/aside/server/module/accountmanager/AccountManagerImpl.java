@@ -1,8 +1,7 @@
 package com.round.aside.server.module.accountmanager;
 
-import java.util.LinkedList;
-
 import com.round.aside.server.bean.RequestInfoBean;
+import com.round.aside.server.entity.LoginUserEntity;
 import com.round.aside.server.entity.RegisterResultEntity;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.dbmanager.IDatabaseManager;
@@ -217,38 +216,64 @@ public final class AccountManagerImpl implements IAccountManager {
     }
 
     @Override
-    public RegisterResultEntity login(String mAccount, String mPassword,
-            long period) {
-        if (StringUtil.isEmpty(mAccount) || StringUtil.isEmpty(mPassword)
-                || period <= 0) {
-            return new RegisterResultEntity(ER5001);
+    public LoginUserEntity login(String mAccount, String mPassword,
+            long period, RequestInfoBean mRequestInfoBean) {
+        if (StringUtil.isEmptyInSet(mAccount, mPassword) || period <= 0) {
+            return new LoginUserEntity.Builder().setStatuscode(ER5001).build();
         }
         IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
                 IDatabaseManager.class, null);
-        int mStatusCode;
-        LinkedList<Integer> statusUser;
-        int mUserID = -1;
 
-        LOOP: while (true) {
-            statusUser = mDBManager.selectUser(mAccount, mPassword);
-            mStatusCode = statusUser.getLast();
-            mUserID = statusUser.getFirst();
-            switch (mStatusCode) {
-                case S1000:
-                    break LOOP;
-                case EX2012:
-                case EX2016:
-                    return new RegisterResultEntity(EX2000);
-                case ER5001:
-                    return new RegisterResultEntity(ER5001);
-                default:
-                    throw new IllegalStateException("Illegal Status Code!");
-            }
+        LoginUserEntity.Builder mUserEntityBuilder;
 
+        mUserEntityBuilder = mDBManager.login(mAccount, mPassword, period);
+        switch (mUserEntityBuilder.getStatuscode()) {
+            case S1000:
+                break;
+            case R6004:
+            case R6005:
+            case ER5001:
+                mDBManager.release();
+                return mUserEntityBuilder.build();
+            case EX2016:
+                mDBManager.release();
+                mUserEntityBuilder.setStatuscode(EX2000);
+                return mUserEntityBuilder.build();
+            default:
+                mDBManager.release();
+                throw new IllegalStateException("Illegal Status Code!");
+        }
+
+        IGenerator mGenerator = ModuleObjectPool.getModuleObject(
+                IGenerator.class, null);
+
+        long mCuttentTime = System.currentTimeMillis();
+        String mToken = mGenerator.generateToken(
+                mUserEntityBuilder.getUserID(), mCuttentTime,
+                mRequestInfoBean.getOS(), mRequestInfoBean.getBrowserName());
+        int mStatusCode = mDBManager.insertToken(
+                mUserEntityBuilder.getUserID(), mRequestInfoBean, mToken,
+                mCuttentTime, mCuttentTime + period);
+
+        switch (mStatusCode) {
+            case S1000:
+                mUserEntityBuilder.setToken(mToken);
+                break;
+            case EX2013:
+                mUserEntityBuilder.setStatuscode(EX2000);
+                break;
+            case ER5001:
+                mUserEntityBuilder.setStatuscode(ER5001);
+                break;
+            default:
+                mDBManager.release();
+                mGenerator.release();
+                throw new IllegalStateException("Illegal Status Code!");
         }
 
         mDBManager.release();
-        return new RegisterResultEntity(S1000, mUserID, "");
+        mGenerator.release();
+        return mUserEntityBuilder.build();
     }
 
     @Override
@@ -272,6 +297,7 @@ public final class AccountManagerImpl implements IAccountManager {
             case S1000:
                 break;
             default:
+                mDBManager.release();
                 throw new IllegalStateException("Illegal Status Code!");
         }
         String registerID = "" + Math.random() * Math.random();
@@ -344,6 +370,7 @@ public final class AccountManagerImpl implements IAccountManager {
                 IDatabaseManager.class, null);
         if (mDBManager.selectUserStatus(mUserID) != 1) {
             System.out.print("你还没有激活邮箱");
+            mDBManager.release();
             return false;
         }
         email = mDBManager.selectUserEmail(mUserID);

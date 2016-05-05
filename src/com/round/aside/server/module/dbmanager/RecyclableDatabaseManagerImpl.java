@@ -5,7 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
-import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.round.aside.server.DB.DataSource;
@@ -14,6 +13,7 @@ import com.round.aside.server.entity.AdvertisementEntity;
 import com.round.aside.server.entity.InformAdsEntity;
 import com.round.aside.server.entity.InformUsersEntity;
 import com.round.aside.server.entity.PersonalCollectionEntity;
+import com.round.aside.server.entity.LoginUserEntity;
 import com.round.aside.server.module.IModuleFactoryRecycleCallback;
 import com.round.aside.server.util.StringUtil;
 
@@ -220,6 +220,47 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             closeMemberPreparedStatement();
         }
         return S1000;
+    }
+
+    private static final String SELECT_USERID_FORMAT = "select userid, password from aside_user where account = ?";
+
+    @Override
+    public LoginUserEntity.Builder login(String mAccount, String mPassword,
+            long period) {
+        LoginUserEntity.Builder mBuilder = new LoginUserEntity.Builder();
+
+        if (StringUtil.isEmptyInSet(mAccount, mPassword) || period <= 0) {
+            return mBuilder.setStatuscode(ER5001);
+        }
+
+        String mTPassword = null;
+        try {
+            mPreState = mConnection.prepareStatement(SELECT_USERID_FORMAT);
+            mPreState.setString(1, mAccount);
+            mResultSet = mPreState.executeQuery();
+
+            while (mResultSet.next()) {
+                mTPassword = mResultSet.getString(2);
+                break;
+            }
+
+            if (mTPassword == null) {
+                mBuilder.setStatuscode(R6004);
+            } else if (!mTPassword.equals(mPassword)) {
+                mBuilder.setStatuscode(R6005);
+            } else {
+                mBuilder.setUserID(mResultSet.getInt(1));
+                mBuilder.setStatuscode(S1000);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            mBuilder.setStatuscode(EX2016);
+        } finally {
+            closeMemberResultSet();
+            closeMemberPreparedStatement();
+        }
+
+        return mBuilder;
     }
 
     public static final String uploadingAdsql = "INSERT into aside_advertisement(AdID, Thumbnail_ID, CarrouselID, Title, Content, StartTime, Deadline, Money, Status, ClickCount, CollectCount, UserID) values(?, ?, ?,?,?,?,?,?,?,?,?,?)";
@@ -483,44 +524,6 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
         }
 
         return S1000;
-    }
-
-    private static final String SELECT_USER_FORMAT = "SELECT userid from aside_user where account=? and password=?";
-
-    @Override
-    public LinkedList<Integer> selectUser(String mAccount, String mPassword) {
-        LinkedList<Integer> stateUserID = new LinkedList<Integer>();
-        int mUserID = 0;
-        stateUserID.add(mUserID);
-        if (StringUtil.isEmpty(mAccount) || StringUtil.isEmpty(mPassword)) {
-            stateUserID.add(ER5001);
-            return stateUserID;
-        }
-
-        try {
-            mPreState = mConnection.prepareStatement(SELECT_USER_FORMAT);
-            mPreState.setString(1, mAccount);
-            mPreState.setString(2, mPassword);
-            mResultSet = mPreState.executeQuery();
-            boolean dataIsNull = false;
-            while (mResultSet.next()) {
-                mUserID = mResultSet.getInt("userid");
-                stateUserID.set(0, mUserID);
-                dataIsNull = true;
-            }
-            if (dataIsNull == false) {
-                stateUserID.add(EX2016);
-                return stateUserID;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            stateUserID.add(EX2016);
-            return stateUserID;
-        } finally {
-            closeMemberResultSet();
-            closeMemberPreparedStatement();
-        }
-        return stateUserID;
     }
 
     private static final String UPDATE_USER_REGISTER = "UPDATE  aside_user set registerid=? where userid=?";

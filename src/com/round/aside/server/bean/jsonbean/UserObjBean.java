@@ -1,18 +1,18 @@
 package com.round.aside.server.bean.jsonbean;
 
 /**
- * 注册结果Objbean
+ * 用户信息Obj bean
  * 
  * @author A Shuai
  * @date 2016-5-5
  * 
  */
-public final class RegisterResultObjBean {
+public final class UserObjBean {
 
     private final int userID;
     private final String token;
 
-    public RegisterResultObjBean(int userID, String token) {
+    public UserObjBean(int userID, String token) {
         this.userID = userID;
         this.token = token;
     }

@@ -10,34 +10,34 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSON;
 import com.round.aside.server.bean.RequestInfoBean;
 import com.round.aside.server.bean.jsonbean.BaseResultBean;
 import com.round.aside.server.bean.jsonbean.UserObjBean;
-import com.round.aside.server.bean.jsonbean.builder.RegisterBuilder;
-import com.round.aside.server.entity.RegisterResultEntity;
+import com.round.aside.server.bean.jsonbean.builder.LoginBuilder;
+import com.round.aside.server.entity.LoginUserEntity;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.accountmanager.IAccountManager;
 import com.round.aside.server.util.HttpRequestUtils;
 
 /**
- * 注册账号所用的Servlet
+ * 登陆Servlet
  * 
  * @author A Shuai
- * @date 2016-4-30
+ * @date 2016-5-5
  * 
  */
-public class RegisterAccountServlet extends HttpServlet {
+public class LoginServlet extends HttpServlet {
 
     /**
      * 
      */
-    private static final long serialVersionUID = 2601600000608396534L;
+    private static final long serialVersionUID = 3294631977038274088L;
 
     /**
      * Constructor of the object.
      */
-    public RegisterAccountServlet() {
+    public LoginServlet() {
         super();
     }
 
@@ -69,31 +69,29 @@ public class RegisterAccountServlet extends HttpServlet {
 
         String mAccount = request.getParameter("account");
         String mPassword = request.getParameter("password");
-        String mPhone = request.getParameter("phone");
-        String mAuthcode = request.getParameter("authcode");
 
         RequestInfoBean mRequestInfoBean = HttpRequestUtils
                 .getOSBrowserInfo(request);
 
         IAccountManager mAccountManager = ModuleObjectPool.getModuleObject(
                 IAccountManager.class, null);
-        RegisterResultEntity mRegisterResult = mAccountManager.registerAccount(
-                mAccount, mPassword, mPhone, mAuthcode, mRequestInfoBean);
+        LoginUserEntity mLoginUserEntity = mAccountManager.login(mAccount,
+                mPassword, 7 * 24 * 60 * 60 * 1000, mRequestInfoBean);
 
-        BaseResultBean.Builder mBuilder = new RegisterBuilder()
-                .setStatusCode(mRegisterResult.getStatusCode());
+        BaseResultBean.Builder mBuilder = new LoginBuilder()
+                .setStatusCode(mLoginUserEntity.getStatuscode());
 
-        if (mRegisterResult.getStatusCode() == S1000) {
-            UserObjBean mObjBean = new UserObjBean(mRegisterResult.getUserID(),
-                    mRegisterResult.getToken());
+        if (mLoginUserEntity.getStatuscode() == S1000) {
+            UserObjBean mObjBean = new UserObjBean(
+                    mLoginUserEntity.getUserID(), mLoginUserEntity.getToken());
             mBuilder.setObj(mObjBean);
         }
+
         BaseResultBean mBean = mBuilder.build();
 
         response.setCharacterEncoding("utf-8");
         PrintWriter out = response.getWriter();
-        out.println(JSONObject.toJSONString(mBean));
-
+        out.println(JSON.toJSONString(mBean));
         out.flush();
         out.close();
     }

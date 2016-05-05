@@ -5,6 +5,8 @@ import com.round.aside.server.entity.AdvertisementEntity;
 import com.round.aside.server.entity.InformAdsEntity;
 import com.round.aside.server.entity.InformUsersEntity;
 import com.round.aside.server.entity.PersonalCollectionEntity;
+import com.round.aside.server.entity.LoginUserEntity;
+
 import java.util.LinkedList;
 
 import com.round.aside.server.module.IModule;
@@ -93,6 +95,19 @@ public interface IDatabaseManager extends IModule,
      */
     int insertToken(int mUserID, RequestInfoBean mRequestInfoBean,
             String mToken, long loginTime, long pastdueTime);
+    
+    /**
+     * 登陆
+     * 
+     * @param mAccount
+     *            账号
+     * @param mPassword
+     *            密码
+     * @param period
+     *            申请token有效期
+     * @return 登陆用户实体类的建造者
+     */
+    LoginUserEntity.Builder login(String mAccount, String mPassword, long period);
 
     /**
      * 新增加一个广告信息记录，插入广告信息的全部字段
@@ -178,17 +193,6 @@ public interface IDatabaseManager extends IModule,
      *                          {@link #ER5001}参数非法等
      */
     int insertInformUser(InformUsersEntity informUser);
-
-    /**
-     * 
-     * @param mAccount
-     *            用户账号，Unique值，不能为空
-     * @param mPassword
-     *            用户密码，不能为空
-     * @return 操作结果状态值和用户ID，合法的结果值只有六种，分别为{@link #S1000}和用户ID成功，其他情况ID为0，
-     *         {@link #EX2016}SQL查询执行异常 以及{@link #ER5001}调用参数非法，其他返回值均为非法值。
-     */
-    LinkedList<Integer> selectUser(String mAccount, String mPassword);
 
     /**
      * 

@@ -6,6 +6,13 @@ import com.round.aside.server.bean.jsonbean.BaseResultBean;
 
 import static com.round.aside.server.constant.StatusCode.*;
 
+/**
+ * 注册Msg填充建造者
+ * 
+ * @author A Shuai
+ * @date 2016-5-5
+ *
+ */
 public final class RegisterBuilder extends BaseResultBean.Builder{
 
     @Override

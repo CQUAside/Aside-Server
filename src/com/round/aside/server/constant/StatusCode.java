@@ -113,6 +113,16 @@ public final class StatusCode {
      * 手机号验证码发送失败
      */
     public static final int R6003 = 6003;
+
+    /**
+     * 账号不存在
+     */
+    public static final int R6004 = 6004;
+
+    /**
+     * 登陆密码错误
+     */
+    public static final int R6005 = 6005;
     
     /**
      * 基础失败码

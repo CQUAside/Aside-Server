@@ -1,6 +1,7 @@
 package com.round.aside.server.module.accountmanager;
 
 import com.round.aside.server.bean.RequestInfoBean;
+import com.round.aside.server.entity.LoginUserEntity;
 import com.round.aside.server.entity.RegisterResultEntity;
 import com.round.aside.server.module.IModule;
 
@@ -58,10 +59,13 @@ public interface IAccountManager extends IModule {
      * @param mPassword
      *            密码，不能为空
      * @param period
-     *            时间
-     * @return 此次注册操作的结果，其中包含了各种情况下对应的状态
+     *            申请Token的有效期
+     * @param mRequestInfoBean
+     *            登陆请求方的相关信息
+     * @return 此次登陆操作的结果，其中包含了各种情况下对应的状态
      */
-    RegisterResultEntity login(String mAccount, String mPassword, long period);
+    LoginUserEntity login(String mAccount, String mPassword, long period,
+            RequestInfoBean mRequestInfoBean);
 
     /**
      * 

@@ -16,7 +16,7 @@ public interface IGenerator extends IModule, IRecyclableModule<IGenerator> {
      * 随机生成一个UserID，随机值取值范围为大于0的int整形数<code>1-2147483648</code>
      * 
      * @param mInitSeed
-     *            初始种子，具体实现可用可不用
+     *            初始种子，具体实现可用可不用。注：指定为0时，表示不指定初始种子，即一个无效种子
      * @return 随机生成的UserID
      */
     int generateUserID(int mInitSeed);
@@ -29,20 +29,24 @@ public interface IGenerator extends IModule, IRecyclableModule<IGenerator> {
      * @param mUserID
      *            用户ID
      * @param mInitSeed
-     *            初始种子，具体实现可用可不用
+     *            初始种子，具体实现可用可不用。注：指定为0时，表示不指定初始种子，即一个无效种子
      * @return 随机生成的图片ID
      */
     String generatePicID(int mUserID, int mInitSeed);
     
     /**
-     * 随机生成一个Token令牌。可使用用户ID及指定时间参与计算生成
+     * 随机生成一个Token令牌。可使用用户ID及指定时间参与计算生成。所有参数均可自选是否参与Token生成
      * 
      * @param mUserID
      *            用户ID
      * @param mTime
-     *            当前时间
+     *            毫秒时间
+     * @param mOS
+     *            操作系统信息
+     * @param mBrowser
+     *            浏览器信息
      * @return Token令牌字符串
      */
-    String generateToken(int mUserID, long mTime);
+    String generateToken(int mUserID, long mTime, String mOS, String mBrowser);
 
 }

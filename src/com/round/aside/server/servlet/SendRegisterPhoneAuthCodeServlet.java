@@ -9,7 +9,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.fastjson.JSONObject;
-import com.round.aside.server.bean.jsonbean.SendAuthcodeResultBean;
+import com.round.aside.server.bean.jsonbean.BaseResultBean;
+import com.round.aside.server.bean.jsonbean.builder.SendAuthcodeBuilder;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.accountmanager.IAccountManager;
 
@@ -62,7 +63,7 @@ public class SendRegisterPhoneAuthCodeServlet extends HttpServlet {
         String mPhone = request.getParameter("phone");
         IAccountManager mAccountManager = ModuleObjectPool.getModuleObject(IAccountManager.class, null);
         int mStatusCode = mAccountManager.sendPhoneAuthcode(mPhone);
-        SendAuthcodeResultBean mBean = new SendAuthcodeResultBean(mStatusCode);
+        BaseResultBean mBean = new SendAuthcodeBuilder().setStatusCode(mStatusCode).build();
 
         response.setCharacterEncoding("utf-8");
         PrintWriter out = response.getWriter();

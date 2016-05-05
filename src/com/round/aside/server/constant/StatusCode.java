@@ -85,6 +85,16 @@ public final class StatusCode {
     public static final int ER5002 = 5002;
     
     /**
+     * 手机号与验证码不对应
+     */
+    public static final int ER5003L = 5003;
+    
+    /**
+     * 手机号与验证码对应，但验证码超时导致无效
+     */
+    public static final int ER5004L = 5004;
+    
+    /**
      * 基础结果码
      */
     public static final int R6000 = 6000;

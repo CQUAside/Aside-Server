@@ -9,7 +9,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.fastjson.JSONObject;
-import com.round.aside.server.bean.jsonbean.CheckAccountLegalResultBean;
+import com.round.aside.server.bean.jsonbean.BaseResultBean;
+import com.round.aside.server.bean.jsonbean.builder.CheckAccountLegalBuilder;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.accountmanager.IAccountManager;
 
@@ -64,7 +65,7 @@ public final class CheckAccountLegalServlet extends HttpServlet {
         IAccountManager mAccountManager = ModuleObjectPool.getModuleObject(IAccountManager.class, null);
 
         int mStatusCode = mAccountManager.checkRegisteredAccountLegal(mAccount);
-        CheckAccountLegalResultBean mBean = new CheckAccountLegalResultBean(mStatusCode);
+        BaseResultBean mBean = new CheckAccountLegalBuilder().setStatusCode(mStatusCode).build();
 
         response.setCharacterEncoding("utf-8");
         PrintWriter out = response.getWriter();

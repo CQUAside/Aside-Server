@@ -8,6 +8,7 @@ import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.LinkedList;
 
 import com.round.aside.server.DB.DataSource;
+import com.round.aside.server.bean.RequestInfoBean;
 import com.round.aside.server.entity.AdvertisementEntity;
 import com.round.aside.server.entity.InformAdsEntity;
 import com.round.aside.server.entity.InformUsersEntity;
@@ -110,7 +111,7 @@ public final class DatabaseManagerImpl implements IDatabaseManager {
     private static final String INSERT_PHONEAUTH_FORMAT = "insert into aside_authcode(phone, authcode, pastdue_time) values(?, ?, ?)";
 
     @Override
-    public int stashRegisterPhoneAuthcode(String mPhone, String mAuthcode) {
+    public int stashRegisterPhoneAuthcode(String mPhone, String mAuthcode, long pastdueTime) {
         if (StringUtil.isEmpty(mPhone) || StringUtil.isEmpty(mAuthcode) || mAuthcode.length() != 4) {
             return ER5001;
         }
@@ -143,7 +144,13 @@ public final class DatabaseManagerImpl implements IDatabaseManager {
     }
 
     @Override
-    public int insertUser(int mUserID, String mAccount, String mPassword) {
+    public int checkRegisterPhoneAuthcode(String mPhone, String mAuthcode, long currentTime) {
+        
+        return ER5000;
+    }
+
+    @Override
+    public int insertUser(int mUserID, String mAccount, String mPassword, String mPhone) {
         if (mUserID <= 0 || StringUtil.isEmpty(mAccount) || StringUtil.isEmpty(mPassword)) {
             return ER5001;
         }
@@ -184,6 +191,12 @@ public final class DatabaseManagerImpl implements IDatabaseManager {
         }
 
         return S1000;
+    }
+
+    @Override
+    public int insertToken(int mUserID, RequestInfoBean mRequestInfoBean,
+            String mToken, long loginTime, long pastdueTime) {
+        return 0;
     }
 
     @Override
@@ -721,6 +734,30 @@ public final class DatabaseManagerImpl implements IDatabaseManager {
     @Override
     public boolean onReuse() {
         return false;
+    }
+
+    @Override
+    public boolean beginTransaction() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean commitTransaction() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public void closeTransaction() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void rollbackTransaction() {
+        // TODO Auto-generated method stub
+        
     }
 
 }

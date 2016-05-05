@@ -1,5 +1,6 @@
 package com.round.aside.server.module.accountmanager;
 
+import com.round.aside.server.bean.RequestInfoBean;
 import com.round.aside.server.entity.RegisterResultEntity;
 import com.round.aside.server.module.IModule;
 
@@ -43,9 +44,12 @@ public interface IAccountManager extends IModule {
      *            手机号
      * @param mAuthcode
      *            手机认证码，为四位随机数字字符串
+     * @param mRequestInfoBean
+     *            请求方法的相关信息
      * @return 此次注册操作的结果，其中包含了各种情况下对应的状态，分别为
      */
-    RegisterResultEntity registerAccount(String mAccount, String mPassword,String mPhone, String mAuthcode);
+    RegisterResultEntity registerAccount(String mAccount, String mPassword,
+            String mPhone, String mAuthcode, RequestInfoBean mRequestInfoBean);
 
     /**
      * 

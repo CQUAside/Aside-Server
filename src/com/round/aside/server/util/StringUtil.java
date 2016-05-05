@@ -26,6 +26,28 @@ public final class StringUtil {
     }
     
     /**
+     * 检查参数指定的字符串序列结合是否只是一个为空
+     * 
+     * @param mStrs
+     *            待检查的字符串序列集合，不定长参数
+     * @return true为至少一个为空，false为全部为空
+     */
+    public static boolean isEmptyInSet(CharSequence... mStrs) {
+        if (mStrs == null || mStrs.length == 0) {
+            throw new IllegalStateException(
+                    "the parameter shouldn't be null or empty totally");
+        }
+
+        for (CharSequence str : mStrs) {
+            if (isEmpty(str)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
+    /**
      * 字符串连接
      * 
      * @param mStrs

@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.round.aside.server.DB.DataSource;
+import com.round.aside.server.bean.RequestInfoBean;
 import com.round.aside.server.entity.AdvertisementEntity;
 import com.round.aside.server.entity.InformAdsEntity;
 import com.round.aside.server.entity.InformUsersEntity;
@@ -73,27 +74,39 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             e.printStackTrace();
             return EX2013;
         } finally {
-            closeMemberPreparedStatement();
             closeMemberResultSet();
+            closeMemberPreparedStatement();
         }
 
         return mExistence ? R6002 : S1000;
     }
 
+    private static final String DELETE_PHONEAUTH_FORMAT = "delete from aside_authcode where phone = ?";
     private static final String INSERT_PHONEAUTH_FORMAT = "insert into aside_authcode(phone, authcode, pastdue_time) values(?, ?, ?)";
 
     @Override
-    public int stashRegisterPhoneAuthcode(String mPhone, String mAuthcode) {
+    public int stashRegisterPhoneAuthcode(String mPhone, String mAuthcode,
+            long pastdueTime) {
         if (StringUtil.isEmpty(mPhone) || StringUtil.isEmpty(mAuthcode)
                 || mAuthcode.length() != 4) {
             return ER5001;
         }
 
         try {
+            mPreState = mConnection.prepareStatement(DELETE_PHONEAUTH_FORMAT);
+            mPreState.setString(1, mPhone);
+            mPreState.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeMemberPreparedStatement();
+        }
+
+        try {
             mPreState = mConnection.prepareStatement(INSERT_PHONEAUTH_FORMAT);
             mPreState.setString(1, mPhone);
             mPreState.setString(2, mAuthcode);
-            mPreState.setLong(3, System.currentTimeMillis() + 5 * 60 * 1000);
+            mPreState.setLong(3, pastdueTime);
             mPreState.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -105,10 +118,50 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
         return S1000;
     }
 
-    private static final String INSERT_USER_FORMAT = "INSERT into aside_user(userid, account, password) values(?, ?, ?)";
+    private static final String SELECT_PHONEAUTH_FORMAT = "select id, pastdue_time  from aside_authcode where phone = ? and authcode = ? order by id desc";
 
     @Override
-    public int insertUser(int mUserID, String mAccount, String mPassword) {
+    public int checkRegisterPhoneAuthcode(String mPhone, String mAuthcode,
+            long currentTime) {
+        if (StringUtil.isEmpty(mPhone) || StringUtil.isEmpty(mAuthcode)
+                || mAuthcode.length() != 4) {
+            return ER5001;
+        }
+
+        long pastdueTime = 0;
+        int resultCode;
+        try {
+            mPreState = mConnection.prepareStatement(SELECT_PHONEAUTH_FORMAT);
+            mPreState.setString(1, mPhone);
+            mPreState.setString(2, mAuthcode);
+            mResultSet = mPreState.executeQuery();
+            while (mResultSet.next()) {
+                pastdueTime = mResultSet.getLong(2);
+                break;
+            }
+
+            if (pastdueTime == 0) {
+                resultCode = ER5003L;
+            } else if (currentTime > pastdueTime) {
+                resultCode = ER5004L;
+            } else {
+                resultCode = S1000;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return EX2016;
+        } finally {
+            closeMemberResultSet();
+            closeMemberPreparedStatement();
+        }
+        return resultCode;
+    }
+
+    private static final String INSERT_USER_FORMAT = "INSERT into aside_user(userid, account, password, phonenum) values(?, ?, ?, ?)";
+
+    @Override
+    public int insertUser(int mUserID, String mAccount, String mPassword,
+            String mPhone) {
         if (mUserID <= 0 || StringUtil.isEmpty(mAccount)
                 || StringUtil.isEmpty(mPassword)) {
             return ER5001;
@@ -119,6 +172,7 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             mPreState.setInt(1, mUserID);
             mPreState.setString(2, mAccount);
             mPreState.setString(3, mPassword);
+            mPreState.setString(4, mPhone);
             mPreState.executeUpdate();
         } catch (SQLIntegrityConstraintViolationException e) {
             String mExMsg = e.getMessage();
@@ -138,6 +192,33 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             closeMemberPreparedStatement();
         }
 
+        return S1000;
+    }
+
+    private static final String INSERT_TOKEN_FORMAT = "INSERT into aside_token(userid, os, browser, detail_browser, token, login_time, pastdue_time) values(?, ?, ?, ?, ?, ?, ?)";
+
+    @Override
+    public int insertToken(int mUserID, RequestInfoBean mRequestInfoBean,
+            String mToken, long loginTime, long pastdueTime) {
+        if (mUserID <= 0 || StringUtil.isEmptyInSet(mToken)) {
+            return ER5001;
+        }
+        try {
+            mPreState = mConnection.prepareStatement(INSERT_TOKEN_FORMAT);
+            mPreState.setInt(1, mUserID);
+            mPreState.setString(2, mRequestInfoBean.getOS());
+            mPreState.setString(3, mRequestInfoBean.getBrowserName());
+            mPreState.setString(4, mRequestInfoBean.getBrowNameAndVer());
+            mPreState.setString(5, mToken);
+            mPreState.setLong(6, loginTime);
+            mPreState.setLong(7, pastdueTime);
+            mPreState.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return EX2013;
+        } finally {
+            closeMemberPreparedStatement();
+        }
         return S1000;
     }
 
@@ -219,8 +300,8 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             e.printStackTrace();
             ad.setStatusCode(EX2016);
         } finally {
-            closeMemberPreparedStatement();
             closeMemberResultSet();
+            closeMemberPreparedStatement();
         }
         return ad;
     }
@@ -436,8 +517,8 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             stateUserID.add(EX2016);
             return stateUserID;
         } finally {
-            closeMemberPreparedStatement();
             closeMemberResultSet();
+            closeMemberPreparedStatement();
         }
         return stateUserID;
     }
@@ -491,8 +572,8 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             e.printStackTrace();
             return EX2014;
         } finally {
-            closeMemberPreparedStatement();
             closeMemberResultSet();
+            closeMemberPreparedStatement();
         }
     }
 
@@ -522,8 +603,8 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             e.printStackTrace();
             return EX2014;
         } finally {
-            closeMemberPreparedStatement();
             closeMemberResultSet();
+            closeMemberPreparedStatement();
         }
     }
 
@@ -565,8 +646,8 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            closeMemberPreparedStatement();
             closeMemberResultSet();
+            closeMemberPreparedStatement();
         }
         return email;
     }
@@ -630,10 +711,13 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
      * 关闭指定对象
      * 
      * @param mAutoCloseable
-     *            待关闭的对象
+     *            待关闭的对象，为不定长参数
      */
-    private void closeAutoCloseable(AutoCloseable mAutoCloseable) {
-        if (mAutoCloseable != null) {
+    private void closeAutoCloseable(AutoCloseable... mAutoCloseableArray) {
+        if (mAutoCloseableArray == null || mAutoCloseableArray.length == 0) {
+            return;
+        }
+        for (AutoCloseable mAutoCloseable : mAutoCloseableArray) {
             try {
                 mAutoCloseable.close();
             } catch (Exception e1) {
@@ -655,6 +739,47 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean beginTransaction() {
+        try {
+            mConnection.setAutoCommit(false);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean commitTransaction() {
+        try {
+            mConnection.commit();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public void closeTransaction() {
+        try {
+            mConnection.setAutoCommit(true);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void rollbackTransaction() {
+        try {
+            mConnection.rollback();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
     }
 
 }

@@ -93,7 +93,7 @@
             async : true,
             success : function(data) {
                 var bean = JSON.parse(data);
-                
+                alert(bean.msg);
             }
         });
     }

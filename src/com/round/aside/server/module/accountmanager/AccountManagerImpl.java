@@ -1,6 +1,8 @@
 package com.round.aside.server.module.accountmanager;
 
 import java.util.LinkedList;
+
+import com.round.aside.server.bean.RequestInfoBean;
 import com.round.aside.server.entity.RegisterResultEntity;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.dbmanager.IDatabaseManager;
@@ -39,20 +41,21 @@ public final class AccountManagerImpl implements IAccountManager {
             return R6001;
         }
 
-        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
+        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
 
         int mStatusCode = mDBManager.checkAccountExistence(mAccount);
         mDBManager.release();
         switch (mStatusCode) {
-        case S1000:
-        case R6002:
-        case ER5001:
-            return mStatusCode;
-        case EX2012:
-        case EX2013:
-            return S1001;
-        default:
-            throw new IllegalStateException("Illegal status code!");
+            case S1000:
+            case R6002:
+            case ER5001:
+                return mStatusCode;
+            case EX2012:
+            case EX2013:
+                return S1001;
+            default:
+                throw new IllegalStateException("Illegal status code!");
         }
     }
 
@@ -70,71 +73,158 @@ public final class AccountManagerImpl implements IAccountManager {
             return R6003;
         }
 
-        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
-        int mStatusCode = mDBManager.stashRegisterPhoneAuthcode(mPhone, mAuthCode);
+        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
+        int mStatusCode = mDBManager.stashRegisterPhoneAuthcode(mPhone,
+                mAuthCode, System.currentTimeMillis() + 5 * 60 * 1000);
         mDBManager.release();
 
         switch (mStatusCode) {
-        case S1000:
-        case ER5001:
-            return mStatusCode;
-        case EX2012:
-        case EX2013:
-            return R6003;
-        default:
-            throw new IllegalStateException("Illegal Status Code!");
+            case S1000:
+            case ER5001:
+                return mStatusCode;
+            case EX2012:
+            case EX2013:
+                return R6003;
+            default:
+                throw new IllegalStateException("Illegal Status Code!");
         }
 
     }
 
+    /**
+     * 这里的业务逻辑首先向用户表插入一条账号注册记录，然后向token表插入一条登陆记录。这两部操作需要包装成一个事务。
+     */
     @Override
     public RegisterResultEntity registerAccount(String mAccount,
-            String mPassword, String mPhone, String mAuthcode) {
-        if (StringUtil.isEmpty(mAccount) || StringUtil.isEmpty(mPassword)) {
+            String mPassword, String mPhone, String mAuthcode,
+            RequestInfoBean mRequestInfoBean) {
+        if (StringUtil.isEmptyInSet(mAccount, mPassword, mPhone, mAuthcode)
+                || mAuthcode.length() != 4) {
             return new RegisterResultEntity(ER5001);
         }
 
-        IGenerator mGenerator = ModuleObjectPool.getModuleObject(IGenerator.class, null);
-        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
+        if (!VerifyUtils.isPhoneNumber(mPhone)) {
+            return new RegisterResultEntity(ER5002);
+        }
+
+        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
+        int mStatusCode = mDBManager.checkRegisterPhoneAuthcode(mPhone,
+                mAuthcode, System.currentTimeMillis());
+
+        switch (mStatusCode) {
+            case S1000:
+                break;
+            case EX2016:
+                mStatusCode = EX2000;
+            case ER5003L:
+            case ER5004L:
+                mDBManager.release();
+                return new RegisterResultEntity(mStatusCode);
+            case ER5001:
+            default:
+                mDBManager.release();
+                throw new IllegalStateException("Illegal Status Code!");
+        }
+
+        IGenerator mGenerator = ModuleObjectPool.getModuleObject(
+                IGenerator.class, null);
+
+        // 开始事务。若未开启成功，则立即返回报错
+        if (!mDBManager.beginTransaction()) {
+            mDBManager.release();
+            mGenerator.release();
+            return new RegisterResultEntity(EX2000);
+        }
 
         int mUserID = -1;
-        int mStatusCode;
 
         LOOP: while (true) {
 
             mUserID = mGenerator.generateUserID(0);
-            mStatusCode = mDBManager.insertUser(mUserID, mAccount, mPassword);
-
+            mStatusCode = mDBManager.insertUser(mUserID, mAccount, mPassword,
+                    mPhone);
             switch (mStatusCode) {
-            case S1000:
-                break LOOP;
-            case F8001:
-                // userid产生了冲突，需重新生成直至插入成功为止
-                continue;
-            case F8002:
-                return new RegisterResultEntity(F8003L);
-            case EX2012:
-            case EX2013:
-                return new RegisterResultEntity(EX2000);
-            case ER5001:
-                return new RegisterResultEntity(ER5001);
-            default:
-                throw new IllegalStateException("Illegal Status Code!");
+                case S1000:
+                    break LOOP;
+                case F8001:
+                    // userid产生了冲突，需重新生成直至插入成功为止
+                    continue;
+                case F8002:
+                    mStatusCode = F8003L;
+                    break;
+                case EX2013:
+                    mStatusCode = EX2000;
+                    break;
+                case ER5001:
+                    mStatusCode = ER5001;
+                    break;
+                default:
+                    mDBManager.rollbackTransaction();
+                    mDBManager.closeTransaction();
+                    mDBManager.release();
+                    mGenerator.release();
+                    throw new IllegalStateException("Illegal Status Code!");
+            }
+
+            if (mStatusCode != S1000) {
+                mDBManager.rollbackTransaction();
+                mDBManager.closeTransaction();
+                mDBManager.release();
+                mGenerator.release();
+                return new RegisterResultEntity(mStatusCode);
             }
 
         }
 
-        mGenerator.release();
-        mDBManager.release();
-        return new RegisterResultEntity(S1000, mUserID, "");
+        long mCuttentTime = System.currentTimeMillis();
+        String mToken = mGenerator.generateToken(mUserID, mCuttentTime,
+                mRequestInfoBean.getOS(), mRequestInfoBean.getBrowserName());
+        mStatusCode = mDBManager.insertToken(mUserID, mRequestInfoBean, mToken,
+                mCuttentTime, mCuttentTime + 7 * 24 * 60 * 60 * 1000);
+
+        switch (mStatusCode) {
+            case S1000:
+                break;
+            case EX2013:
+                mStatusCode = EX2000;
+                break;
+            case ER5001:
+                mStatusCode = ER5001;
+                break;
+            default:
+                mDBManager.rollbackTransaction();
+                mDBManager.closeTransaction();
+                mDBManager.release();
+                mGenerator.release();
+                throw new IllegalStateException("Illegal Status Code!");
+        }
+
+        if (mStatusCode == S1000) {
+            mDBManager.closeTransaction();
+            mDBManager.release();
+            mGenerator.release();
+            return new RegisterResultEntity(mStatusCode, mUserID, mToken);
+        } else {
+            mDBManager.rollbackTransaction();
+            mDBManager.closeTransaction();
+            mDBManager.release();
+            mGenerator.release();
+            return new RegisterResultEntity(mStatusCode);
+        }
+
     }
 
     @Override
-    public RegisterResultEntity login(String mAccount, String mPassword, long period) {
-        if (StringUtil.isEmpty(mAccount) || StringUtil.isEmpty(mPassword) || period <= 0) {
+    public RegisterResultEntity login(String mAccount, String mPassword,
+            long period) {
+        if (StringUtil.isEmpty(mAccount) || StringUtil.isEmpty(mPassword)
+                || period <= 0) {
             return new RegisterResultEntity(ER5001);
         }
-        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
+        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
         int mStatusCode;
         LinkedList<Integer> statusUser;
         int mUserID = -1;
@@ -144,15 +234,15 @@ public final class AccountManagerImpl implements IAccountManager {
             mStatusCode = statusUser.getLast();
             mUserID = statusUser.getFirst();
             switch (mStatusCode) {
-            case S1000:
-                break LOOP;
-            case EX2012:
-            case EX2016:
-                return new RegisterResultEntity(EX2000);
-            case ER5001:
-                return new RegisterResultEntity(ER5001);
-            default:
-                throw new IllegalStateException("Illegal Status Code!");
+                case S1000:
+                    break LOOP;
+                case EX2012:
+                case EX2016:
+                    return new RegisterResultEntity(EX2000);
+                case ER5001:
+                    return new RegisterResultEntity(ER5001);
+                default:
+                    throw new IllegalStateException("Illegal Status Code!");
             }
 
         }
@@ -173,15 +263,16 @@ public final class AccountManagerImpl implements IAccountManager {
         int mStatus;
         String to = email;
         String smtp = "smtp.sina.cn";
-        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
+        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
         mStatus = mDBManager.selectUserStatus(mUserID);// 获取用户邮箱的状态码，看是否以验证过；
         switch (mStatus) {
-        case 0:
-            System.out.print("邮箱已经验证过了");
-        case S1000:
-            break;
-        default:
-            throw new IllegalStateException("Illegal Status Code!");
+            case 0:
+                System.out.print("邮箱已经验证过了");
+            case S1000:
+                break;
+            default:
+                throw new IllegalStateException("Illegal Status Code!");
         }
         String registerID = "" + Math.random() * Math.random();
         mStatusCode = mDBManager.updateUserRegister(mUserID, registerID);
@@ -249,7 +340,8 @@ public final class AccountManagerImpl implements IAccountManager {
         String email = "";
         String smtp = "smtp.sina.cn";
         int mStatusCode;
-        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
+        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
         if (mDBManager.selectUserStatus(mUserID) != 1) {
             System.out.print("你还没有激活邮箱");
             return false;
@@ -303,7 +395,8 @@ public final class AccountManagerImpl implements IAccountManager {
 
     @Override
     public boolean validationFindPassword(int mUserID, String verificationCode) {// 代码与验证激活邮箱是相同的，可以只用一个。
-        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(IDatabaseManager.class, null);
+        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
         if (mDBManager.selectUserRegister(mUserID, verificationCode) == S1000) {
             mDBManager.updateUserStatus(mUserID);
             mDBManager.release();

@@ -25,7 +25,7 @@ public final class RecyclableGeneratorImpl implements IGenerator{
     private IModuleFactoryRecycleCallback<IGenerator> mRecycleCallback;
     
     private static final String PICID_FORMAT = "%s%10d%4d";
-    private static final String ORITOKEN_FORMAT = "%10d-%s";
+    private static final String ORITOKEN_FORMAT = "%10d-%s-%s-%s";
     
     private final Random mRandom;
     
@@ -73,11 +73,11 @@ public final class RecyclableGeneratorImpl implements IGenerator{
     }
 
     @Override
-    public String generateToken(int mUserID, long mTime) {
+    public String generateToken(int mUserID, long mTime, String mOS, String mBrowser) {
         mDate.setTime(mTime);
         String mTemp = MD5Utils.encryptionInfoByMd5(String.format(
                 Locale.getDefault(), ORITOKEN_FORMAT, mUserID,
-                mDateFormat.format(mDate)));
+                mDateFormat.format(mDate), mOS, mBrowser));
         try {
             return mBase64En.encode(mTemp.getBytes("utf-8"));
         } catch (UnsupportedEncodingException e) {

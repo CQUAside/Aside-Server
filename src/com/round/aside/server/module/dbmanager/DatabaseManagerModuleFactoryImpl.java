@@ -50,7 +50,6 @@ public final class DatabaseManagerModuleFactoryImpl implements
                 while (mIdleDBManagerList.size() > 0) {
                     mDBManager = mIdleDBManagerList.remove(0);
                     if (mDBManager.onReuse()) {
-                        System.out.println("复用成功");
                         break;
                     }
                 }

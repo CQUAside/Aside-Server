@@ -1,5 +1,7 @@
 package com.round.aside.server.module.netsecurity;
 
+import static com.round.aside.server.constant.StatusCode.*;
+
 /**
  * 网络安全模块实现类
  * 
@@ -8,5 +10,10 @@ package com.round.aside.server.module.netsecurity;
  * 
  */
 public final class NetSecurityImpl implements INetSecurity {
+
+    @Override
+    public int checkTokenLegal(int mUserID, String mToken) {
+        return S1000;
+    }
 
 }

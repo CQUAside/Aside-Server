@@ -18,7 +18,7 @@ public interface IImagePath extends IModule {
      *          图片id
      * @return
      */
-    String logoImgPath(int userId,String imgId);
+    String logoImgPath(int userId,String imgId, String imgExten);
     
     
     /**
@@ -29,7 +29,7 @@ public interface IImagePath extends IModule {
      *          图片id
      * @return
      */
-    String originalImgPath(int userId,String imgId);
+    String originalImgPath(int userId,String imgId, String imgExten);
     
     /**
      * 获取缩略图文件路径
@@ -39,7 +39,7 @@ public interface IImagePath extends IModule {
      *          图片id
      * @return
      */
-    String thumbImgPath(int userId,String imgId);
+    String thumbImgPath(int userId,String imgId, String imgExten);
     
     /**
      * 获取一个用户对应的原图目录

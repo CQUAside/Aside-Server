@@ -1,6 +1,7 @@
 package com.round.aside.server.module.imagepath;
 
 import com.round.aside.server.util.MD5Utils;
+import com.round.aside.server.util.StringUtil;
 
 /**
  * 图片目录模块超级接口的实现类
@@ -11,26 +12,26 @@ import com.round.aside.server.util.MD5Utils;
 public final class ImagePathImpl implements IImagePath {
 
     @Override
-    public String logoImgPath(int userId, String imgId) {        //优化：写成一个函数
+    public String logoImgPath(int userId, String imgId, String imgExten) {        //优化：写成一个函数
         String str = String.valueOf(userId);
         String md5path = MD5Utils.encryptionInfoByMd5(str).substring(29, 32);
-        String path = "WebRoot/LogoImages/"+md5path+"/"+userId+"/"+imgId;
+        String path = "LogoImages/"+md5path+"/"+userId+"/"+imgId + (StringUtil.isEmpty(imgExten) ? "" : "." + imgExten);
         return path;
     }
 
     @Override
-    public String originalImgPath(int userId, String imgId) {
+    public String originalImgPath(int userId, String imgId, String imgExten) {
         String str = String.valueOf(userId);
         String md5path = MD5Utils.encryptionInfoByMd5(str).substring(29, 32);
-        String path = "WebRoot/OriginalImages/"+md5path+"/"+userId+"/"+imgId;
+        String path = "OriginalImages/"+md5path+"/"+userId+"/"+imgId + (StringUtil.isEmpty(imgExten) ? "" : "." + imgExten);
         return path;
     }
 
     @Override
-    public String thumbImgPath(int userId, String imgId) {
+    public String thumbImgPath(int userId, String imgId, String imgExten) {
         String str = String.valueOf(userId);
         String md5path = MD5Utils.encryptionInfoByMd5(str).substring(29, 32);
-        String path = "WebRoot/ThumbImages/"+md5path+"/"+userId+"/"+imgId;
+        String path = "ThumbImages/"+md5path+"/"+userId+"/"+imgId + (StringUtil.isEmpty(imgExten) ? "" : "." + imgExten);
         return path;
     }
 
@@ -38,7 +39,7 @@ public final class ImagePathImpl implements IImagePath {
     public String userOriginalImgDir(int userId) {
         String str = String.valueOf(userId);
         String md5path = MD5Utils.encryptionInfoByMd5(str).substring(29, 32);
-        String path = "WebRoot/OriginalImages/"+md5path+"/"+userId;
+        String path = "OriginalImages/"+md5path+"/"+userId;
         return path;
     }
 
@@ -46,7 +47,7 @@ public final class ImagePathImpl implements IImagePath {
     public String userThumbImgDir(int userId) {
         String str = String.valueOf(userId);
         String md5path = MD5Utils.encryptionInfoByMd5(str).substring(29, 32);
-        String path = "WebRoot/ThumbImages/"+md5path+"/"+userId;
+        String path = "ThumbImages/"+md5path+"/"+userId;
         return path;
     }
 

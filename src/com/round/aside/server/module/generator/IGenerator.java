@@ -19,7 +19,7 @@ public interface IGenerator extends IModule, IRecyclableModule<IGenerator> {
      *            初始种子，具体实现可用可不用。注：指定为0时，表示不指定初始种子，即一个无效种子
      * @return 随机生成的UserID
      */
-    int generateUserID(int mInitSeed);
+    int generateUserID(long mInitSeed);
 
     /**
      * 生成一个图片ID，图片ID的生成格式为“年月日小时分钟秒+10位UserID+4位随机数”。 末尾的随机数生成范围为
@@ -32,7 +32,7 @@ public interface IGenerator extends IModule, IRecyclableModule<IGenerator> {
      *            初始种子，具体实现可用可不用。注：指定为0时，表示不指定初始种子，即一个无效种子
      * @return 随机生成的图片ID
      */
-    String generatePicID(int mUserID, int mInitSeed);
+    String generatePicID(int mUserID, long mInitSeed);
     
     /**
      * 随机生成一个Token令牌。可使用用户ID及指定时间参与计算生成。所有参数均可自选是否参与Token生成

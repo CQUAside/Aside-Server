@@ -20,13 +20,13 @@ public final class GeneratorImpl implements IGenerator {
     private static final String PICID_FORMAT = "%s%8d%4d";
 
     @Override
-    public int generateUserID(int mInitSeed) {
+    public int generateUserID(long mInitSeed) {
         Random mRandom = new Random(mInitSeed);
         return mRandom.nextInt(100000000);
     }
 
     @Override
-    public String generatePicID(int mUserID, int mInitSeed) {
+    public String generatePicID(int mUserID, long mInitSeed) {
         Random mRandom = new Random(mInitSeed);
 
         DateFormat mDateFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS", Locale.getDefault());

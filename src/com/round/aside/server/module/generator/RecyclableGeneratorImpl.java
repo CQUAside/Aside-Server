@@ -44,7 +44,7 @@ public final class RecyclableGeneratorImpl implements IGenerator{
     }
     
     @Override
-    public int generateUserID(int mInitSeed) {
+    public int generateUserID(long mInitSeed) {
         int result = 0;
         do {
             result = UUID.randomUUID().toString().hashCode();
@@ -54,7 +54,7 @@ public final class RecyclableGeneratorImpl implements IGenerator{
     }
 
     @Override
-    public String generatePicID(int mUserID, int mInitSeed) {
+    public String generatePicID(int mUserID, long mInitSeed) {
         mRandom.setSeed(System.currentTimeMillis());
         
         mDate.setTime(System.currentTimeMillis());

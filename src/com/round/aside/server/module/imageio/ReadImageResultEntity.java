@@ -1,6 +1,6 @@
 package com.round.aside.server.module.imageio;
 
-import com.round.aside.server.module.imageio.ImageIOResultEnum.imgRWResultEnum;
+import com.round.aside.server.module.imageio.ImageIOResultEnum.ImgRWResultEnum;
 
 /**
  * 图片读取结果实体
@@ -13,18 +13,18 @@ public class ReadImageResultEntity {
     /**
      * 图片读取结果枚举
      */
-    private imgRWResultEnum result;
+    private ImgRWResultEnum result;
     
     /**
      * 图片数据输出流
      */
     private String imgtobase64;
 
-    public imgRWResultEnum getResult() {
+    public ImgRWResultEnum getResult() {
         return result;
     }
 
-    public void setResult(imgRWResultEnum rusult) {
+    public void setResult(ImgRWResultEnum rusult) {
         this.result = rusult;
     }
 

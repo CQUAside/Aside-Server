@@ -32,4 +32,21 @@ public final class VerifyUtils {
         return mMatcher.matches();
     }
 
+    /**
+     * 检查是否是合法的图片文件格式。目前只支持jpg，png和jpeg。
+     * 
+     * @param mFileExten
+     *            待检查的文件扩展名
+     * @return true为合法，false为非法
+     */
+    public static boolean isLegalPicFormat(String mFileExten) {
+        if (StringUtil.isEmpty(mFileExten)) {
+            return false;
+        }
+
+        Pattern mPattern = Pattern.compile("^(jpg|png|jpeg)$");
+        Matcher mMatcher = mPattern.matcher(mFileExten);
+        return mMatcher.matches();
+    }
+
 }

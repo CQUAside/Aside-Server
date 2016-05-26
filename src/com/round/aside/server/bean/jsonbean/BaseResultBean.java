@@ -40,7 +40,7 @@ public final class BaseResultBean {
      * @date 2016-5-4
      *
      */
-    public abstract static class Builder {
+    public static class Builder {
 
         private int statusCode;
         private String msg;
@@ -60,6 +60,17 @@ public final class BaseResultBean {
             return this;
         }
 
+        /**
+         * 单独重新设置Msg
+         * 
+         * @param msg
+         *            要设置的描述信息
+         * @return
+         */
+        public Builder setMsg(String msg) {
+            this.msg = msg;
+            return this;
+        }
 
         /**
          * 根据指定状态码返回对应的描述字符串
@@ -68,7 +79,9 @@ public final class BaseResultBean {
          *            状态码
          * @return 描述字符串，不可为空
          */
-        public abstract @NotNull String getMsg(int statusCode);
+        public @NotNull String getMsg(int statusCode){
+            return "";
+        }
 
         public Builder setObj(Object obj) {
             this.obj = obj;

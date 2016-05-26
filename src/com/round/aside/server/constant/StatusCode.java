@@ -75,6 +75,11 @@ public final class StatusCode {
     public static final int EX2016 = 2016;
 
     /**
+     * 数据库中受Unique约束的字段插入冲突
+     */
+    public static final int EX2017 = 2017;
+
+    /**
      * 基础错误码
      */
     public static final int ER5000 = 5000;
@@ -108,6 +113,21 @@ public final class StatusCode {
      * Token验证逻辑中的输入参数Token参数非法
      */
     public static final int ER5006 = 5006;
+
+    /**
+     * 图片上传错误。图片上传应使用multipart
+     */
+    public static final int ER5007 = 5007;
+
+    /**
+     * 上传的图片格式非法或不支持
+     */
+    public static final int ER5008 = 5008;
+
+    /**
+     * 图片IO异常
+     */
+    public static final int ER5009 = 5009;
 
     /**
      * 基础结果码
@@ -179,5 +199,10 @@ public final class StatusCode {
      * 审核广告时，若广告所处状态不是未审核状态时则，返回该状态码，表明广告在该状态下不能进行审核操作
      */
     public static final int F8004 = 8004;
+
+    /**
+     * 数据库中受Unique约束的字段插入冲突
+     */
+    public static final int F8005 = 8005;
 
 }

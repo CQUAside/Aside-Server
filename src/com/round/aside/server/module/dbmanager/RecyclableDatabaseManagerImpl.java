@@ -301,6 +301,67 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
         return S1000;
     }
 
+    private static final String INSERT_PIC_FORMAT = "INSERT into aside_pic(picid) values(?)";
+
+    @Override
+    public StatusCodeBean insertPicWithPicId(String picId) {
+        if (StringUtil.isEmpty(picId)){
+            return new StatusCodeBean(ER5001, "图片Id非法");
+        }
+
+        try {
+            mPreState = mConnection.prepareStatement(INSERT_PIC_FORMAT);
+            mPreState.setString(1, picId);
+            mPreState.executeUpdate();
+        } catch (SQLIntegrityConstraintViolationException e) {
+            String mExMsg = e.getMessage();
+            if (mExMsg.indexOf("picid'") != -1) {
+                return new StatusCodeBean(EX2017, "图片id重复");
+            } else {
+                e.printStackTrace();
+                throw new IllegalStateException(
+                        "This is a improper exception, please check your code!");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new StatusCodeBean(EX2013, "数据库插入异常");
+        } finally {
+            closeMemberPreparedStatement();
+        }
+        return new StatusCodeBean(S1000, "成功");
+    }
+
+    private static final String UPDATE_PIC_FORMAT = "UPDATE aside_pic SET order = ?, originalpath = ?, thumbpath = ?, extension = ? WHERE picid = ?";
+
+    @Override
+    public StatusCodeBean updatePicWithOutAdId(String picId, int order,
+            String originalPath, String thumbPath, String extension) {
+        if(StringUtil.isEmptyInSet(picId, originalPath, thumbPath)){
+            return new StatusCodeBean(ER5001, "参数非法，图片id、原图相对路径以及缩略图相对路径不可为空");
+        }
+        if(order < 0){
+            return new StatusCodeBean(ER5001, "参数非法，序号需为自然数");
+        }
+        
+        try {
+            mPreState = mConnection.prepareStatement(UPDATE_PIC_FORMAT);
+            
+            mPreState.setInt(1, order);
+            mPreState.setString(2, originalPath);
+            mPreState.setString(3, thumbPath);
+            mPreState.setString(4, extension);
+            mPreState.setString(5, picId);
+            mPreState.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new StatusCodeBean(EX2014, "数据库更新异常");
+        } finally {
+            closeMemberPreparedStatement();
+        }
+        
+        return new StatusCodeBean(S1000, "成功");
+    }
+
     public static final String uploadingAdsql = "INSERT into aside_advertisement(AdID, Thumbnail_ID, CarrouselID, Title, Content, StartTime, Deadline, Money, Status, ClickCount, CollectCount, UserID) values(?, ?, ?,?,?,?,?,?,?,?,?,?)";
 
     @Override

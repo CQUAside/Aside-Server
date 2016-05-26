@@ -121,6 +121,33 @@ public interface IDatabaseManager extends IModule,
     int tokenLoginCheck(int userId, String token);
 
     /**
+     * 插入一条图片记录，但只插入PicId字段，以避免PicId重复
+     * 
+     * @param picId
+     *            图片ID
+     * @return 状态码机器对应秒速
+     */
+    StatusCodeBean insertPicWithPicId(String picId);
+
+    /**
+     * 更新图片记录的大部分字段，暂不更新广告id。
+     * 
+     * @param picId
+     *            图片ID
+     * @param order
+     *            序号
+     * @param originalPath
+     *            原图相对路径
+     * @param thumbPath
+     *            缩略图相对路径
+     * @param extension
+     *            文件扩展名
+     * @return 结果状态码及其对应描述，有且仅有以下几种，分别为{@link #S1000}成功，{@link #ER5001}调用参数非法，
+     */
+    StatusCodeBean updatePicWithOutAdId(String picId, int order, String originalPath,
+            String thumbPath, String extension);
+
+    /**
      * 新增加一个广告信息记录，插入广告信息的全部字段
      * 
      * @param ad

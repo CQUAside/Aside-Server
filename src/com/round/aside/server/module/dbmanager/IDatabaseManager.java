@@ -1,13 +1,12 @@
 package com.round.aside.server.module.dbmanager;
 
 import com.round.aside.server.bean.RequestInfoBean;
+import com.round.aside.server.bean.StatusCodeBean;
 import com.round.aside.server.entity.AdvertisementEntity;
 import com.round.aside.server.entity.InformAdsEntity;
 import com.round.aside.server.entity.InformUsersEntity;
 import com.round.aside.server.entity.PersonalCollectionEntity;
 import com.round.aside.server.entity.LoginUserEntity;
-
-import java.util.LinkedList;
 
 import com.round.aside.server.module.IModule;
 import com.round.aside.server.module.IRecyclableModule;
@@ -97,7 +96,7 @@ public interface IDatabaseManager extends IModule,
             String mToken, long loginTime, long pastdueTime);
     
     /**
-     * 登陆
+     * 普通登陆检查
      * 
      * @param mAccount
      *            账号
@@ -107,7 +106,19 @@ public interface IDatabaseManager extends IModule,
      *            申请token有效期
      * @return 登陆用户实体类的建造者
      */
-    LoginUserEntity.Builder login(String mAccount, String mPassword, long period);
+    LoginUserEntity.Builder loginCheck(String mAccount, String mPassword, long period);
+
+    /**
+     * Token令牌登陆检查
+     * 
+     * @param userId
+     *            用户ID
+     * @param token
+     *            令牌
+     * @return 结果状态码，有且仅有以下几种，分别为{@link #S1000}合法，{@link #ER5001}调用参数非法，
+     *         {@link #R6006}Token非法，{@link #R6007}Token失效，{@link #EX2016}SQL查询执行异常。
+     */
+    int tokenLoginCheck(int userId, String token);
 
     /**
      * 新增加一个广告信息记录，插入广告信息的全部字段

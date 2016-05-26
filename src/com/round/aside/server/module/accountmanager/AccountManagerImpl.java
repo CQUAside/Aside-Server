@@ -132,6 +132,7 @@ public final class AccountManagerImpl implements IAccountManager {
 
         // 开始事务。若未开启成功，则立即返回报错
         if (!mDBManager.beginTransaction()) {
+            mDBManager.closeTransaction();
             mDBManager.release();
             mGenerator.release();
             return new RegisterResultEntity(EX2000);
@@ -201,10 +202,20 @@ public final class AccountManagerImpl implements IAccountManager {
         }
 
         if (mStatusCode == S1000) {
-            mDBManager.closeTransaction();
-            mDBManager.release();
-            mGenerator.release();
-            return new RegisterResultEntity(mStatusCode, mUserID, mToken);
+            if (mDBManager.commitTransaction()) {
+                mDBManager.closeTransaction();
+                mDBManager.release();
+                mGenerator.release();
+                return new RegisterResultEntity(mStatusCode, mUserID, mToken);
+            } else {
+                mStatusCode = EX2000;
+                mDBManager.rollbackTransaction();
+                mDBManager.closeTransaction();
+                mDBManager.release();
+                mGenerator.release();
+                return new RegisterResultEntity(mStatusCode);
+            }
+
         } else {
             mDBManager.rollbackTransaction();
             mDBManager.closeTransaction();
@@ -226,7 +237,7 @@ public final class AccountManagerImpl implements IAccountManager {
 
         LoginUserEntity.Builder mUserEntityBuilder;
 
-        mUserEntityBuilder = mDBManager.login(mAccount, mPassword, period);
+        mUserEntityBuilder = mDBManager.loginCheck(mAccount, mPassword, period);
         switch (mUserEntityBuilder.getStatuscode()) {
             case S1000:
                 break;
@@ -277,9 +288,27 @@ public final class AccountManagerImpl implements IAccountManager {
     }
 
     @Override
-    public RegisterResultEntity tokenLogin(String token) {// 此方法暂未实现
-        int mUserID = 0;// 暂时设置一个值
-        return new RegisterResultEntity(S1000, mUserID, "");
+    public int verifyToken(int userId, String token) {
+        if (StringUtil.isEmptyInSet(token)) {
+            return R6006;
+        }
+
+        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
+        int mStatusCode = mDBManager.tokenLoginCheck(userId, token);
+        mDBManager.release();
+        switch (mStatusCode) {
+            case S1000:
+            case R6006:
+            case R6007:
+            case ER5001:
+            case EX2016:
+                break;
+            default:
+                throw new IllegalStateException("Illegal Status Code!");
+        }
+
+        return mStatusCode;
     }
 
     @Override

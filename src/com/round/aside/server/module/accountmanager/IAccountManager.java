@@ -53,6 +53,7 @@ public interface IAccountManager extends IModule {
             String mPhone, String mAuthcode, RequestInfoBean mRequestInfoBean);
 
     /**
+     * 登陆
      * 
      * @param mAccount
      *            账号，不能为空
@@ -68,11 +69,16 @@ public interface IAccountManager extends IModule {
             RequestInfoBean mRequestInfoBean);
 
     /**
+     * Token登陆
      * 
+     * @param userId
+     *            用户ID
      * @param token
-     * @return 此次注册操作的结果，其中包含了各种情况下对应的状态
+     *            Token令牌
+     * @return 此次注册操作的结果状态码，有且仅有以下几种，分别为{@link #S1000}合法，{@link #ER5001}调用参数非法，
+     *         {@link #R6006}Token非法，{@link #R6007}Token失效，{@link #EX2016}SQL查询执行异常。
      */
-    RegisterResultEntity tokenLogin(String token);
+    int verifyToken(int userId, String token);
 
     /**
      * 

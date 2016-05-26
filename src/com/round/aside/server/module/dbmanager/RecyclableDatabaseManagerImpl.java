@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.round.aside.server.DB.DataSource;
 import com.round.aside.server.bean.RequestInfoBean;
+import com.round.aside.server.bean.StatusCodeBean;
 import com.round.aside.server.entity.AdvertisementEntity;
 import com.round.aside.server.entity.InformAdsEntity;
 import com.round.aside.server.entity.InformUsersEntity;
@@ -225,7 +226,7 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
     private static final String SELECT_USERID_FORMAT = "select userid, password from aside_user where account = ?";
 
     @Override
-    public LoginUserEntity.Builder login(String mAccount, String mPassword,
+    public LoginUserEntity.Builder loginCheck(String mAccount, String mPassword,
             long period) {
         LoginUserEntity.Builder mBuilder = new LoginUserEntity.Builder();
 
@@ -261,6 +262,43 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
         }
 
         return mBuilder;
+    }
+
+    private static final String SELECT_TOKEN_FORMAT = "select pastdue_time from aside_token where userid = ? and token = ?";
+
+    @Override
+    public int tokenLoginCheck(int userId, String token) {
+        if (userId <= 0 || StringUtil.isEmptyInSet(token)) {
+            return ER5001;
+        }
+
+        try {
+            mPreState = mConnection.prepareStatement(SELECT_TOKEN_FORMAT);
+            mPreState.setInt(1, userId);
+            mPreState.setString(2, token);
+            mResultSet = mPreState.executeQuery();
+
+            long mPastdueTime = 0;
+            while (mResultSet.next()) {
+                mPastdueTime = mResultSet.getLong(1);
+                break;
+            }
+
+            if (mPastdueTime == 0) {
+                return R6006;
+            } else if (mPastdueTime >= System.currentTimeMillis()) {
+                return R6007;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return EX2016;
+        } finally {
+            closeMemberResultSet();
+            closeMemberPreparedStatement();
+        }
+
+        return S1000;
     }
 
     public static final String uploadingAdsql = "INSERT into aside_advertisement(AdID, Thumbnail_ID, CarrouselID, Title, Content, StartTime, Deadline, Money, Status, ClickCount, CollectCount, UserID) values(?, ?, ?,?,?,?,?,?,?,?,?,?)";
@@ -706,24 +744,6 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             } catch (Exception e1) {
             } finally {
                 mResultSet = null;
-            }
-        }
-    }
-
-    /**
-     * 关闭指定对象
-     * 
-     * @param mAutoCloseable
-     *            待关闭的对象，为不定长参数
-     */
-    private void closeAutoCloseable(AutoCloseable... mAutoCloseableArray) {
-        if (mAutoCloseableArray == null || mAutoCloseableArray.length == 0) {
-            return;
-        }
-        for (AutoCloseable mAutoCloseable : mAutoCloseableArray) {
-            try {
-                mAutoCloseable.close();
-            } catch (Exception e1) {
             }
         }
     }

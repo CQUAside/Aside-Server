@@ -2,6 +2,8 @@ package com.round.aside.server.module;
 
 /**
  * 可回收模块接口，适用于那些创建开销较大且适合回收复用的模块类进行继承，以实现可回收复用的模块类。
+ * <p>
+ * 凡是标记为可回收的模块类，其模块对象在使用完毕以后请务必调用{@link #release()}方法进行释放，以方便回收
  * 
  * @author A Shuai
  * @date 2016-4-23

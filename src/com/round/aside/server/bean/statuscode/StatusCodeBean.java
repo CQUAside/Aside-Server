@@ -1,4 +1,4 @@
-package com.round.aside.server.bean;
+package com.round.aside.server.bean.statuscode;
 
 /**
  * 状态码的数据bean，包含了状态码以及描述信息

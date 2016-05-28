@@ -2,7 +2,7 @@ package com.round.aside.server.module.netsecurity;
 
 import static com.round.aside.server.constant.StatusCode.*;
 
-import com.round.aside.server.bean.StatusCodeBean;
+import com.round.aside.server.bean.statuscode.StatusCodeBean;
 
 /**
  * 网络安全模块实现类

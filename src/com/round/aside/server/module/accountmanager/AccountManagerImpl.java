@@ -1,8 +1,8 @@
 package com.round.aside.server.module.accountmanager;
 
-import com.round.aside.server.bean.LoginUserBean;
 import com.round.aside.server.bean.RequestInfoBean;
-import com.round.aside.server.bean.StatusCodeBean;
+import com.round.aside.server.bean.statuscode.LoginUserBean;
+import com.round.aside.server.bean.statuscode.StatusCodeBean;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.dbmanager.IDatabaseManager;
 import com.round.aside.server.module.generator.IGenerator;

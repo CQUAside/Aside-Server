@@ -1,8 +1,10 @@
 package com.round.aside.server.module.dbmanager;
 
-import com.round.aside.server.bean.LoginUserBean;
 import com.round.aside.server.bean.RequestInfoBean;
-import com.round.aside.server.bean.StatusCodeBean;
+import com.round.aside.server.bean.entity.AdStatusEntity;
+import com.round.aside.server.bean.statuscode.AdStatusCodeBean;
+import com.round.aside.server.bean.statuscode.LoginUserBean;
+import com.round.aside.server.bean.statuscode.StatusCodeBean;
 import com.round.aside.server.entity.AdvertisementEntity;
 import com.round.aside.server.entity.InformAdsEntity;
 import com.round.aside.server.entity.InformUsersEntity;
@@ -156,7 +158,7 @@ public interface IDatabaseManager extends IModule,
      *         id字段冲突（包括adID、Thumbnail_ID、CarrouselID）， {@link #EX2013}SQL插入执行异常
      *         以及{@link #ER5001}参数非法，其他返回值均为非法值。
      */
-    int insertAD(AdvertisementEntity ad);
+    StatusCodeBean insertAD(AdvertisementEntity ad);
 
     /**
      * 根据广告ID，查询一条广告信息记录
@@ -166,7 +168,7 @@ public interface IDatabaseManager extends IModule,
      * @return AdAndStatusCode
      *         一个部分广告信息加上返回状态码的一个实体（广告信息包括：广告状态、广告收藏量、广告点击量、用户ID）
      */
-    AdAndStatusCode queryAD(int adID);
+    AdStatusCodeBean queryAD(int adID);
 
     /**
      * 更新广告记录的某些字段（广告状态或广告收藏量或广告点击量）
@@ -178,7 +180,7 @@ public interface IDatabaseManager extends IModule,
      * @return 操作结果状态值，合法的结果值只有六种，分别为{@link #S1000}成功即 广告更新成功 {@link #EX2014}
      *         SQL插入执行异常 以及{@link #ER5001}参数非法，其他返回值均为非法值。
      */
-    int updateAD(int adID, AdAndStatusCode ad);
+    StatusCodeBean updateAD(int adID, AdStatusEntity ad);
 
     /**
      * 根据广告ID删除一个广告
@@ -188,7 +190,7 @@ public interface IDatabaseManager extends IModule,
      * @return 操作结果状态值，分别为{@link #S1000}成功即 广告删除成功 {@link #EX2015}SQL删除执行异常 以及
      *         {@link #ER5001}参数非法等
      */
-    int deleteAD(int adID);
+    StatusCodeBean deleteAD(int adID);
 
     /**
      * 插入一个用户收藏广告的记录

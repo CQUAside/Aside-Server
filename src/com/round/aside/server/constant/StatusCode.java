@@ -170,6 +170,11 @@ public final class StatusCode {
     public static final int R6007 = 6007;
 
     /**
+     * DB查询无数据
+     */
+    public static final int R6008 = 6008;
+
+    /**
      * 基础失败码
      */
     public static final int F8000 = 8000;

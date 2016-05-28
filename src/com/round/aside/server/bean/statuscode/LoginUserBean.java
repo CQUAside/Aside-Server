@@ -1,4 +1,4 @@
-package com.round.aside.server.bean;
+package com.round.aside.server.bean.statuscode;
 
 import com.round.aside.server.util.StringUtil;
 
@@ -41,41 +41,26 @@ public class LoginUserBean extends StatusCodeBean {
 
         private int userID;
         private String token;
-        private StatusCodeBean.Builder mPBuilder;
+        private final StatusCodeBean.Builder mPBuilder;
 
         public Builder() {
-        }
-
-        public Builder setStatusCodeBeanBuilder(StatusCodeBean.Builder mPBuilder) {
-            this.mPBuilder = mPBuilder;
-            return this;
+            mPBuilder = new StatusCodeBean.Builder();
         }
 
         public Builder setStatusCodeBean(StatusCodeBean statusCodeBean) {
-            setStatusCode(statusCodeBean.getStatusCode());
-            setMsg(statusCodeBean.getMsg());
+            mPBuilder.setStatusCode(statusCodeBean.getStatusCode());
+            mPBuilder.setMsg(statusCodeBean.getMsg());
             return this;
         }
 
         public Builder setStatusCode(int statusCode) {
-            checkPBuilderEmpty();
             mPBuilder.setStatusCode(statusCode);
             return this;
         }
 
         public Builder setMsg(String msg) {
-            checkPBuilderEmpty();
             mPBuilder.setMsg(msg);
             return this;
-        }
-
-        /**
-         * 检查StatusCodeBean的建造者是否为空
-         */
-        private void checkPBuilderEmpty() {
-            if (mPBuilder == null) {
-                mPBuilder = new StatusCodeBean.Builder();
-            }
         }
 
         public Builder setUserID(int userID) {

@@ -6,8 +6,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.round.aside.server.bean.StatusCodeBean;
 import com.round.aside.server.bean.jsonbean.BaseResultBean;
+import com.round.aside.server.bean.statuscode.StatusCodeBean;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.accountmanager.IAccountManager;
 

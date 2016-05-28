@@ -16,9 +16,9 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
-import com.round.aside.server.bean.StatusCodeBean;
 import com.round.aside.server.bean.jsonbean.BaseResultBean;
 import com.round.aside.server.bean.jsonbean.result.PicUploadResult;
+import com.round.aside.server.bean.statuscode.StatusCodeBean;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.dbmanager.IDatabaseManager;
 import com.round.aside.server.module.generator.IGenerator;

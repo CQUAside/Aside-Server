@@ -8,10 +8,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.round.aside.server.bean.LoginUserBean;
 import com.round.aside.server.bean.RequestInfoBean;
 import com.round.aside.server.bean.jsonbean.BaseResultBean;
 import com.round.aside.server.bean.jsonbean.result.UserObjBean;
+import com.round.aside.server.bean.statuscode.LoginUserBean;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.accountmanager.IAccountManager;
 import com.round.aside.server.util.HttpRequestUtils;

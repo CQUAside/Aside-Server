@@ -8,9 +8,11 @@ import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.round.aside.server.DB.DataSource;
-import com.round.aside.server.bean.LoginUserBean;
 import com.round.aside.server.bean.RequestInfoBean;
-import com.round.aside.server.bean.StatusCodeBean;
+import com.round.aside.server.bean.entity.AdStatusEntity;
+import com.round.aside.server.bean.statuscode.AdStatusCodeBean;
+import com.round.aside.server.bean.statuscode.LoginUserBean;
+import com.round.aside.server.bean.statuscode.StatusCodeBean;
 import com.round.aside.server.entity.AdvertisementEntity;
 import com.round.aside.server.entity.InformAdsEntity;
 import com.round.aside.server.entity.InformUsersEntity;
@@ -404,27 +406,29 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
     public static final String uploadingAdsql = "INSERT into aside_advertisement(AdID, Thumbnail_ID, CarrouselID, Title, Content, StartTime, Deadline, Money, Status, ClickCount, CollectCount, UserID) values(?, ?, ?,?,?,?,?,?,?,?,?,?)";
 
     @Override
-    public int insertAD(AdvertisementEntity ad) {
+    public StatusCodeBean insertAD(AdvertisementEntity ad) {
+        StatusCodeBean.Builder mBuilder = new StatusCodeBean.Builder();
+
         if (ad.getAdID() <= 0 || ad.getAdID() > 99999999)
-            return ER5001;
+            return mBuilder.setStatusCode(ER5001).setMsg("AdID非法").build();
 
         if (ad.getCarrouselID() <= 0 || ad.getCarrouselID() > 99999999)
-            return ER5001;
+            return mBuilder.setStatusCode(ER5001).setMsg("轮播ID非法").build();
 
-        if (ad.getThumbnail_ID() <= 0 || ad.getThumbnail_ID() > 99999999)
-            return ER5001;
+        if (StringUtil.isEmpty(ad.getThumbnail_ID()))
+            return mBuilder.setStatusCode(ER5001).setMsg("缩略图ID非法").build();
 
         if (ad.getUserID() <= 0)
-            return ER5001;
+            return mBuilder.setStatusCode(ER5001).setMsg("UserID非法").build();
 
         if (ad.getTitle().equals("") || ad.getContent().equals("")
                 || ad.getStartTime().equals("") || ad.getDeadline().equals(""))
-            return ER5001;
+            return mBuilder.setStatusCode(ER5001).setMsg("广告参数非法").build();
 
         try {
             mPreState = mConnection.prepareStatement(uploadingAdsql);
             mPreState.setInt(1, ad.getAdID());
-            mPreState.setInt(2, ad.getThumbnail_ID());
+            mPreState.setString(2, ad.getThumbnail_ID());
             mPreState.setInt(3, ad.getCarrouselID());
             mPreState.setString(4, ad.getTitle());
             mPreState.setString(5, ad.getContent());
@@ -436,12 +440,14 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             mPreState.setInt(11, ad.getCollectCount());
             mPreState.setInt(12, ad.getUserID());
             mPreState.executeUpdate();
+
+            mBuilder.setStatusCode(S1000).setMsg("广告插入成功");
         } catch (SQLIntegrityConstraintViolationException e) {
             String mExMsg = e.getMessage();
             if (mExMsg.indexOf("AdID") != -1
                     || mExMsg.indexOf("Thumbnail_ID") != -1
                     || mExMsg.indexOf("CarrouselID") != -1)
-                return F8001;
+                mBuilder.setStatusCode(F8001).setMsg("Unique约束字段插入失败");
             else {
                 e.printStackTrace();
                 throw new IllegalStateException(
@@ -449,86 +455,103 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            return EX2013;
+            mBuilder.setStatusCode(EX2013).setMsg("数据库插入异常，请重试");
         } finally {
             closeMemberPreparedStatement();
         }
-        return S1000;
+        return mBuilder.build();
     }
 
     // 审核广告时查询广告信息用的SQL语句
     public static final String queryAdsql = "select ad.Status, ad.UserID, ad.CollectCount, ad.ClickCount from aside_advertisement ad where ad.AdID = ?";
 
     @Override
-    public AdAndStatusCode queryAD(int adID) {
-        AdAndStatusCode ad = new AdAndStatusCode();
+    public AdStatusCodeBean queryAD(int adID) {
+        AdStatusCodeBean.Builder mBuilder = new AdStatusCodeBean.Builder();
         if (adID <= 0 || adID > 99999999)
-            ad.setStatusCode(ER5001);
+            return mBuilder.setStatusCode(ER5001).setMsg("广告ID非法").build();
 
         try {
+            boolean find = false;
+
             mPreState = mConnection.prepareStatement(queryAdsql);
             mPreState.setInt(1, adID);
             mResultSet = mPreState.executeQuery();
             while (mResultSet.next()) {
-                ad.setStatus(mResultSet.getInt("Status"));
-                ad.setClickCount(mResultSet.getInt("ClickCount"));
-                ad.setCollectCount(mResultSet.getInt("CollectCount"));
-                ad.setUserID(mResultSet.getInt("UserID"));
+                mBuilder.setAdStatusType(mResultSet.getInt("Status"));
+                mBuilder.setClickCount(mResultSet.getInt("ClickCount"));
+                mBuilder.setCollectCount(mResultSet.getInt("CollectCount"));
+                mBuilder.setUserID(mResultSet.getInt("UserID"));
+                mBuilder.setStatusCode(S1000).setMsg("广告数据查询成功");
+                find = true;
+                break;
+            }
+
+            if (!find) {
+                mBuilder.setStatusCode(R6008).setMsg("未查询到广告数据，即AdID无效");
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            ad.setStatusCode(EX2016);
+            mBuilder.setStatusCode(EX2016).setMsg("数据库查询异常");
         } finally {
             closeMemberResultSet();
             closeMemberPreparedStatement();
         }
-        return ad;
+        return mBuilder.build();
     }
 
     // 更新广告时用的SQL语句，包括更新状态、点击量、收藏量。
     public static final String updateAdsql = "update aside_advertisement set Status = ?, ClickCount = ?, CollectCount = ? where AdID = ?";
 
     @Override
-    public int updateAD(int adID, AdAndStatusCode ad) {
+    public StatusCodeBean updateAD(int adID, AdStatusEntity ad) {
+        StatusCodeBean.Builder mBuilder = new StatusCodeBean.Builder();
+
         if (adID <= 0 || adID > 99999999)
-            ad.setStatusCode(ER5001);
+            return mBuilder.setStatusCode(ER5001).setMsg("AdID参数非法").build();
 
         try {
             mPreState = mConnection.prepareStatement(updateAdsql);
-            mPreState.setInt(1, ad.getStatus());
+            mPreState.setInt(1, ad.getAdStatus().getType());
             mPreState.setInt(2, ad.getClickCount());
             mPreState.setInt(3, ad.getCollectCount());
             mPreState.setInt(4, adID);
 
             mPreState.executeUpdate();
+
+            mBuilder.setStatusCode(S1000).setMsg("广告状态更新成功");
         } catch (SQLException e) {
             e.printStackTrace();
-            return EX2014;
+            mBuilder.setStatusCode(EX2014).setMsg("数据库更新异常，请重试");
         } finally {
             closeMemberPreparedStatement();
         }
-        return S1000;
+        return mBuilder.build();
     }
 
     // 删除广告时用的SQL语句
     public static final String deleteAdsql = "delete from aside_advertisement where AdID = ?";
 
     @Override
-    public int deleteAD(int adID) {
+    public StatusCodeBean deleteAD(int adID) {
+        StatusCodeBean.Builder mBuilder = new StatusCodeBean.Builder();
+
         if (adID <= 0 || adID > 99999999)
-            return ER5001;
+            return mBuilder.setStatusCode(ER5001).setMsg("AdID参数非法").build();
 
         try {
             mPreState = mConnection.prepareStatement(deleteAdsql);
             mPreState.setInt(1, adID);
             mPreState.executeUpdate();
+
+            mBuilder.setStatusCode(S1000).setMsg("广告删除成功");
         } catch (SQLException e) {
             e.printStackTrace();
-            return EX2015;
+            mBuilder.setStatusCode(EX2015).setMsg("数据库删除异常，请重试");
         } finally {
             closeMemberPreparedStatement();
         }
-        return S1000;
+        return mBuilder.build();
     }
 
     // 用户收藏广告时插入一个收藏记录

@@ -10,7 +10,7 @@ package com.round.aside.server.entity;
  */
 public class AdvertisementEntity {
 	int AdID;		 	//广告ID
-	int Thumbnail_ID;	//缩略图ID
+	String Thumbnail_ID;	//缩略图ID
 	int CarrouselID; 	//轮播ID
 	String Title; 		//广告标题
 	String Content; 	//广告内容
@@ -27,7 +27,7 @@ public class AdvertisementEntity {
 		super();
 	}
 	
-	public AdvertisementEntity(int adID, int thumbnail_ID, int carrouselID,
+	public AdvertisementEntity(int adID, String thumbnail_ID, int carrouselID,
 			String title, String content, String startTime, String deadline,
 			double money, int status, int clickCount, int collectCount,
 			int userID) {
@@ -57,10 +57,10 @@ public class AdvertisementEntity {
 	public void setAdID(int adID) {
 		AdID = adID;
 	}
-	public int getThumbnail_ID() {
+	public String getThumbnail_ID() {
 		return Thumbnail_ID;
 	}
-	public void setThumbnail_ID(int thumbnail_ID) {
+	public void setThumbnail_ID(String thumbnail_ID) {
 		Thumbnail_ID = thumbnail_ID;
 	}
 	public int getCarrouselID() {

@@ -1,6 +1,8 @@
 package com.round.aside.server.module.admanager;
 
+import com.round.aside.server.bean.statuscode.StatusCodeBean;
 import com.round.aside.server.entity.AdvertisementEntity;
+import com.round.aside.server.enumeration.AdStatusEnum;
 import com.round.aside.server.module.IModule;
 
 /**
@@ -17,24 +19,24 @@ public interface IAdvertisementManager extends IModule{
      * 
      * @param ad 一个广告实体
      * @return 操作结果状态值，合法的结果值只有六种，分别为{@link #S1000}成功即 广告上传成功，{@link #F8001}id字段冲突（包括adID、Thumbnail_ID、CarrouselID），
-     *         {@link #EX2012}Connection获取失败异常，
      *         {@link #EX2013}SQL插入执行异常 以及{@link #ER5001}参数非法，其他返回值均为非法值。
      * 
      */
-    int uploadAD(AdvertisementEntity ad);
+    StatusCodeBean uploadAD(AdvertisementEntity ad);
 
     /**
-     * 审核广告（广告状态从未审核到已审核）
+     * 审核广告（广告状态从未审核到审核未通过或审核通过状态）
+     * 
      * @param adID
-     * 			广告ID，unique值，范围为1-99999999
-     * @return  为审核成功，状态：未审核（0）、已审核（1）、下架（2）、过期（3）。
-     * 		合法的结果值只有六种，分别为{@link #S1000}成功即 广告审核成功
-     *         						  {@link #EX2012}Connection获取失败异常，
-     *         						  {@link #EX2014}SQL更新执行异常 ，
-     *         						  {@link #F8004}状态不符合审核要求，
-     *         						  {@link #EX2016}SQL查询执行异常 以及{@link #ER5001}参数非法，其他返回值均为非法值。
+     *            广告ID，unique值，范围为1-99999999
+     * @param finalState
+     *            结果状态，只有审核未通过和审核通过两种状态合法
+     * @return 为审核成功，状态：未审核（0）、审核未通过（1）、审核通过（2）、下架（3）、过期（4）。 合法的结果值只有六种，分别为
+     *         {@link #S1000}成功即 广告审核成功 {@link #EX2014}SQL更新执行异常 ，
+     *         {@link #F8004}状态不符合审核要求， {@link #EX2016}SQL查询执行异常 以及
+     *         {@link #ER5001}参数非法，其他返回值均为非法值。
      */
-    int checkAD(int adID);
+    StatusCodeBean checkAD(int adID, AdStatusEnum finalState);
 
 
     /**
@@ -45,7 +47,7 @@ public interface IAdvertisementManager extends IModule{
      * 			用户ID，unique值，范围为1-99999999
      * @return  为下架操作成功
      */
-    int abolishAD(int adID, int userID);
+    StatusCodeBean abolishAD(int adID, int userID);
 
     /**
      * 删除广告
@@ -53,11 +55,10 @@ public interface IAdvertisementManager extends IModule{
      * 			广告ID，unique值，范围为1-99999999
      * @return  为删除成功
      * 合法的结果值只有六种，分别为{@link #S1000}成功即 广告审核成功
-     *         						  {@link #EX2012}Connection获取失败异常，
      *         						  {@link #EX2015}SQL删除执行异常 ，
      *         						    以及{@link #ER5001}参数非法，其他返回值均为非法值。
      */
-    int deleteAD(int adID);
+    StatusCodeBean deleteAD(int adID);
 
 
     /**
@@ -67,7 +68,7 @@ public interface IAdvertisementManager extends IModule{
      * @param CreaseCount
      * @return 新关注计数，-1为操作失败
      */
-    int addAdAttention(int adID, int increaseCount);
+    StatusCodeBean addAdAttention(int adID, int increaseCount);
 
 
     /**
@@ -77,5 +78,5 @@ public interface IAdvertisementManager extends IModule{
      * @param CreaseCount
      * @return int NewAdView 新的广告浏览量，-1为操作失败
      */
-    int addAdView(int adID, int increaseCount);
+    StatusCodeBean addAdClickCount(int adID, int increaseCount);
 }

@@ -1,6 +1,6 @@
 package com.round.aside.server.bean.jsonbean;
 
-import com.round.aside.server.bean.StatusCodeBean;
+import com.round.aside.server.bean.statuscode.StatusCodeBean;
 
 /**
  * 基础JSON结果数据bean

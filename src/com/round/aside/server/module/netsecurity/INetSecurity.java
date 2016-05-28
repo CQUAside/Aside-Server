@@ -1,6 +1,6 @@
 package com.round.aside.server.module.netsecurity;
 
-import com.round.aside.server.bean.StatusCodeBean;
+import com.round.aside.server.bean.statuscode.StatusCodeBean;
 import com.round.aside.server.module.IModule;
 
 /**

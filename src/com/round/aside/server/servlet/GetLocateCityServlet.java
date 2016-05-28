@@ -6,7 +6,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.round.aside.server.bean.jsonbean.builder.TokenVerifyBuilder;
+import com.round.aside.server.bean.StatusCodeBean;
+import com.round.aside.server.bean.jsonbean.BaseResultBean;
 
 import static com.round.aside.server.constant.StatusCode.*;
 
@@ -29,6 +30,16 @@ public class GetLocateCityServlet extends BaseApiServlet {
      */
     public GetLocateCityServlet() {
         super();
+    }
+
+    /**
+     * Initialization of the servlet. <br>
+     * 
+     * @throws ServletException
+     *             if an error occurs
+     */
+    public void init() throws ServletException {
+        // Put your code here
     }
 
     /**
@@ -58,21 +69,14 @@ public class GetLocateCityServlet extends BaseApiServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        int mStatusCode = verifyToken(request);
-        if (mStatusCode != S1002) {
-            writeResponse(response, new TokenVerifyBuilder().setStatusCode(mStatusCode).build());
+        StatusCodeBean mStatusCodeBean = verifyToken(request);
+        if (mStatusCodeBean.getStatusCode() != S1002) {
+            BaseResultBean mBean = new BaseResultBean.Builder()
+                    .setStatusCodeBean(mStatusCodeBean).build();
+            writeResponse(response, mBean);
             return;
         }
 
-    }
-
-    /**
-     * Initialization of the servlet. <br>
-     * 
-     * @throws ServletException
-     *             if an error occurs
-     */
-    public void init() throws ServletException {
     }
 
 }

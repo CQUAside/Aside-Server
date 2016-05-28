@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
 
 import com.alibaba.fastjson.JSON;
+import com.round.aside.server.bean.StatusCodeBean;
 import com.round.aside.server.bean.jsonbean.BaseResultBean;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.accountmanager.IAccountManager;
@@ -46,13 +47,13 @@ public abstract class BaseApiServlet extends HttpServlet {
      * 
      * @param request
      *            HttpRequest请求对象
-     * @return 结果状态码，分别为{@link #S1002}Token验证通过，{@link #ER5005}userId输入非法，
-     *         {@link #ER5006}token输入非法，{@link #EX2000}SQL查询异常，{@link #5001}
-     *         参数非法，{@link #R6006}token非法，{@link #R6007}token失效
+     * @return 状态码数据bean，分别为{@link #S1002}Token验证通过，{@link #ER5005}userId输入非法，
+     *         {@link #ER5006}token输入非法，{@link #EX2000}SQL异常，{@link #5001} 参数非法，
+     *         {@link #R6006}token非法，{@link #R6007}token失效
      * @throws ServletException
      * @throws IOException
      */
-    protected final int verifyToken(HttpServletRequest request)
+    protected final StatusCodeBean verifyToken(HttpServletRequest request)
             throws ServletException, IOException {
 
         String mUserIDStr = request.getParameter("userid");
@@ -62,40 +63,45 @@ public abstract class BaseApiServlet extends HttpServlet {
             mUserID = Integer.valueOf(mUserIDStr);
         } catch (Exception e) {
             e.printStackTrace();
-
-            return ER5005;
+            return new StatusCodeBean.Builder().setStatusCode(ER5005)
+                    .setMsg("UserID参数非法").build();
         }
         String mToken = request.getParameter("token");
         if (StringUtil.isEmpty(mToken)) {
-            return ER5006;
+            return new StatusCodeBean.Builder().setStatusCode(ER5006)
+                    .setMsg("Token参数非法").build();
         }
 
         INetSecurity mNetSecurity = ModuleObjectPool.getModuleObject(
                 INetSecurity.class, null);
-        int mStatusCode = mNetSecurity.checkTokenLegal(mUserID, mToken);
-        if (mStatusCode != S1000) {
-            return mStatusCode;
+        StatusCodeBean mStatusCodeBean = mNetSecurity.checkTokenLegal(mUserID,
+                mToken);
+        if (mStatusCodeBean.getStatusCode() != S1000) {
+            return mStatusCodeBean;
         }
+
+        StatusCodeBean.Builder mBuilder = new StatusCodeBean.Builder();
 
         IAccountManager mAccountManager = ModuleObjectPool.getModuleObject(
                 IAccountManager.class, null);
-        mStatusCode = mAccountManager.verifyToken(mUserID, mToken);
-        switch (mStatusCode) {
+        mStatusCodeBean = mAccountManager.verifyToken(mUserID, mToken);
+        switch (mStatusCodeBean.getStatusCode()) {
             case S1000:
-                mStatusCode = S1002;
+                mBuilder.setStatusCode(S1002).setMsg("Token验证成功");
                 break;
             case EX2016:
-                mStatusCode = EX2000;
+                mBuilder.setStatusCode(EX2000).setMsg("数据库操作异常，请重试");
                 break;
             case ER5001:
             case R6006:
             case R6007:
+                mBuilder.setStatusCodeBean(mStatusCodeBean);
                 break;
             default:
                 throw new IllegalStateException("Illegal Status Code!");
         }
 
-        return mStatusCode;
+        return mBuilder.build();
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.round.aside.server.module.netsecurity;
 
+import com.round.aside.server.bean.StatusCodeBean;
 import com.round.aside.server.module.IModule;
 
 /**
@@ -18,6 +19,6 @@ public interface INetSecurity extends IModule {
      * @param mToken
      * @return 结果状态码，分别为{@link #S1000}安全合法
      */
-    int checkTokenLegal(int mUserID, String mToken);
+    StatusCodeBean checkTokenLegal(int mUserID, String mToken);
     
 }

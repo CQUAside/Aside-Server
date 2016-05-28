@@ -1,16 +1,13 @@
 package com.round.aside.server.servlet;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.alibaba.fastjson.JSONObject;
+import com.round.aside.server.bean.StatusCodeBean;
 import com.round.aside.server.bean.jsonbean.BaseResultBean;
-import com.round.aside.server.bean.jsonbean.builder.CheckAccountLegalBuilder;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.accountmanager.IAccountManager;
 
@@ -21,7 +18,7 @@ import com.round.aside.server.module.accountmanager.IAccountManager;
  * @date 2016-4-27
  * 
  */
-public final class CheckAccountLegalServlet extends HttpServlet {
+public final class CheckAccountLegalServlet extends BaseApiServlet {
 
     /**
      * 
@@ -33,6 +30,16 @@ public final class CheckAccountLegalServlet extends HttpServlet {
      */
     public CheckAccountLegalServlet() {
         super();
+    }
+
+    /**
+     * Initialization of the servlet. <br>
+     * 
+     * @throws ServletException
+     *             if an error occurs
+     */
+    public void init() throws ServletException {
+        // Put your code here
     }
 
     /**
@@ -58,31 +65,21 @@ public final class CheckAccountLegalServlet extends HttpServlet {
      * @throws IOException
      *             if an error occurred
      */
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
         String mAccount = request.getParameter("account");
 
-        IAccountManager mAccountManager = ModuleObjectPool.getModuleObject(IAccountManager.class, null);
+        IAccountManager mAccountManager = ModuleObjectPool.getModuleObject(
+                IAccountManager.class, null);
 
-        int mStatusCode = mAccountManager.checkRegisteredAccountLegal(mAccount);
-        BaseResultBean mBean = new CheckAccountLegalBuilder().setStatusCode(mStatusCode).build();
+        StatusCodeBean mStatusCodeBean = mAccountManager
+                .checkRegisteredAccountLegal(mAccount);
+        BaseResultBean mBean = new BaseResultBean.Builder().setStatusCodeBean(
+                mStatusCodeBean).build();
 
-        response.setCharacterEncoding("utf-8");
-        PrintWriter out = response.getWriter();
-        out.println(JSONObject.toJSONString(mBean));
+        writeResponse(response, mBean);
 
-        out.flush();
-        out.close();
-    }
-
-    /**
-     * Initialization of the servlet. <br>
-     * 
-     * @throws ServletException
-     *             if an error occurs
-     */
-    public void init() throws ServletException {
-        // Put your code here
     }
 
 }

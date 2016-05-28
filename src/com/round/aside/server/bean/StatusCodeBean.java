@@ -5,16 +5,16 @@ package com.round.aside.server.bean;
  * 
  * @author A Shuai
  * @date 2016-5-25
- *
+ * 
  */
-public final class StatusCodeBean {
+public class StatusCodeBean {
 
     private final int statusCode;
     private final String msg;
 
-    public StatusCodeBean(int statusCode, String msg){
-        this.statusCode = statusCode;
-        this.msg = msg;
+    public StatusCodeBean(Builder mBuilder) {
+        this.statusCode = mBuilder.statusCode;
+        this.msg = mBuilder.msg;
     }
 
     public int getStatusCode() {
@@ -23,6 +23,43 @@ public final class StatusCodeBean {
 
     public String getMsg() {
         return msg;
+    }
+
+    /**
+     * 建造者
+     * 
+     * @author A Shuai
+     * @date 2016-5-26
+     * 
+     */
+    public static class Builder {
+
+        private int statusCode;
+        private String msg;
+
+        public Builder() {
+        }
+
+        public Builder setStatusCode(int statusCode) {
+            this.statusCode = statusCode;
+            return this;
+        }
+
+        public Builder setMsg(String msg) {
+            this.msg = msg;
+            return this;
+        }
+
+        public Builder setStatusCodeBean(StatusCodeBean mBean) {
+            this.statusCode = mBean.statusCode;
+            this.msg = mBean.msg;
+            return this;
+        }
+
+        public StatusCodeBean build() {
+            return new StatusCodeBean(this);
+        }
+
     }
 
 }

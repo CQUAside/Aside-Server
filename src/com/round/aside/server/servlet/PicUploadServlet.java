@@ -17,7 +17,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import com.round.aside.server.bean.StatusCodeBean;
-import com.round.aside.server.bean.jsonbean.builder.TokenVerifyBuilder;
+import com.round.aside.server.bean.jsonbean.BaseResultBean;
 import com.round.aside.server.bean.jsonbean.result.PicUploadResult;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.dbmanager.IDatabaseManager;
@@ -33,7 +33,7 @@ import static com.round.aside.server.constant.Constants.*;
 import static com.round.aside.server.constant.StatusCode.*;
 
 /**
- * 
+ * 图片上传Servlet
  * 
  * @author A Shuai
  * @date 2016-5-24
@@ -89,10 +89,11 @@ public class PicUploadServlet extends BaseApiServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        int mStatusCode = verifyToken(request);
-        if (mStatusCode != S1002) {
-            writeResponse(response,
-                    new TokenVerifyBuilder().setStatusCode(mStatusCode).build());
+        StatusCodeBean mStatusCodeBean = verifyToken(request);
+        if (mStatusCodeBean.getStatusCode() != S1002) {
+            BaseResultBean mBean = new BaseResultBean.Builder()
+                    .setStatusCodeBean(mStatusCodeBean).build();
+            writeResponse(response, mBean);
             return;
         }
 
@@ -140,7 +141,6 @@ public class PicUploadServlet extends BaseApiServlet {
                     }
 
                     String mPicID = "";
-                    StatusCodeBean mStatusCodeBean = null;
 
                     LOOP: while (true) {
                         mPicID = mGenerator.generatePicID(mUserID,

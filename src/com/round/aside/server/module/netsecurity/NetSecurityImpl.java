@@ -2,6 +2,8 @@ package com.round.aside.server.module.netsecurity;
 
 import static com.round.aside.server.constant.StatusCode.*;
 
+import com.round.aside.server.bean.StatusCodeBean;
+
 /**
  * 网络安全模块实现类
  * 
@@ -12,8 +14,10 @@ import static com.round.aside.server.constant.StatusCode.*;
 public final class NetSecurityImpl implements INetSecurity {
 
     @Override
-    public int checkTokenLegal(int mUserID, String mToken) {
-        return S1000;
+    public StatusCodeBean checkTokenLegal(int mUserID, String mToken) {
+        StatusCodeBean.Builder mBuilder = new StatusCodeBean.Builder();
+        mBuilder.setStatusCode(S1000).setMsg("验证通过");
+        return mBuilder.build();
     }
 
 }

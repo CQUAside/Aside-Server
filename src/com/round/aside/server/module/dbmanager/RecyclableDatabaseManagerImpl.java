@@ -8,13 +8,13 @@ import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.round.aside.server.DB.DataSource;
+import com.round.aside.server.bean.LoginUserBean;
 import com.round.aside.server.bean.RequestInfoBean;
 import com.round.aside.server.bean.StatusCodeBean;
 import com.round.aside.server.entity.AdvertisementEntity;
 import com.round.aside.server.entity.InformAdsEntity;
 import com.round.aside.server.entity.InformUsersEntity;
 import com.round.aside.server.entity.PersonalCollectionEntity;
-import com.round.aside.server.entity.LoginUserEntity;
 import com.round.aside.server.module.IModuleFactoryRecycleCallback;
 import com.round.aside.server.util.StringUtil;
 
@@ -29,6 +29,9 @@ import static com.round.aside.server.constant.StatusCode.*;
  */
 public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
 
+    /**
+     * 同步计数器
+     */
     private static final AtomicInteger COUNTER = new AtomicInteger(1);
 
     private final int mID;
@@ -54,9 +57,11 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
     private static final String CHECK_ACCOUNT_EXIST_FORMAT = "select userid from aside_user where account = ?";
 
     @Override
-    public int checkAccountExistence(String mAccount) {
+    public StatusCodeBean checkAccountExistence(String mAccount) {
+        StatusCodeBean.Builder mBuilder = new StatusCodeBean.Builder();
+
         if (StringUtil.isEmpty(mAccount)) {
-            return ER5001;
+            return mBuilder.setStatusCode(ER5001).setMsg("账号参数非法").build();
         }
 
         boolean mExistence = false;
@@ -73,24 +78,31 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
 
         } catch (SQLException e) {
             e.printStackTrace();
-            return EX2013;
+            return mBuilder.setStatusCode(EX2016).setMsg("数据库查询异常，请重试").build();
         } finally {
             closeMemberResultSet();
             closeMemberPreparedStatement();
         }
 
-        return mExistence ? R6002 : S1000;
+        if (mExistence) {
+            mBuilder.setStatusCode(R6002).setMsg("账号重复");
+        } else {
+            mBuilder.setStatusCode(S1000).setMsg("账号检查通过");
+        }
+        return mBuilder.build();
     }
 
     private static final String DELETE_PHONEAUTH_FORMAT = "delete from aside_authcode where phone = ?";
     private static final String INSERT_PHONEAUTH_FORMAT = "insert into aside_authcode(phone, authcode, pastdue_time) values(?, ?, ?)";
 
     @Override
-    public int stashRegisterPhoneAuthcode(String mPhone, String mAuthcode,
-            long pastdueTime) {
+    public StatusCodeBean stashRegisterPhoneAuthcode(String mPhone,
+            String mAuthcode, long pastdueTime) {
+        StatusCodeBean.Builder mBuilder = new StatusCodeBean.Builder();
+
         if (StringUtil.isEmpty(mPhone) || StringUtil.isEmpty(mAuthcode)
                 || mAuthcode.length() != 4) {
-            return ER5001;
+            return mBuilder.setStatusCode(ER5001).setMsg("账号参数非法").build();
         }
 
         try {
@@ -109,28 +121,31 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             mPreState.setString(2, mAuthcode);
             mPreState.setLong(3, pastdueTime);
             mPreState.executeUpdate();
+            mBuilder.setStatusCode(S1000).setMsg("暂存手机验证码成功");
         } catch (SQLException e) {
             e.printStackTrace();
-            return EX2013;
+            mBuilder.setStatusCode(EX2013).setMsg("数据库插入异常，请重试");
         } finally {
             closeMemberPreparedStatement();
         }
 
-        return S1000;
+        return mBuilder.build();
     }
 
     private static final String SELECT_PHONEAUTH_FORMAT = "select id, pastdue_time  from aside_authcode where phone = ? and authcode = ? order by id desc";
 
     @Override
-    public int checkRegisterPhoneAuthcode(String mPhone, String mAuthcode,
-            long currentTime) {
+    public StatusCodeBean checkRegisterPhoneAuthcode(String mPhone,
+            String mAuthcode, long currentTime) {
+        StatusCodeBean.Builder mBuilder = new StatusCodeBean.Builder();
+
         if (StringUtil.isEmpty(mPhone) || StringUtil.isEmpty(mAuthcode)
                 || mAuthcode.length() != 4) {
-            return ER5001;
+            return mBuilder.setStatusCode(ER5001).setMsg("参数非法").build();
         }
 
         long pastdueTime = 0;
-        int resultCode;
+
         try {
             mPreState = mConnection.prepareStatement(SELECT_PHONEAUTH_FORMAT);
             mPreState.setString(1, mPhone);
@@ -142,30 +157,32 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             }
 
             if (pastdueTime == 0) {
-                resultCode = ER5003L;
+                mBuilder.setStatusCode(ER5003L).setMsg("验证码不符");
             } else if (currentTime > pastdueTime) {
-                resultCode = ER5004L;
+                mBuilder.setStatusCode(ER5004L).setMsg("验证码过期，请重新获取");
             } else {
-                resultCode = S1000;
+                mBuilder.setStatusCode(S1000);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return EX2016;
+            return mBuilder.setStatusCode(EX2016).setMsg("数据库查询异常").build();
         } finally {
             closeMemberResultSet();
             closeMemberPreparedStatement();
         }
-        return resultCode;
+        return mBuilder.build();
     }
 
     private static final String INSERT_USER_FORMAT = "INSERT into aside_user(userid, account, password, phonenum) values(?, ?, ?, ?)";
 
     @Override
-    public int insertUser(int mUserID, String mAccount, String mPassword,
-            String mPhone) {
+    public StatusCodeBean insertUser(int mUserID, String mAccount,
+            String mPassword, String mPhone) {
+        StatusCodeBean.Builder mBuilder = new StatusCodeBean.Builder();
+
         if (mUserID <= 0 || StringUtil.isEmpty(mAccount)
                 || StringUtil.isEmpty(mPassword)) {
-            return ER5001;
+            return mBuilder.setStatusCode(ER5001).setMsg("参数非法").build();
         }
 
         try {
@@ -175,12 +192,14 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             mPreState.setString(3, mPassword);
             mPreState.setString(4, mPhone);
             mPreState.executeUpdate();
+
+            mBuilder.setStatusCode(S1000).setMsg("用户账号插入成功");
         } catch (SQLIntegrityConstraintViolationException e) {
             String mExMsg = e.getMessage();
             if (mExMsg.indexOf("userid'") != -1) {
-                return F8001;
+                mBuilder.setStatusCode(F8001).setMsg("UserId冲突，请重新生成再次插入");
             } else if (mExMsg.indexOf("account") != -1) {
-                return F8002;
+                mBuilder.setStatusCode(F8002).setMsg("Account账号冲突");
             } else {
                 e.printStackTrace();
                 throw new IllegalStateException(
@@ -188,21 +207,24 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            return EX2013;
+            mBuilder.setStatusCode(EX2013).setMsg("数据库插入异常");
         } finally {
             closeMemberPreparedStatement();
         }
 
-        return S1000;
+        return mBuilder.build();
     }
 
     private static final String INSERT_TOKEN_FORMAT = "INSERT into aside_token(userid, os, browser, detail_browser, token, login_time, pastdue_time) values(?, ?, ?, ?, ?, ?, ?)";
 
     @Override
-    public int insertToken(int mUserID, RequestInfoBean mRequestInfoBean,
-            String mToken, long loginTime, long pastdueTime) {
+    public StatusCodeBean insertToken(int mUserID,
+            RequestInfoBean mRequestInfoBean, String mToken, long loginTime,
+            long pastdueTime) {
+        StatusCodeBean.Builder mBuilder = new StatusCodeBean.Builder();
+
         if (mUserID <= 0 || StringUtil.isEmptyInSet(mToken)) {
-            return ER5001;
+            return mBuilder.setStatusCode(ER5001).setMsg("参数非法").build();
         }
         try {
             mPreState = mConnection.prepareStatement(INSERT_TOKEN_FORMAT);
@@ -214,24 +236,27 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             mPreState.setLong(6, loginTime);
             mPreState.setLong(7, pastdueTime);
             mPreState.executeUpdate();
+
+            mBuilder.setStatusCode(S1000).setMsg("Token插入成功");
         } catch (SQLException e) {
             e.printStackTrace();
-            return EX2013;
+            mBuilder.setStatusCode(EX2013).setMsg("数据库插入异常");
         } finally {
             closeMemberPreparedStatement();
         }
-        return S1000;
+        return mBuilder.build();
     }
 
     private static final String SELECT_USERID_FORMAT = "select userid, password from aside_user where account = ?";
 
     @Override
-    public LoginUserEntity.Builder loginCheck(String mAccount, String mPassword,
+    public LoginUserBean loginCheck(String mAccount, String mPassword,
             long period) {
-        LoginUserEntity.Builder mBuilder = new LoginUserEntity.Builder();
+        LoginUserBean.Builder mBuilder = new LoginUserBean.Builder();
 
         if (StringUtil.isEmptyInSet(mAccount, mPassword) || period <= 0) {
-            return mBuilder.setStatuscode(ER5001);
+            return mBuilder.setStatusCode(ER5001).setMsg("账号或密码参数非法，请检查后重新输入")
+                    .build();
         }
 
         String mTPassword = null;
@@ -246,30 +271,32 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             }
 
             if (mTPassword == null) {
-                mBuilder.setStatuscode(R6004);
+                mBuilder.setStatusCode(R6004).setMsg("账号不存在");
             } else if (!mTPassword.equals(mPassword)) {
-                mBuilder.setStatuscode(R6005);
+                mBuilder.setStatusCode(R6005).setMsg("密码输入错误，请重新输入");
             } else {
-                mBuilder.setUserID(mResultSet.getInt(1));
-                mBuilder.setStatuscode(S1000);
+                mBuilder.setStatusCode(S1000).setMsg("账号密码验证通过")
+                        .setUserID(mResultSet.getInt(1));
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            mBuilder.setStatuscode(EX2016);
+            mBuilder.setStatusCode(EX2016).setMsg("数据库查询异常，请重试");
         } finally {
             closeMemberResultSet();
             closeMemberPreparedStatement();
         }
 
-        return mBuilder;
+        return mBuilder.build();
     }
 
     private static final String SELECT_TOKEN_FORMAT = "select pastdue_time from aside_token where userid = ? and token = ?";
 
     @Override
-    public int tokenLoginCheck(int userId, String token) {
+    public StatusCodeBean tokenLoginCheck(int userId, String token) {
+        StatusCodeBean.Builder mBuilder = new StatusCodeBean.Builder();
+
         if (userId <= 0 || StringUtil.isEmptyInSet(token)) {
-            return ER5001;
+            return mBuilder.setStatusCode(ER5001).setMsg("参数非法").build();
         }
 
         try {
@@ -285,38 +312,44 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             }
 
             if (mPastdueTime == 0) {
-                return R6006;
+                mBuilder.setStatusCode(R6006).setMsg("Token非法，请登录");
             } else if (mPastdueTime >= System.currentTimeMillis()) {
-                return R6007;
+                mBuilder.setStatusCode(R6007).setMsg("Token过期，请重新登录");
+            } else {
+                mBuilder.setStatusCode(S1000).setMsg("Token验证成功");
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
-            return EX2016;
+            mBuilder.setStatusCode(EX2016).setMsg("数据库查询异常");
         } finally {
             closeMemberResultSet();
             closeMemberPreparedStatement();
         }
 
-        return S1000;
+        return mBuilder.build();
     }
 
     private static final String INSERT_PIC_FORMAT = "INSERT into aside_pic(picid) values(?)";
 
     @Override
     public StatusCodeBean insertPicWithPicId(String picId) {
-        if (StringUtil.isEmpty(picId)){
-            return new StatusCodeBean(ER5001, "图片Id非法");
+        StatusCodeBean.Builder mBuilder = new StatusCodeBean.Builder();
+
+        if (StringUtil.isEmpty(picId)) {
+            return mBuilder.setStatusCode(ER5001).setMsg("图片Id非法").build();
         }
 
         try {
             mPreState = mConnection.prepareStatement(INSERT_PIC_FORMAT);
             mPreState.setString(1, picId);
             mPreState.executeUpdate();
+
+            mBuilder.setStatusCode(S1000).setMsg("Pic插入成功");
         } catch (SQLIntegrityConstraintViolationException e) {
             String mExMsg = e.getMessage();
             if (mExMsg.indexOf("picid'") != -1) {
-                return new StatusCodeBean(EX2017, "图片id重复");
+                mBuilder.setStatusCode(EX2017).setMsg("图片id重复");
             } else {
                 e.printStackTrace();
                 throw new IllegalStateException(
@@ -324,11 +357,11 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            return new StatusCodeBean(EX2013, "数据库插入异常");
+            mBuilder.setStatusCode(EX2013).setMsg("数据库插入异常");
         } finally {
             closeMemberPreparedStatement();
         }
-        return new StatusCodeBean(S1000, "成功");
+        return mBuilder.build();
     }
 
     private static final String UPDATE_PIC_FORMAT = "UPDATE aside_pic SET order = ?, originalpath = ?, thumbpath = ?, extension = ? WHERE picid = ?";
@@ -336,30 +369,36 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
     @Override
     public StatusCodeBean updatePicWithOutAdId(String picId, int order,
             String originalPath, String thumbPath, String extension) {
-        if(StringUtil.isEmptyInSet(picId, originalPath, thumbPath)){
-            return new StatusCodeBean(ER5001, "参数非法，图片id、原图相对路径以及缩略图相对路径不可为空");
+        StatusCodeBean.Builder mBuilder = new StatusCodeBean.Builder();
+
+        if (StringUtil.isEmptyInSet(picId, originalPath, thumbPath)) {
+            return mBuilder.setStatusCode(ER5001)
+                    .setMsg("参数非法，图片id、原图相对路径以及缩略图相对路径不可为空").build();
         }
-        if(order < 0){
-            return new StatusCodeBean(ER5001, "参数非法，序号需为自然数");
+        if (order < 0) {
+            return mBuilder.setStatusCode(ER5001).setMsg("参数非法，序号需为自然数")
+                    .build();
         }
-        
+
         try {
             mPreState = mConnection.prepareStatement(UPDATE_PIC_FORMAT);
-            
+
             mPreState.setInt(1, order);
             mPreState.setString(2, originalPath);
             mPreState.setString(3, thumbPath);
             mPreState.setString(4, extension);
             mPreState.setString(5, picId);
             mPreState.executeUpdate();
+
+            mBuilder.setStatusCode(S1000).setMsg("Pic信息更新成功");
         } catch (SQLException e) {
             e.printStackTrace();
-            return new StatusCodeBean(EX2014, "数据库更新异常");
+            mBuilder.setStatusCode(EX2014).setMsg("数据库更新异常");
         } finally {
             closeMemberPreparedStatement();
         }
-        
-        return new StatusCodeBean(S1000, "成功");
+
+        return mBuilder.build();
     }
 
     public static final String uploadingAdsql = "INSERT into aside_advertisement(AdID, Thumbnail_ID, CarrouselID, Title, Content, StartTime, Deadline, Money, Status, ClickCount, CollectCount, UserID) values(?, ?, ?,?,?,?,?,?,?,?,?,?)";

@@ -1,12 +1,12 @@
 package com.round.aside.server.module.dbmanager;
 
+import com.round.aside.server.bean.LoginUserBean;
 import com.round.aside.server.bean.RequestInfoBean;
 import com.round.aside.server.bean.StatusCodeBean;
 import com.round.aside.server.entity.AdvertisementEntity;
 import com.round.aside.server.entity.InformAdsEntity;
 import com.round.aside.server.entity.InformUsersEntity;
 import com.round.aside.server.entity.PersonalCollectionEntity;
-import com.round.aside.server.entity.LoginUserEntity;
 
 import com.round.aside.server.module.IModule;
 import com.round.aside.server.module.IRecyclableModule;
@@ -29,9 +29,9 @@ public interface IDatabaseManager extends IModule,
      * @param mAccount
      *            待检查的用户名
      * @return 表征结果的状态码，分别有{@link #S1000}SQL执行正常且未重复，{@link #R6002}SQL执行正常且已重复，
-     *         {@link #EX2013}SQL查询执行异常， {@link #ER5001}调用参数非法。
+     *         {@link #EX2016}SQL查询执行异常， {@link #ER5001}调用参数非法。
      */
-    int checkAccountExistence(String mAccount);
+    StatusCodeBean checkAccountExistence(String mAccount);
 
     /**
      * 暂存注册账号步骤中手机号码及对应验证码
@@ -43,7 +43,7 @@ public interface IDatabaseManager extends IModule,
      * @return 表征结果的状态码，分别有分别有{@link #S1000}SQL执行正常，{@link #EX2013}SQL插入执行异常，
      *         {@link #ER5001}调用参数非法。
      */
-    int stashRegisterPhoneAuthcode(String mPhone, String mAuthcode,
+    StatusCodeBean stashRegisterPhoneAuthcode(String mPhone, String mAuthcode,
             long pastdueTime);
 
     /**
@@ -57,7 +57,7 @@ public interface IDatabaseManager extends IModule,
      *         {@link #ER5003L}手机号和验证码不对应，{@link #ER5004L}手机号与验证码对应，但验证码超时无效，
      *         {@link #S1000}成功
      */
-    int checkRegisterPhoneAuthcode(String mPhone, String mAuthcode,
+    StatusCodeBean checkRegisterPhoneAuthcode(String mPhone, String mAuthcode,
             long currentTime);
 
     /**
@@ -75,7 +75,7 @@ public interface IDatabaseManager extends IModule,
      *         {@link #F8002}account字段冲突， {@link #EX2013}SQL插入执行异常 以及
      *         {@link #ER5001}调用参数非法，其他返回值均为非法值。
      */
-    int insertUser(int mUserID, String mAccount, String mPassword, String mPhone);
+    StatusCodeBean insertUser(int mUserID, String mAccount, String mPassword, String mPhone);
 
     /**
      * 插入一条token记录，作为登陆成功的凭证
@@ -92,7 +92,7 @@ public interface IDatabaseManager extends IModule,
      *            令牌过期时间
      * @return 状态码
      */
-    int insertToken(int mUserID, RequestInfoBean mRequestInfoBean,
+    StatusCodeBean insertToken(int mUserID, RequestInfoBean mRequestInfoBean,
             String mToken, long loginTime, long pastdueTime);
     
     /**
@@ -106,7 +106,7 @@ public interface IDatabaseManager extends IModule,
      *            申请token有效期
      * @return 登陆用户实体类的建造者
      */
-    LoginUserEntity.Builder loginCheck(String mAccount, String mPassword, long period);
+    LoginUserBean loginCheck(String mAccount, String mPassword, long period);
 
     /**
      * Token令牌登陆检查
@@ -118,7 +118,7 @@ public interface IDatabaseManager extends IModule,
      * @return 结果状态码，有且仅有以下几种，分别为{@link #S1000}合法，{@link #ER5001}调用参数非法，
      *         {@link #R6006}Token非法，{@link #R6007}Token失效，{@link #EX2016}SQL查询执行异常。
      */
-    int tokenLoginCheck(int userId, String token);
+    StatusCodeBean tokenLoginCheck(int userId, String token);
 
     /**
      * 插入一条图片记录，但只插入PicId字段，以避免PicId重复

@@ -1,18 +1,17 @@
 package com.round.aside.server.servlet;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.alibaba.fastjson.JSONObject;
+import com.round.aside.server.bean.StatusCodeBean;
 import com.round.aside.server.bean.jsonbean.BaseResultBean;
-import com.round.aside.server.bean.jsonbean.builder.SendAuthcodeBuilder;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.accountmanager.IAccountManager;
+
+import static com.round.aside.server.constant.StatusCode.*;
 
 /**
  * 发送注册账号时的手机验证码
@@ -21,7 +20,7 @@ import com.round.aside.server.module.accountmanager.IAccountManager;
  * @date 2016-4-30
  * 
  */
-public class SendRegisterPhoneAuthCodeServlet extends HttpServlet {
+public class SendRegisterPhoneAuthCodeServlet extends BaseApiServlet {
 
     /**
      * 
@@ -33,6 +32,16 @@ public class SendRegisterPhoneAuthCodeServlet extends HttpServlet {
      */
     public SendRegisterPhoneAuthCodeServlet() {
         super();
+    }
+
+    /**
+     * Initialization of the servlet. <br>
+     * 
+     * @throws ServletException
+     *             if an error occurs
+     */
+    public void init() throws ServletException {
+        // Put your code here
     }
 
     /**
@@ -58,28 +67,22 @@ public class SendRegisterPhoneAuthCodeServlet extends HttpServlet {
      * @throws IOException
      *             if an error occurred
      */
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
         String mPhone = request.getParameter("phone");
-        IAccountManager mAccountManager = ModuleObjectPool.getModuleObject(IAccountManager.class, null);
-        int mStatusCode = mAccountManager.sendPhoneAuthcode(mPhone);
-        BaseResultBean mBean = new SendAuthcodeBuilder().setStatusCode(mStatusCode).build();
+        IAccountManager mAccountManager = ModuleObjectPool.getModuleObject(
+                IAccountManager.class, null);
+        StatusCodeBean mStatusCodeBean = mAccountManager
+                .sendPhoneAuthcode(mPhone);
+        BaseResultBean.Builder mBuilder = new BaseResultBean.Builder();
+        if(mStatusCodeBean.getStatusCode() == S1000){
+            mBuilder.setStatusCode(S1000).setMsg("验证码发送成功");
+        } else {
+            mBuilder.setStatusCodeBean(mStatusCodeBean);
+        }
 
-        response.setCharacterEncoding("utf-8");
-        PrintWriter out = response.getWriter();
-        out.println(JSONObject.toJSONString(mBean));
-        out.flush();
-        out.close();
-    }
-
-    /**
-     * Initialization of the servlet. <br>
-     * 
-     * @throws ServletException
-     *             if an error occurs
-     */
-    public void init() throws ServletException {
-        // Put your code here
+        writeResponse(response, mBuilder.build());
     }
 
 }

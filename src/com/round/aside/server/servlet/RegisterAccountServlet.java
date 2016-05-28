@@ -3,19 +3,15 @@ package com.round.aside.server.servlet;
 import static com.round.aside.server.constant.StatusCode.*;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.alibaba.fastjson.JSONObject;
+import com.round.aside.server.bean.LoginUserBean;
 import com.round.aside.server.bean.RequestInfoBean;
 import com.round.aside.server.bean.jsonbean.BaseResultBean;
-import com.round.aside.server.bean.jsonbean.UserObjBean;
-import com.round.aside.server.bean.jsonbean.builder.RegisterBuilder;
-import com.round.aside.server.entity.RegisterResultEntity;
+import com.round.aside.server.bean.jsonbean.result.UserObjBean;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.accountmanager.IAccountManager;
 import com.round.aside.server.util.HttpRequestUtils;
@@ -27,7 +23,7 @@ import com.round.aside.server.util.HttpRequestUtils;
  * @date 2016-4-30
  * 
  */
-public class RegisterAccountServlet extends HttpServlet {
+public class RegisterAccountServlet extends BaseApiServlet {
 
     /**
      * 
@@ -39,6 +35,16 @@ public class RegisterAccountServlet extends HttpServlet {
      */
     public RegisterAccountServlet() {
         super();
+    }
+
+    /**
+     * Initialization of the servlet. <br>
+     * 
+     * @throws ServletException
+     *             if an error occurs
+     */
+    public void init() throws ServletException {
+        // Put your code here
     }
 
     /**
@@ -77,35 +83,19 @@ public class RegisterAccountServlet extends HttpServlet {
 
         IAccountManager mAccountManager = ModuleObjectPool.getModuleObject(
                 IAccountManager.class, null);
-        RegisterResultEntity mRegisterResult = mAccountManager.registerAccount(
+        LoginUserBean mLoginUserBean = mAccountManager.registerAccount(
                 mAccount, mPassword, mPhone, mAuthcode, mRequestInfoBean);
 
-        BaseResultBean.Builder mBuilder = new RegisterBuilder()
-                .setStatusCode(mRegisterResult.getStatusCode());
+        BaseResultBean.Builder mBuilder = new BaseResultBean.Builder()
+                .setStatusCodeBean(mLoginUserBean);
 
-        if (mRegisterResult.getStatusCode() == S1000) {
-            UserObjBean mObjBean = new UserObjBean(mRegisterResult.getUserID(),
-                    mRegisterResult.getToken());
+        if (mLoginUserBean.getStatusCode() == S1000) {
+            UserObjBean mObjBean = new UserObjBean(mLoginUserBean.getUserID(),
+                    mLoginUserBean.getToken());
             mBuilder.setObj(mObjBean);
         }
-        BaseResultBean mBean = mBuilder.build();
 
-        response.setCharacterEncoding("utf-8");
-        PrintWriter out = response.getWriter();
-        out.println(JSONObject.toJSONString(mBean));
-
-        out.flush();
-        out.close();
-    }
-
-    /**
-     * Initialization of the servlet. <br>
-     * 
-     * @throws ServletException
-     *             if an error occurs
-     */
-    public void init() throws ServletException {
-        // Put your code here
+        writeResponse(response, mBuilder.build());
     }
 
 }

@@ -1,4 +1,4 @@
-package com.round.aside.server.bean.jsonbean;
+package com.round.aside.server.bean.jsonbean.result;
 
 /**
  * 用户信息Obj bean

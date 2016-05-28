@@ -1,6 +1,6 @@
 package com.round.aside.server.bean.jsonbean;
 
-import javax.validation.constraints.NotNull;
+import com.round.aside.server.bean.StatusCodeBean;
 
 /**
  * 基础JSON结果数据bean
@@ -52,11 +52,6 @@ public final class BaseResultBean {
         
         public Builder setStatusCode(int statusCode) {
             this.statusCode = statusCode;
-            msg = getMsg(statusCode);
-            if (msg == null) {
-                throw new IllegalStateException(
-                        "the return str shouldn't be null");
-            }
             return this;
         }
 
@@ -72,15 +67,10 @@ public final class BaseResultBean {
             return this;
         }
 
-        /**
-         * 根据指定状态码返回对应的描述字符串
-         * 
-         * @param statusCode
-         *            状态码
-         * @return 描述字符串，不可为空
-         */
-        public @NotNull String getMsg(int statusCode){
-            return "";
+        public Builder setStatusCodeBean(StatusCodeBean mBean) {
+            statusCode = mBean.getStatusCode();
+            msg = mBean.getMsg();
+            return this;
         }
 
         public Builder setObj(Object obj) {

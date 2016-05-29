@@ -21,11 +21,28 @@ public class AdvertisementManagerImpl implements IAdvertisementManager {
 
     @Override
     public StatusCodeBean uploadAD(AdvertisementEntity ad) {
+        StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
+
         IDatabaseManager datamanager = ModuleObjectPool.getModuleObject(
                 IDatabaseManager.class, null);
-        StatusCodeBean result = datamanager.insertAD(ad);
+        StatusCodeBean mStatusCodeBean = datamanager.insertAD(ad);
         datamanager.release();
-        return result;
+
+        switch (mStatusCodeBean.getStatusCode()) {
+            case S1000:
+                mResultBuilder.setStatusCode(S1000).setMsg("广告上传成功");
+                break;
+            case EX2013:
+                mResultBuilder.setStatusCode(EX2000).setMsg("数据库操作异常，请重试");
+                break;
+            case ER5001:
+            case F8001:
+                mResultBuilder.setStatusCodeBean(mStatusCodeBean);
+                break;
+            default:
+                throw new IllegalStateException("Illegal status code!");
+        }
+        return mResultBuilder.build();
     }
 
     @Override

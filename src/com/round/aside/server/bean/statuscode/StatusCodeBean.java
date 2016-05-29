@@ -38,6 +38,7 @@ public class StatusCodeBean {
         private String msg;
 
         public Builder() {
+            statusCode = 0;
         }
 
         public Builder setStatusCode(int statusCode) {
@@ -57,6 +58,9 @@ public class StatusCodeBean {
         }
 
         public StatusCodeBean build() {
+            if (statusCode == 0) {
+                throw new IllegalStateException("status code must be assign!");
+            }
             return new StatusCodeBean(this);
         }
 

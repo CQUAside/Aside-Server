@@ -163,7 +163,7 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             } else if (currentTime > pastdueTime) {
                 mBuilder.setStatusCode(ER5004L).setMsg("验证码过期，请重新获取");
             } else {
-                mBuilder.setStatusCode(S1000);
+                mBuilder.setStatusCode(S1000).setMsg("手机验证码验证通过");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -558,13 +558,17 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
     public static final String insertCollectionsql = "insert into aside_collection(UserID, AdID) values(?, ?)";
 
     @Override
-    public int insertCollection(PersonalCollectionEntity personalCollection) {
+    public StatusCodeBean insertCollection(
+            PersonalCollectionEntity personalCollection) {
+        StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
         if (personalCollection.getAdID() <= 0
                 || personalCollection.getAdID() > 99999999)
-            return ER5001;
+            return mResultBuilder.setStatusCode(ER5001).setMsg("AdID参数非法")
+                    .build();
         if (personalCollection.getUserID() <= 0
                 || personalCollection.getUserID() > 99999999) {
-            return ER5001;
+            return mResultBuilder.setStatusCode(ER5001).setMsg("UserID参数非法")
+                    .build();
         }
 
         try {
@@ -572,33 +576,29 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             mPreState.setInt(1, personalCollection.getUserID());
             mPreState.setInt(2, personalCollection.getAdID());
             mPreState.executeUpdate();
-        } catch (SQLIntegrityConstraintViolationException e) {
-            String mExMsg = e.getMessage();
-            if (mExMsg.indexOf("adID") != -1 || mExMsg.indexOf("userID") != -1)
-                return F8001;
-            else {
-                e.printStackTrace();
-                throw new IllegalStateException(
-                        "This is a improper exception, please check your code!");
-            }
+
+            mResultBuilder.setStatusCode(S1000).setMsg("收藏成功");
         } catch (SQLException e) {
             e.printStackTrace();
-            return EX2013;
+            mResultBuilder.setStatusCode(EX2013).setMsg("数据库插入异常，请重试");
         } finally {
             closeMemberPreparedStatement();
         }
-        return S1000;
+        return mResultBuilder.build();
     }
 
     // 用户取消收藏时，删除一个收藏记录
     public static final String deleteCollectionsql = "delete from aside_collection where AdID = ? and UserID = ?";
 
     @Override
-    public int deleteCollecion(int adID, int userID) {
+    public StatusCodeBean deleteCollecion(int adID, int userID) {
+        StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
         if (adID <= 0 || adID > 99999999)
-            return ER5001;
-        if (userID <= 0 || userID > 99999999) {
-            return ER5001;
+            return mResultBuilder.setStatusCode(ER5001).setMsg("AdID参数非法")
+                    .build();
+        if (userID <= 0) {
+            return mResultBuilder.setStatusCode(ER5001).setMsg("UserID参数非法")
+                    .build();
         }
 
         try {
@@ -606,85 +606,75 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             mPreState.setInt(1, adID);
             mPreState.setInt(2, userID);
             mPreState.executeUpdate();
+
+            mResultBuilder.setStatusCode(S1000).setMsg("取消收藏成功");
         } catch (SQLException e) {
             e.printStackTrace();
-            return EX2015;
+            mResultBuilder.setStatusCode(EX2015).setMsg("数据库删除异常，请重试");
         } finally {
             closeMemberPreparedStatement();
         }
-        return S1000;
+        return mResultBuilder.build();
     }
 
     // 用户举报广告时，向举报广告表插入一个举报记录
     public static final String insertInformAdsql = "insert into aside_informAds(UserID, AdID) values(?, ?)";
 
     @Override
-    public int insertInformAd(InformAdsEntity informAd) {
+    public StatusCodeBean insertInformAd(InformAdsEntity informAd) {
+        StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
         if (informAd.getAdID() <= 0 || informAd.getAdID() > 99999999)
-            return ER5001;
+            return mResultBuilder.setStatusCode(ER5001).setMsg("被举报AdID参数非法")
+                    .build();
         if (informAd.getUserID() <= 0)
-            return ER5001;
+            return mResultBuilder.setStatusCode(ER5001).setMsg("举报人UserID参数非法")
+                    .build();
 
         try {
             mPreState = mConnection.prepareStatement(insertInformAdsql);
             mPreState.setInt(1, informAd.getUserID());
             mPreState.setInt(2, informAd.getAdID());
-
             mPreState.executeUpdate();
-        } catch (SQLIntegrityConstraintViolationException e) {
-            String mExMsg = e.getMessage();
-            if (mExMsg.indexOf("AdID") != -1 || mExMsg.indexOf("UserID") != -1)
-                return F8001;
-            else {
-                e.printStackTrace();
-                throw new IllegalStateException(
-                        "This is a improper exception, please check your code!");
-            }
+
+            mResultBuilder.setStatusCode(S1000).setMsg("举报广告成功");
         } catch (SQLException e) {
             e.printStackTrace();
-            return EX2013;
+            mResultBuilder.setStatusCode(EX2013).setMsg("数据库插入异常，请重试");
         } finally {
             closeMemberPreparedStatement();
         }
-        return S1000;
+        return mResultBuilder.build();
     }
 
     // 用户举报别的用户时，向举报用户表插入一个举报记录
     public static final String insertInformUsersql = "insert into aside_informUser(UserID, InformedUserID, InformReason) values(?, ?, ?)";
 
     @Override
-    public int insertInformUser(InformUsersEntity informUser) {
+    public StatusCodeBean insertInformUser(InformUsersEntity informUser) {
+        StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
         if (informUser.getUserID() <= 0)
-            return ER5001;
+            return mResultBuilder.setStatusCode(ER5001).setMsg("举报人UserID参数非法")
+                    .build();
         if (informUser.getInformedUserID() <= 0)
-            return ER5001;
+            return mResultBuilder.setStatusCode(ER5001)
+                    .setMsg("被举报人UserID参数非法").build();
 
         try {
             mPreState = mConnection.prepareStatement(insertInformUsersql);
             mPreState.setInt(1, informUser.getUserID());
             mPreState.setInt(2, informUser.getInformedUserID());
             mPreState.setString(3, informUser.getInformReason());
-
             mPreState.executeUpdate();
-        } catch (SQLIntegrityConstraintViolationException e) {
 
-            String mExMsg = e.getMessage();
-            if (mExMsg.indexOf("UserID") != -1
-                    || mExMsg.indexOf("InformedUserID") != -1)
-                return F8001;
-            else {
-                e.printStackTrace();
-                throw new IllegalStateException(
-                        "This is a improper exception, please check your code!");
-            }
+            mResultBuilder.setStatusCode(S1000).setMsg("举报用户成功");
         } catch (SQLException e) {
             e.printStackTrace();
-            return EX2013;
+            mResultBuilder.setStatusCode(EX2013).setMsg("数据库插入异常，请重试");
         } finally {
             closeMemberPreparedStatement();
         }
 
-        return S1000;
+        return mResultBuilder.build();
     }
 
     private static final String UPDATE_USER_REGISTER = "UPDATE  aside_user set registerid=? where userid=?";

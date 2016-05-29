@@ -92,7 +92,8 @@ public interface IDatabaseManager extends IModule,
      *            登陆时间
      * @param pastdueTime
      *            令牌过期时间
-     * @return 状态码
+     * @return 状态码，分别有{@link #S1000}token插入成功，{@link #ER5001}调用参数非法，
+     *         {@link #EX2013}数据库插入异常。
      */
     StatusCodeBean insertToken(int mUserID, RequestInfoBean mRequestInfoBean,
             String mToken, long loginTime, long pastdueTime);
@@ -106,7 +107,9 @@ public interface IDatabaseManager extends IModule,
      *            密码
      * @param period
      *            申请token有效期
-     * @return 登陆用户实体类的建造者
+     * @return 包含状态码和用户登录信息的数据bean，状态码分别为{@link #S1000}账号密码验证通过，{@link #ER5001}
+     *         调用参数非法，{@link #R6004}账号不存在，{@link #R6005}密码错误，{@link #EX2016}
+     *         SQL查询异常。
      */
     LoginUserBean loginCheck(String mAccount, String mPassword, long period);
 
@@ -127,7 +130,8 @@ public interface IDatabaseManager extends IModule,
      * 
      * @param picId
      *            图片ID
-     * @return 状态码机器对应秒速
+     * @return 状态码及其对应描述，状态码分别为{@link #S1000}成功，{@link #ER5001}图片ID参数非法，
+     *         {@link #EX2017}PicID不满足Unique约束，{@link #EX2013}数据库插入异常。
      */
     StatusCodeBean insertPicWithPicId(String picId);
 
@@ -145,9 +149,10 @@ public interface IDatabaseManager extends IModule,
      * @param extension
      *            文件扩展名
      * @return 结果状态码及其对应描述，有且仅有以下几种，分别为{@link #S1000}成功，{@link #ER5001}调用参数非法，
+     *         {@link #EX2014}数据库更新异常。
      */
-    StatusCodeBean updatePicWithOutAdId(String picId, int order, String originalPath,
-            String thumbPath, String extension);
+    StatusCodeBean updatePicWithOutAdId(String picId, int order,
+            String originalPath, String thumbPath, String extension);
 
     /**
      * 新增加一个广告信息记录，插入广告信息的全部字段
@@ -166,7 +171,9 @@ public interface IDatabaseManager extends IModule,
      * @param adID
      *            广告ID
      * @return AdAndStatusCode
-     *         一个部分广告信息加上返回状态码的一个实体（广告信息包括：广告状态、广告收藏量、广告点击量、用户ID）
+     *         一个部分广告状态信息加上返回状态码的一个实体（广告信息包括：广告状态、广告收藏量、广告点击量、用户ID）<br>
+     *         状态码分别为{@link #S1000}查询成功，{@link #5001}所传参数非法，{@link #6008}
+     *         adID非法，无此数据，{@link #EX2016}数据库查询异常
      */
     AdStatusCodeBean queryAD(int adID);
 
@@ -197,10 +204,10 @@ public interface IDatabaseManager extends IModule,
      * 
      * @param personalCollection
      *            收藏实体
-     * @return操作结果状态值，分别为{@link #S1000}成功即 插入收藏记录成功 {@link #EX2013}SQL插入执行异常 以及
-     *                          {@link #ER5001}参数非法等
+     * @return 操作结果状态值，分别为{@link #S1000}成功即 插入收藏记录成功、{@link #EX2013}SQL插入执行异常 以及
+     *         {@link #ER5001}参数非法等
      */
-    int insertCollection(PersonalCollectionEntity personalCollection);
+    StatusCodeBean insertCollection(PersonalCollectionEntity personalCollection);
 
     /**
      * 根据用户ID和广告ID删除一个用户收藏广告的记录
@@ -209,30 +216,30 @@ public interface IDatabaseManager extends IModule,
      *            广告ID
      * @param userID
      *            用户ID
-     * @return操作结果状态值，分别为{@link #S1000}成功即 删除收藏记录成功 {@link #EX2015}SQL删除执行异常 以及
-     *                          {@link #ER5001}参数非法等
+     * @return 操作结果状态值，分别为{@link #S1000}成功即 删除收藏记录成功、{@link #EX2015}SQL删除执行异常 以及
+     *         {@link #ER5001}参数非法等
      */
-    int deleteCollecion(int adID, int userID);
+    StatusCodeBean deleteCollecion(int adID, int userID);
 
     /**
      * 用户举报广告时，插入一个举报广告记录
      * 
      * @param informAd
      *            举报广告实体（包括用户ID，广告ID...）
-     * @return操作结果状态值，分别为{@link #S1000}成功即 插入举报记录成功 {@link #EX2013}SQL插入执行异常 以及
-     *                          {@link #ER5001}参数非法等
+     * @return 操作结果状态值，分别为{@link #S1000}成功即 插入举报记录成功、{@link #EX2013}SQL插入执行异常 以及
+     *         {@link #ER5001}参数非法。
      */
-    int insertInformAd(InformAdsEntity informAd);
+    StatusCodeBean insertInformAd(InformAdsEntity informAd);
 
     /**
      * 用户举报用户时，插入一个举报用户记录
      * 
      * @param informUser
      *            举报用户实体（包括举报人ID，别举报人ID，举报原因....）
-     * @return操作结果状态值，分别为{@link #S1000}成功即 插入举报记录成功 {@link #EX2013}SQL插入执行异常 以及
-     *                          {@link #ER5001}参数非法等
+     * @return 操作结果状态值，分别为{@link #S1000}成功即 插入举报记录成功、{@link #EX2013}SQL插入执行异常 以及
+     *         {@link #ER5001}参数非法。
      */
-    int insertInformUser(InformUsersEntity informUser);
+    StatusCodeBean insertInformUser(InformUsersEntity informUser);
 
     /**
      * 

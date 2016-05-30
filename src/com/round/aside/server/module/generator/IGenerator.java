@@ -33,7 +33,7 @@ public interface IGenerator extends IModule, IRecyclableModule<IGenerator> {
      * @return 随机生成的图片ID
      */
     String generatePicID(int mUserID, long mInitSeed);
-    
+
     /**
      * 随机生成一个Token令牌。可使用用户ID及指定时间参与计算生成。所有参数均可自选是否参与Token生成
      * 
@@ -48,5 +48,14 @@ public interface IGenerator extends IModule, IRecyclableModule<IGenerator> {
      * @return Token令牌字符串
      */
     String generateToken(int mUserID, long mTime, String mOS, String mBrowser);
+
+    /**
+     * 随机生成一个用于邮箱验证步骤中的认证码，四位字符串
+     * 
+     * @param mInitSeed
+     *            随机种子，可选用
+     * @return 随机生成的认证码，为四位长的字符串
+     */
+    String generateEmailAuthCode(long mInitSeed);
 
 }

@@ -40,6 +40,11 @@ public final class StatusCode {
     public static final int S1002 = 1002;
 
     /**
+     * 同类型的操作已成功执行过，无需再次执行
+     */
+    public static final int S1003 = 1003;
+
+    /**
      * 基础异常码，指API调用过程中出现了异常，但是无需对调用方告知，只需简单通知其发生了异常即可
      */
     public static final int EX2000 = 2000;
@@ -48,6 +53,12 @@ public final class StatusCode {
      * 数据库连接异常
      */
     public static final int EX2001 = 2001;
+
+    /**
+     * 数据库操作异常，用于包装{@link #EX2012}、{@link #EX2013}、{@link #EX2014}、
+     * {@link #EX2015}、{@link #EX2016}类型的异常，实现对外隐藏具体的异常类型。
+     */
+    public static final int EX2010 = 2010;
 
     /**
      * 从数据库连接池中获取Connection异常
@@ -173,6 +184,21 @@ public final class StatusCode {
      * DB查询无数据
      */
     public static final int R6008 = 6008;
+
+    /**
+     * 邮件发送失败
+     */
+    public static final int R6009 = 6009;
+
+    /**
+     * 认证码不符，认证失败
+     */
+    public static final int R6010 = 6010;
+
+    /**
+     * 邮箱未认证成功导致无法继续下一步操作
+     */
+    public static final int R6011 = 6011;
 
     /**
      * 基础失败码

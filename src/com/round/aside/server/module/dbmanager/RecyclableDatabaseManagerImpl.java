@@ -11,12 +11,16 @@ import com.round.aside.server.DB.DataSource;
 import com.round.aside.server.bean.RequestInfoBean;
 import com.round.aside.server.bean.entity.AdStatusEntity;
 import com.round.aside.server.bean.statuscode.AdStatusCodeBean;
+import com.round.aside.server.bean.statuscode.AuthCodeStatusCodeBean;
+import com.round.aside.server.bean.statuscode.EmailStatusCodeBean;
 import com.round.aside.server.bean.statuscode.LoginUserBean;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
+import com.round.aside.server.bean.statuscode.UserEmailAuthStatusBean;
 import com.round.aside.server.entity.AdvertisementEntity;
 import com.round.aside.server.entity.InformAdsEntity;
 import com.round.aside.server.entity.InformUsersEntity;
 import com.round.aside.server.entity.PersonalCollectionEntity;
+import com.round.aside.server.enumeration.UserEmailStatusEnum;
 import com.round.aside.server.module.IModuleFactoryRecycleCallback;
 import com.round.aside.server.util.StringUtil;
 
@@ -677,133 +681,214 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
         return mResultBuilder.build();
     }
 
-    private static final String UPDATE_USER_REGISTER = "UPDATE  aside_user set registerid=? where userid=?";
+    private static final String DELETE_EMAIL_AUTHCODE = "delete from aside_authcode where userid = ? and email = ?";
+    private static final String INSERT_EMAIL_AUTHCODE = "insert into aside_authcode(userid, email, authcode, pastdue_time) values(?, ?, ?, ?)";
 
     @Override
-    public int updateUserRegister(int mUserID, String registerID) {
+    public StatusCodeBean insertUserEmailAuthCode(int mUserID, String mEmail,
+            String mAuthCode, long pastdueTime) {
+        StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
         if (mUserID <= 0) {
-            return ER5001;
+            return mResultBuilder.setStatusCode(ER5001).setMsg("UserID参数非法")
+                    .build();
+        }
+        if (mAuthCode.length() != 4) {
+            return mResultBuilder.setStatusCode(ER5001)
+                    .setMsg("AuthCode参数长度必须为四").build();
         }
 
         try {
-            mPreState = mConnection.prepareStatement(UPDATE_USER_REGISTER);
-            mPreState.setString(1, registerID);
-            mPreState.setInt(2, mUserID);
-            mPreState.executeUpdate();
+            mPreState = mConnection.prepareStatement(DELETE_EMAIL_AUTHCODE);
+            mPreState.setInt(1, mUserID);
+            mPreState.setString(2, mEmail);
+            mPreState.execute();
         } catch (SQLException e) {
             e.printStackTrace();
-            return EX2014;
         } finally {
             closeMemberPreparedStatement();
         }
 
-        return S1000;
+        try {
+            mPreState = mConnection.prepareStatement(INSERT_EMAIL_AUTHCODE);
+            mPreState.setInt(1, mUserID);
+            mPreState.setString(2, mEmail);
+            mPreState.setString(3, mAuthCode);
+            mPreState.setLong(4, pastdueTime);
+            mPreState.executeUpdate();
+
+            mResultBuilder.setStatusCode(S1000).setMsg("邮件认证码写入成功");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            mResultBuilder.setStatusCode(EX2013).setMsg("数据库插入异常，请重试");
+        } finally {
+            closeMemberPreparedStatement();
+        }
+
+        return mResultBuilder.build();
     }
 
-    private static final String SELECT_USER_REGISTER = "SELECT　registerid from aside_user where userid=?";
+    private static final String SELECT_EMAIL_AUTHCODE = "select authcode from aside_authcode where userid = ? and email = ?";
 
     @Override
-    public int selectUserRegister(int mUserID, String registerID) {
-        String registerid = " ";
+    public AuthCodeStatusCodeBean getUserEmailAuthCode(int mUserID, String mEmail) {
+        AuthCodeStatusCodeBean.Builder mResultBuilder = new AuthCodeStatusCodeBean.Builder();
         if (mUserID <= 0) {
-            return ER5001;
+            return mResultBuilder.setStatusCode(ER5001).setMsg("UserID参数非法")
+                    .build();
         }
 
         try {
-            mPreState = mConnection.prepareStatement(SELECT_USER_REGISTER);
+            boolean find = false;
+
+            mPreState = mConnection.prepareStatement(SELECT_EMAIL_AUTHCODE);
             mPreState.setInt(1, mUserID);
+            mPreState.setString(2, mEmail);
             mResultSet = mPreState.executeQuery();
             while (mResultSet.next()) {
-                registerid = mResultSet.getString("registerid");
+                mResultBuilder.setAuthCode(mResultSet.getString(1));
+                find = true;
+                break;
             }
-            if (registerid.equals(registerID)) {
-                return S1000;
+
+            if (find) {
+                mResultBuilder.setStatusCode(S1000).setMsg("查询成功");
             } else {
-                return 0;
+                mResultBuilder.setStatusCode(R6008).setMsg("无对应的邮箱认证码");
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
-            return EX2014;
+            mResultBuilder.setStatusCode(EX2016).setMsg("数据库查询异常，请重试");
         } finally {
             closeMemberResultSet();
             closeMemberPreparedStatement();
         }
+
+        return mResultBuilder.build();
     }
 
-    private static final String SELECT_USER_STATUS = "SELECT　status from aside_user where userid=?";
+    private static final String SELECT_USER_STATUS = "SELECT status from aside_user where userid = ?";
 
     @Override
-    public int selectUserStatus(int mUserID) {
-        int status = 1;
+    public UserEmailAuthStatusBean selectUserEmailStatus(int mUserID) {
+        UserEmailAuthStatusBean.Builder mResultBuilder = new UserEmailAuthStatusBean.Builder();
+
         if (mUserID <= 0) {
-            return ER5001;
+            return mResultBuilder.setStatusCode(ER5001).setMsg("UserID参数非法")
+                    .build();
         }
 
+        mResultBuilder.setUserEmailStatusType(UserEmailStatusEnum.UNAUTH
+                .getType());
         try {
+            boolean find = false;
+
             mPreState = mConnection.prepareStatement(SELECT_USER_STATUS);
             mPreState.setInt(1, mUserID);
             mResultSet = mPreState.executeQuery();
             while (mResultSet.next()) {
-                status = mResultSet.getInt("status");
+                mResultBuilder.setUserEmailStatusType(mResultSet
+                        .getInt("status"));
+                find = true;
+                break;
             }
-            if (status == 0) {
-                return S1000;
+
+            if (find) {
+                mResultBuilder.setStatusCode(S1000).setMsg("查询成功");
             } else {
-                return status;
+                mResultBuilder.setStatusCode(R6008).setMsg("UserID错误，无此数据");
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
-            return EX2014;
+            mResultBuilder.setStatusCode(EX2016).setMsg("数据库查询异常，请重试");
         } finally {
             closeMemberResultSet();
             closeMemberPreparedStatement();
         }
+
+        return mResultBuilder.build();
     }
 
-    private static final String UPDATE_USER_STATUS = "UPDATE  aside_user set status=? where userid=?";
+    private static final String UPDATE_USER_STATUS = "UPDATE aside_user set status = ? where userid = ?";
 
     @Override
-    public int updateUserStatus(int mUserID) {
+    public StatusCodeBean updateUserEmailStatus(int mUserID,
+            UserEmailStatusEnum mEmailStatus) {
+        StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
         if (mUserID <= 0) {
-            return ER5001;
+            return mResultBuilder.setStatusCode(ER5001).setMsg("UserID参数非法")
+                    .build();
+        }
+        if (mEmailStatus == UserEmailStatusEnum.UNAUTH) {
+            return mResultBuilder.setStatusCode(ER5001)
+                    .setMsg("EmailStatus邮箱认证状态参数非法").build();
         }
 
         try {
             mPreState = mConnection.prepareStatement(UPDATE_USER_STATUS);
-            mPreState.setInt(1, 1);
+            mPreState.setInt(1, mEmailStatus.getType());
             mPreState.setInt(2, mUserID);
             mPreState.executeUpdate();
+
+            mResultBuilder.setStatusCode(S1000).setMsg("修改邮箱认证状态成功");
         } catch (SQLException e) {
             e.printStackTrace();
-            return EX2014;
+            mResultBuilder.setStatusCode(EX2014).setMsg("数据库更新异常，请重试");
         } finally {
             closeMemberPreparedStatement();
         }
-        return S1000;
+        return mResultBuilder.build();
     }
 
     private static final String SELECT_USER_EMAIL = "SELECT　email from aside_user where userid=?";
 
     @Override
-    public String selectUserEmail(int mUserID) {
-        String email = "";
+    public EmailStatusCodeBean selectUserEmail(int mUserID) {
+        EmailStatusCodeBean.Builder mResultBuilder = new EmailStatusCodeBean.Builder();
+
+        if (mUserID <= 0) {
+            return mResultBuilder.setStatusCode(ER5001).setMsg("UserID参数非法")
+                    .build();
+        }
+
         try {
+            boolean find = false;
+
             mPreState = mConnection.prepareStatement(SELECT_USER_EMAIL);
             mPreState.setInt(1, mUserID);
             mResultSet = mPreState.executeQuery();
             while (mResultSet.next()) {
-                email = mResultSet.getString("email");
+                mResultBuilder.setUserEmail(mResultSet.getString("email"));
+                find = true;
+            }
+
+            if (find) {
+                mResultBuilder.setStatusCode(S1000).setMsg("UserID对应的用户邮箱查询成功");
+            } else {
+                mResultBuilder.setStatusCode(R6008).setMsg("无此UserID对应的用户数据");
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
+            mResultBuilder.setStatusCode(EX2016).setMsg("数据库查询异常，请重试");
         } finally {
             closeMemberResultSet();
             closeMemberPreparedStatement();
         }
-        return email;
+        return mResultBuilder.build();
+    }
+
+    @Override
+    public StatusCodeBean insertRetrieverPasswordAuthCode(int mUserID,
+            String mEmail, String mAuthCode, long pastdueTime) {
+        return insertUserEmailAuthCode(mUserID, mEmail, mAuthCode, pastdueTime);
+    }
+
+    @Override
+    public AuthCodeStatusCodeBean getRetrieverPasswordAuthCode(int mUserID,
+            String mEmail) {
+        return getUserEmailAuthCode(mUserID, mEmail);
     }
 
     @Override

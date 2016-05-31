@@ -21,7 +21,8 @@ public interface IAccountManager extends IModule {
      * @param mAccount
      *            待查询账号
      * @return 结果状态码，合法的结果值有几种，分别为{@link #S1000}完全合法，{@link #R6002}账号重复，
-     *         {@link #R6001}用户名命名非法，{@link #ER5001}参数为空，{@link #EX2000}数据库异常，可重试。
+     *         {@link #R6001}用户名命名非法，{@link #ER5001}参数为空，{@link #EX2000}
+     *         数据库异常，可重试。
      */
     StatusCodeBean checkRegisteredAccountLegal(String mAccount);
 
@@ -76,45 +77,54 @@ public interface IAccountManager extends IModule {
      * @param token
      *            Token令牌
      * @return 此次注册操作的结果状态码，有且仅有以下几种，分别为{@link #S1000}合法，{@link #ER5001}调用参数非法，
-     *         {@link #R6006}Token非法，{@link #R6007}Token失效，{@link #EX2016}SQL查询执行异常。
+     *         {@link #R6006}Token非法，{@link #R6007}Token失效，{@link #EX2016}
+     *         SQL查询执行异常。
      */
     StatusCodeBean verifyToken(int userId, String token);
 
     /**
+     * 向指定UserID对应的用户注册邮箱发送激活邮件
      * 
      * @param mUserID
      *            用户ID
-     * @param email
-     *            接受方的Email
      * @return true表示发送验证邮箱，否则发送失败
      */
-    boolean activationEmail(int mUserID, String email);
+    StatusCodeBean activateEmail(int mUserID);
 
     /**
+     * 验证邮箱认证码
      * 
      * @param mUserID
-     *            用户ID
-     * @param VerificationCode
+     *            待认证方的用户ID
+     * @param mEmail
+     *            待认证方邮箱地址
+     * @param mAuthCode
      *            验证码
      * @return true表示激活邮箱，否则激活失败
      */
-    boolean validationctivationEmail(int mUserID, String VerificationCode);
+    StatusCodeBean validateActivationEmail(int mUserID, String mEmail,
+            String mAuthCode);
 
     /**
+     * 找回密码
      * 
      * @param mUserID
      *            用户ID
      * @return 表示发送找回密码邮件，否则发送失败
      */
-    boolean findPassword(int mUserID);
+    StatusCodeBean retrievePassword(int mUserID);
 
     /**
+     * 验证找回密码认证码
      * 
      * @param mUserID
      *            用户ID
-     * @param verificationCode
+     * @param mEmail
+     *            待认证方邮箱地址
+     * @param mAuthCode
      *            验证码
      * @return 返回true说明验证成功，否则失败
      */
-    boolean validationFindPassword(int mUserID, String verificationCode);
+    StatusCodeBean validationRetrieverPassword(int mUserID, String mEmail,
+            String mAuthCode);
 }

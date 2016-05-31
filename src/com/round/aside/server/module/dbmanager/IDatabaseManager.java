@@ -3,12 +3,16 @@ package com.round.aside.server.module.dbmanager;
 import com.round.aside.server.bean.RequestInfoBean;
 import com.round.aside.server.bean.entity.AdStatusEntity;
 import com.round.aside.server.bean.statuscode.AdStatusCodeBean;
+import com.round.aside.server.bean.statuscode.AuthCodeStatusCodeBean;
+import com.round.aside.server.bean.statuscode.EmailStatusCodeBean;
 import com.round.aside.server.bean.statuscode.LoginUserBean;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
+import com.round.aside.server.bean.statuscode.UserEmailAuthStatusBean;
 import com.round.aside.server.entity.AdvertisementEntity;
 import com.round.aside.server.entity.InformAdsEntity;
 import com.round.aside.server.entity.InformUsersEntity;
 import com.round.aside.server.entity.PersonalCollectionEntity;
+import com.round.aside.server.enumeration.UserEmailStatusEnum;
 
 import com.round.aside.server.module.IModule;
 import com.round.aside.server.module.IRecyclableModule;
@@ -242,49 +246,92 @@ public interface IDatabaseManager extends IModule,
     StatusCodeBean insertInformUser(InformUsersEntity informUser);
 
     /**
+     * 写入用户邮件认证码
      * 
      * @param mUserID
      *            用户ID
-     * @param registerID
+     * @param mEmail
+     *            邮箱地址
+     * @param mAuthCode
      *            用户验证邮箱生成的验证码
+     * @param pastdueTime
+     *            过期时间
      * @return 操作结果状态值 ，有四种{@link #S1000}成功，{@link #EX2014}SQL更新执行异常，
      *         {@link #ER5001}调用参数非法，其他返回值均为非法值
      */
-    int updateUserRegister(int mUserID, String registerID);
+    StatusCodeBean insertUserEmailAuthCode(int mUserID, String mEmail,
+            String mAuthCode, long pastdueTime);
 
     /**
+     * 查询用户邮件认证码
      * 
      * @param mUserID
      *            用户ID
-     * @param registerID
-     *            用户验证邮箱生成的验证码
+     * @param mEmail
+     *            邮箱
      * @return
      */
-    int selectUserRegister(int mUserID, String registerID);
+    AuthCodeStatusCodeBean getUserEmailAuthCode(int mUserID, String mEmail);
 
     /**
+     * 查询用户验证邮箱状态
      * 
      * @param mUserID
      *            用户ID
-     * @return
+     * @return 包含用户注册状态的状态数据bean，状态值分别有{@link #S1000}查询成功，{@link #ER5001}参数错误，
+     *         {@link #R6008}无此UserID数据，{@link #EX2016}数据库查询异常。
      */
-    int selectUserStatus(int mUserID);
+    UserEmailAuthStatusBean selectUserEmailStatus(int mUserID);
 
     /**
+     * 更新用户邮箱认证状态为指定状态
      * 
      * @param mUserID
      *            用户ID
-     * @return
+     * @param mEmailStatus
+     *            用户邮箱认证状态，只可以是认证成功或认证失败两种状态
+     * @return 结果状态码
      */
-    int updateUserStatus(int mUserID);
+    StatusCodeBean updateUserEmailStatus(int mUserID,
+            UserEmailStatusEnum mEmailStatus);
 
     /**
+     * 查询指定UserID对应用户的Email
      * 
      * @param mUserID
      *            用户ID
+     * @return 结果状态码
+     */
+    EmailStatusCodeBean selectUserEmail(int mUserID);
+
+    /**
+     * 写入邮件找回密码步骤中的认证码
+     * 
+     * @param mUserID
+     *            用户ID
+     * @param mEmail
+     *            邮箱地址
+     * @param mAuthCode
+     *            验证码
+     * @param pastdueTime
+     *            过期时间
+     * @return 操作结果状态值 ，有四种{@link #S1000}成功，{@link #EX2014}SQL更新执行异常，
+     *         {@link #ER5001}调用参数非法，其他返回值均为非法值
+     */
+    StatusCodeBean insertRetrieverPasswordAuthCode(int mUserID, String mEmail,
+            String mAuthCode, long pastdueTime);
+
+    /**
+     * 查询邮件找回密码步骤中的认证码
+     * 
+     * @param mUserID
+     *            用户ID
+     * @param mEmail
+     *            邮箱
      * @return
      */
-    String selectUserEmail(int mUserID);
+    AuthCodeStatusCodeBean getRetrieverPasswordAuthCode(int mUserID,
+            String mEmail);
 
     /**
      * 开启事务

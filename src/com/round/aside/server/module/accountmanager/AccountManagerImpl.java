@@ -1,8 +1,11 @@
 package com.round.aside.server.module.accountmanager;
 
 import com.round.aside.server.bean.RequestInfoBean;
+import com.round.aside.server.bean.statuscode.AuthCodeStatusCodeBean;
 import com.round.aside.server.bean.statuscode.LoginUserBean;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
+import com.round.aside.server.bean.statuscode.UserEmailAuthStatusBean;
+import com.round.aside.server.enumeration.UserEmailStatusEnum;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.dbmanager.IDatabaseManager;
 import com.round.aside.server.module.generator.IGenerator;
@@ -10,15 +13,10 @@ import com.round.aside.server.util.AssistUtils;
 import com.round.aside.server.util.StringUtil;
 import com.round.aside.server.util.VerifyUtils;
 
-import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.mail.*;
-import javax.mail.internet.*;
-
 import static com.round.aside.server.constant.StatusCode.*;
-import static com.round.aside.server.constant.Constants.*;
 
 /**
  * 账号管理模块超级接口的实现类
@@ -343,154 +341,271 @@ public final class AccountManagerImpl implements IAccountManager {
     }
 
     @Override
-    public boolean activationEmail(int mUserID, String email) {
-        int mStatusCode;
-        int mStatus;
-        String to = email;
-        String smtp = "smtp.sina.cn";
+    public StatusCodeBean activateEmail(int mUserID) {
+        StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
+
+        if (mUserID < 0) {
+            return mResultBuilder.setStatusCode(ER5001).setMsg("UserID参数非法")
+                    .build();
+        }
+
         IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
                 IDatabaseManager.class, null);
-        mStatus = mDBManager.selectUserStatus(mUserID);// 获取用户邮箱的状态码，看是否以验证过；
-        switch (mStatus) {
-            case 0:
-                System.out.print("邮箱已经验证过了");
+        UserEmailAuthStatusBean mUserEmailAuthSCB = mDBManager
+                .selectUserEmailStatus(mUserID);
+        switch (mUserEmailAuthSCB.getStatusCode()) {
+            case EX2016:
+                mResultBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
+                break;
             case S1000:
+                if (mUserEmailAuthSCB.getUserEmailStatus() == UserEmailStatusEnum.AUTHED) {
+                    mResultBuilder.setStatusCode(S1003)
+                            .setMsg("邮箱已验证通过，无需再次认证");
+                } else {
+                    mResultBuilder.setStatusCodeBean(mUserEmailAuthSCB);
+                }
+                break;
+            case ER5001:
+            case R6008:
+                mResultBuilder.setStatusCodeBean(mUserEmailAuthSCB);
                 break;
             default:
                 mDBManager.release();
                 throw new IllegalStateException("Illegal Status Code!");
         }
-        String registerID = "" + Math.random() * Math.random();
-        mStatusCode = mDBManager.updateUserRegister(mUserID, registerID);
+
+        if (mUserEmailAuthSCB.getStatusCode() != S1000
+                || mUserEmailAuthSCB.getUserEmailStatus() == UserEmailStatusEnum.AUTHED) {
+            mDBManager.release();
+            return mResultBuilder.build();
+        }
+
+        IGenerator mGenerator = ModuleObjectPool.getModuleObject(
+                IGenerator.class, null);
+        String mAuthCode = mGenerator.generateEmailAuthCode(System
+                .currentTimeMillis());
+        mGenerator.release();
+
+        StatusCodeBean mStatusCodeBean = mDBManager.insertUserEmailAuthCode(
+                mUserID, mUserEmailAuthSCB.getUserEmail(), mAuthCode,
+                System.currentTimeMillis() + 5 * 60 * 1000);
+        mDBManager.release();
+        switch (mStatusCodeBean.getStatusCode()) {
+            case EX2013:
+                mResultBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
+                break;
+            case ER5001:
+            case S1000:
+                mResultBuilder.setStatusCodeBean(mStatusCodeBean);
+                break;
+            default:
+                throw new IllegalStateException("Illegal Status Code!");
+        }
+
+        if (mStatusCodeBean.getStatusCode() != S1000) {
+            return mResultBuilder.build();
+        }
+
+        if (AssistUtils.sendActivationEmailAuthCode(
+                mUserEmailAuthSCB.getUserEmail(), mAuthCode)) {
+            mResultBuilder.setStatusCode(S1000).setMsg("认证码发送成功");
+        } else {
+            mResultBuilder.setStatusCode(R6009).setMsg("认证码邮件发送失败");
+        }
+        return mResultBuilder.build();
+    }
+
+    @Override
+    public StatusCodeBean validateActivationEmail(int mUserID, String mEmail,
+            String mAuthCode) {
+        StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
+        if (mUserID <= 0) {
+            return mResultBuilder.setStatusCode(ER5001).setMsg("UserID参数非法")
+                    .build();
+        }
+        if (StringUtil.isEmpty(mEmail)) {
+            return mResultBuilder.setStatusCode(ER5001).setMsg("邮箱地址参数非法")
+                    .build();
+        }
+        if (StringUtil.isEmpty(mAuthCode) || mAuthCode.length() != 4) {
+            return mResultBuilder.setStatusCode(ER5001).setMsg("认证码参数非法")
+                    .build();
+        }
+
+        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
+        AuthCodeStatusCodeBean mAuthCodeSCB = mDBManager.getUserEmailAuthCode(
+                mUserID, mEmail);
+
+        switch (mAuthCodeSCB.getStatusCode()) {
+            case EX2016:
+                mResultBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
+                break;
+            case S1000:
+            case ER5001:
+            case R6008:
+                mResultBuilder.setStatusCodeBean(mAuthCodeSCB);
+                break;
+            default:
+                mDBManager.release();
+                throw new IllegalStateException("Illegal Status Code!");
+        }
+        if (mAuthCodeSCB.getStatusCode() != S1000) {
+            mDBManager.release();
+            return mResultBuilder.build();
+        }
+
+        boolean mAuth = mAuthCodeSCB.getAuthCode().equals(mAuthCode);
+        StatusCodeBean mStatusCodeBean = mDBManager.updateUserEmailStatus(
+                mUserID, mAuth ? UserEmailStatusEnum.AUTHED
+                        : UserEmailStatusEnum.AUTHLESS);
+        mDBManager.release();
+        switch (mStatusCodeBean.getStatusCode()) {
+            case EX2014:
+                mResultBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
+                break;
+            case ER5001:
+            case S1000:
+                mResultBuilder.setStatusCodeBean(mStatusCodeBean);
+                break;
+            default:
+                throw new IllegalStateException("Illegal Status Code!");
+        }
+
+        if (mStatusCodeBean.getStatusCode() == S1000) {
+            if (mAuth) {
+                mResultBuilder.setStatusCode(S1000).setMsg("认证成功");
+            } else {
+                mResultBuilder.setStatusCode(R6010).setMsg("认证失败");
+            }
+        }
+
+        return mResultBuilder.build();
+    }
+
+    @Override
+    public StatusCodeBean retrievePassword(int mUserID) {
+        StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
+
+        if (mUserID <= 0) {
+            return mResultBuilder.setStatusCode(ER5001).setMsg("UserID参数非法")
+                    .build();
+        }
+
+        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
+        UserEmailAuthStatusBean mUserEmailAuthSCB = mDBManager
+                .selectUserEmailStatus(mUserID);
+
+        switch (mUserEmailAuthSCB.getStatusCode()) {
+            case EX2016:
+                mResultBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
+                break;
+            case S1000:
+                if (mUserEmailAuthSCB.getUserEmailStatus() == UserEmailStatusEnum.AUTHLESS) {
+                    mResultBuilder.setStatusCode(R6011).setMsg(
+                            "邮箱认证失败，不能用于寻回密码");
+                } else if (mUserEmailAuthSCB.getUserEmailStatus() == UserEmailStatusEnum.UNAUTH) {
+                    mResultBuilder.setStatusCode(R6011).setMsg(
+                            "邮箱尚未认证，不能用于寻回密码");
+                } else {
+                    mResultBuilder.setStatusCodeBean(mUserEmailAuthSCB);
+                }
+                break;
+            case ER5001:
+            case R6008:
+                mResultBuilder.setStatusCodeBean(mUserEmailAuthSCB);
+                break;
+            default:
+                mDBManager.release();
+                throw new IllegalStateException("Illegal Status Code!");
+        }
+
+        if (mUserEmailAuthSCB.getStatusCode() != S1000
+                || mUserEmailAuthSCB.getUserEmailStatus() != UserEmailStatusEnum.AUTHED) {
+            mDBManager.release();
+            return mResultBuilder.build();
+        }
+
+        IGenerator mGenerator = ModuleObjectPool.getModuleObject(
+                IGenerator.class, null);
+        String mAuthCode = mGenerator.generateRetrieverPasswordAuthCode(System
+                .currentTimeMillis());
+        mGenerator.release();
+
+        StatusCodeBean mStatusCodeBean = mDBManager
+                .insertRetrieverPasswordAuthCode(mUserID,
+                        mUserEmailAuthSCB.getUserEmail(), mAuthCode,
+                        System.currentTimeMillis() + 5 * 60 * 1000);
+        mDBManager.release();
+        switch (mStatusCodeBean.getStatusCode()) {
+            case EX2013:
+                mResultBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
+                break;
+            case ER5001:
+            case S1000:
+                mResultBuilder.setStatusCodeBean(mStatusCodeBean);
+                break;
+            default:
+                throw new IllegalStateException("Illegal Status Code!");
+        }
+
+        if (mStatusCodeBean.getStatusCode() != S1000) {
+            return mResultBuilder.build();
+        }
+
+        if (AssistUtils.sendRetrieverPasswordAuthCode(
+                mUserEmailAuthSCB.getUserEmail(), mAuthCode)) {
+            mResultBuilder.setStatusCode(S1000).setMsg("密码找回邮件发送成功");
+        } else {
+            mResultBuilder.setStatusCode(R6009).setMsg("密码找回邮件发送失败");
+        }
+        return mResultBuilder.build();
+    }
+
+    @Override
+    public StatusCodeBean validationRetrieverPassword(int mUserID,
+            String mEmail, String mAuthCode) {
+        StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
+        if (mUserID <= 0) {
+            return mResultBuilder.setStatusCode(ER5001).setMsg("UserID参数非法")
+                    .build();
+        }
+        if (StringUtil.isEmpty(mEmail)) {
+            return mResultBuilder.setStatusCode(ER5001).setMsg("邮箱地址参数非法")
+                    .build();
+        }
+        if (StringUtil.isEmpty(mAuthCode) || mAuthCode.length() != 4) {
+            return mResultBuilder.setStatusCode(ER5001).setMsg("认证码参数非法")
+                    .build();
+        }
+
+        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
+        AuthCodeStatusCodeBean mAuthCodeSCB = mDBManager.getUserEmailAuthCode(
+                mUserID, mEmail);
         mDBManager.release();
 
-        if (mStatusCode != S1000) {
-            return false;
+        switch (mAuthCodeSCB.getStatusCode()) {
+            case EX2016:
+                mResultBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
+                break;
+            case S1000:
+            case ER5001:
+            case R6008:
+                mResultBuilder.setStatusCodeBean(mAuthCodeSCB);
+                break;
+            default:
+                throw new IllegalStateException("Illegal Status Code!");
         }
-        // 获得系统属性
-        Properties properties = System.getProperties();
-        // 设置邮件主机
-        properties.setProperty("mail.smtp.host", smtp);
-        properties.setProperty("mail.smtp.auth", "true");
-        // 设置我方网站地址，用户在点击后，返回本站
-        String url = " ?registerID=" + registerID;
-        Session session = Session.getDefaultInstance(properties);
-        try {
-            // Create a default MimeMessage object.
-            MimeMessage message = new MimeMessage(session);
-
-            // Set From: header field of the header.
-            message.setFrom(new InternetAddress(SEND_EMAIL_ADDRESS));
-
-            // Set To: header field of the header.
-            message.addRecipient(Message.RecipientType.TO, new InternetAddress(
-                    to));
-
-            // Set Subject: header field
-            message.setSubject("网站激活");
-
-            // Now set the actual message
-            message.setText("This is actual message");
-            message.setContent("<a href= url  ></a>点击下面，完成注册</br>" + url,
-                    "text/html;charset=utf-8");
-            // Send message
-            message.setSentDate(new Date());
-            message.saveChanges();
-            Transport transport = session.getTransport("smtp");
-            transport.connect(smtp, SEND_EMAIL_ADDRESS, SEND_EMAIL_PASSWORD);
-            transport.sendMessage(message, message.getAllRecipients());
-            transport.close();
-        } catch (MessagingException mex) {
-            mex.printStackTrace();
-            return false;
+        if (mAuthCodeSCB.getStatusCode() == S1000) {
+            if (mAuthCodeSCB.getAuthCode().equals(mAuthCode)) {
+                mResultBuilder.setStatusCode(S1000).setMsg("认证成功，准许修改密码");
+            } else {
+                mResultBuilder.setStatusCode(R6010).setMsg("认证码不符，不可修改密码");
+            }
         }
-        return true;
-    }
 
-    @Override
-    public boolean validationctivationEmail(int mUserID, String VerificationCode) {
-        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
-                IDatabaseManager.class, null);
-        if (mDBManager.selectUserRegister(mUserID, VerificationCode) == S1000) {
-            mDBManager.updateUserStatus(mUserID);
-            mDBManager.release();
-            return true;
-        } else {
-            mDBManager.release();
-            return false;
-        }
-    }
-
-    @Override
-    public boolean findPassword(int mUserID) {
-        String email = "";
-        String smtp = "smtp.sina.cn";
-        int mStatusCode;
-        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
-                IDatabaseManager.class, null);
-        if (mDBManager.selectUserStatus(mUserID) != 1) {
-            System.out.print("你还没有激活邮箱");
-            mDBManager.release();
-            return false;
-        }
-        email = mDBManager.selectUserEmail(mUserID);
-        Properties properties = System.getProperties();
-        // 设置邮件主机
-        properties.setProperty("mail.smtp.host", smtp);
-        properties.setProperty("mail.smtp.auth", "true");
-        // 设置我方地址，用户在点击后，返回本站
-        String randomTemp = "" + (Math.random() * Math.random() * 100000);
-        String[] registerIDTemp = randomTemp.split(".");
-        String registerID = registerIDTemp[0];
-        mStatusCode = mDBManager.updateUserRegister(mUserID, registerID);
-        mDBManager.release();
-        if (mStatusCode != S1000) {
-            return false;
-        }
-        Session session = Session.getDefaultInstance(properties);
-        try {
-            // Create a default MimeMessage object.
-            MimeMessage message = new MimeMessage(session);
-
-            // Set From: header field of the header.
-            message.setFrom(new InternetAddress(SEND_EMAIL_ADDRESS));
-
-            // Set To: header field of the header.
-            message.addRecipient(Message.RecipientType.TO, new InternetAddress(
-                    email));
-
-            // Set Subject: header field
-            message.setSubject("网站激活");
-
-            // Now set the actual message
-            message.setText("This is actual message");
-            message.setContent("<h2>下面是你的验证码</h2></br>" + registerID,
-                    "text/html;charset=utf-8");
-            // Send message
-            message.setSentDate(new Date());
-            message.saveChanges();
-            Transport transport = session.getTransport("smtp");
-            transport.connect(smtp, SEND_EMAIL_ADDRESS, SEND_EMAIL_PASSWORD);
-            transport.sendMessage(message, message.getAllRecipients());
-            transport.close();
-        } catch (MessagingException mex) {
-            mex.printStackTrace();
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public boolean validationFindPassword(int mUserID, String verificationCode) {// 代码与验证激活邮箱是相同的，可以只用一个。
-        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
-                IDatabaseManager.class, null);
-        if (mDBManager.selectUserRegister(mUserID, verificationCode) == S1000) {
-            mDBManager.updateUserStatus(mUserID);
-            mDBManager.release();
-            return true;
-        } else {
-            mDBManager.release();
-            return false;
-        }
+        return mResultBuilder.build();
     }
 }

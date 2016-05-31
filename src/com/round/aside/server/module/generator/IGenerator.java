@@ -58,4 +58,13 @@ public interface IGenerator extends IModule, IRecyclableModule<IGenerator> {
      */
     String generateEmailAuthCode(long mInitSeed);
 
+    /**
+     * 随机生成一个用于找回密码步骤中的认证码，为一个四位长度的字符串
+     * 
+     * @param mInitSeed
+     *            随机种子，可选用
+     * @return 随机生成的认证码，为四位长的字符串
+     */
+    String generateRetrieverPasswordAuthCode(long mInitSeed);
+
 }

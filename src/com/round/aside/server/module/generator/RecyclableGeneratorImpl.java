@@ -97,6 +97,16 @@ public final class RecyclableGeneratorImpl implements IGenerator{
     }
 
     @Override
+    public String generateRetrieverPasswordAuthCode(long mInitSeed) {
+        String mStr = null;
+        do {
+            mStr = UUID.randomUUID().toString();
+        } while (mStr.length() < 4);
+
+        return mStr.substring(0, 4);
+    }
+
+    @Override
     public boolean onReuse() {
         return true;
     }

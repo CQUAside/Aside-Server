@@ -21,7 +21,7 @@ public interface IAccountManager extends IModule {
      * @param mAccount
      *            待查询账号
      * @return 结果状态码，合法的结果值有几种，分别为{@link #S1000}完全合法，{@link #R6002}账号重复，
-     *         {@link #R6001}用户名命名非法，{@link #ER5001}参数为空，{@link #EX2000}
+     *         {@link #R6001}用户名命名非法，{@link #ER5001}参数为空，{@link #EX2010}
      *         数据库异常，可重试。
      */
     StatusCodeBean checkRegisteredAccountLegal(String mAccount);
@@ -31,7 +31,9 @@ public interface IAccountManager extends IModule {
      * 
      * @param mPhone
      *            手机号码
-     * @return 结果状态码
+     * @return 结果状态码，分别为{@link #S1000}手机认证码发送成功，{@link #ER5001}手机号参数错误，
+     *         {@link #ER5002}手机号非法，{@link #R6003}认证码发送失败，{@link #EX2010}
+     *         数据库操作异常，请重试。
      */
     StatusCodeBean sendPhoneAuthcode(String mPhone);
 
@@ -48,13 +50,16 @@ public interface IAccountManager extends IModule {
      *            手机认证码，为四位随机数字字符串
      * @param mRequestInfoBean
      *            请求方法的相关信息
-     * @return 此次注册操作的结果，其中包含了各种情况下对应的状态，分别为
+     * @return 注册结果包括结果状态码，其中包含了各种情况下对应的状态，分别为{@link #S1000}注册成功；{@link #ER5001}
+     *         参数非法；{@link #ER5002}手机号非法；{@link #EX2010}数据库操作异常，请重试；
+     *         {@link #ER5003L}手机号与认证码不符；{@link #ER5004L}手机认证码超时；{@link #F8003L}
+     *         账号重复。
      */
     LoginUserBean registerAccount(String mAccount, String mPassword,
             String mPhone, String mAuthcode, RequestInfoBean mRequestInfoBean);
 
     /**
-     * 登陆
+     * 普通登陆
      * 
      * @param mAccount
      *            账号，不能为空
@@ -64,7 +69,9 @@ public interface IAccountManager extends IModule {
      *            申请Token的有效期
      * @param mRequestInfoBean
      *            登陆请求方的相关信息
-     * @return 此次登陆操作的结果，其中包含了各种情况下对应的状态
+     * @return 登陆结果包括结果状态码，其中包含了各种情况下对应的状态{@link #S1000}登陆成功；{@link #ER5001}
+     *         参数非法；{@link #R6004}账号不存在；{@link #R6005}密码错误；{@link #EX2010}
+     *         数据库操作异常，请重试。
      */
     LoginUserBean login(String mAccount, String mPassword, long period,
             RequestInfoBean mRequestInfoBean);
@@ -76,18 +83,20 @@ public interface IAccountManager extends IModule {
      *            用户ID
      * @param token
      *            Token令牌
-     * @return 此次注册操作的结果状态码，有且仅有以下几种，分别为{@link #S1000}合法，{@link #ER5001}调用参数非法，
-     *         {@link #R6006}Token非法，{@link #R6007}Token失效，{@link #EX2016}
-     *         SQL查询执行异常。
+     * @return 此次注册操作的结果状态码，有且仅有以下几种，分别为{@link #S1000}合法；{@link #ER5001}调用参数非法；
+     *         {@link #R6006}Token非法；{@link #R6007}Token已失效；{@link #EX2010}
+     *         数据库操作异常，请重试。
      */
     StatusCodeBean verifyToken(int userId, String token);
 
     /**
-     * 向指定UserID对应的用户注册邮箱发送激活邮件
+     * 向指定UserID对应的用户注册邮箱发送邮箱验证邮件
      * 
      * @param mUserID
      *            用户ID
-     * @return true表示发送验证邮箱，否则发送失败
+     * @return 结果状态数据bean。状态值有且仅有以下几种，分别为{@link #S1000}验证邮件发送成功；{@link #R6013}
+     *         邮箱已经验证通过，无需再次认证；{@link #ER5001}UserID参数非法；{@link #R6008}
+     *         无此UserID用户；{@link #EX2010}数据库操作异常，请重试；{@link #R6009}邮件发送失败。
      */
     StatusCodeBean activateEmail(int mUserID);
 
@@ -100,7 +109,9 @@ public interface IAccountManager extends IModule {
      *            待认证方邮箱地址
      * @param mAuthCode
      *            验证码
-     * @return true表示激活邮箱，否则激活失败
+     * @return 结果状态数据bean。状态值有且仅有以下几种，分别为{@link #S1000}邮箱验证通过；{@link #ER5001}
+     *         参数非法；{@link #R6008}无此UserID和Email对应的认证请求；{@link #EX2010}
+     *         数据库操作异常，请重试；{@link #R6010}认证码不符，认证失败。
      */
     StatusCodeBean validateActivationEmail(int mUserID, String mEmail,
             String mAuthCode);
@@ -110,7 +121,10 @@ public interface IAccountManager extends IModule {
      * 
      * @param mUserID
      *            用户ID
-     * @return 表示发送找回密码邮件，否则发送失败
+     * @return 结果状态数据bean。状态值有且仅有以下几种，分别为{@link #S1000}密码找回邮件发送成功；{@link #R6009}
+     *         密码找回邮件发送失败；{@link #R6011}邮箱认证失败，不可找回密码；{@link #R6012}
+     *         邮箱认证失败，不可找回密码；{@link #ER5001}UserID参数非法；{@link #R6008}
+     *         无此UserID对应的用户；{@link #EX2010}数据库操作异常，请重试。
      */
     StatusCodeBean retrievePassword(int mUserID);
 
@@ -123,7 +137,10 @@ public interface IAccountManager extends IModule {
      *            待认证方邮箱地址
      * @param mAuthCode
      *            验证码
-     * @return 返回true说明验证成功，否则失败
+     * @return 结果状态数据bean。状态值有且仅有以下几种，分别为{@link #S1000}认证成功，准许修改密码；
+     *         {@link #R6010}认证失败，不许修改密码，请重新申请；{@link #R6008}
+     *         无此UserID和Email的找回密码请求；{@link #ER5001}参数非法；{@link #EX2010}
+     *         数据库操作异常，请重试。
      */
     StatusCodeBean validationRetrieverPassword(int mUserID, String mEmail,
             String mAuthCode);

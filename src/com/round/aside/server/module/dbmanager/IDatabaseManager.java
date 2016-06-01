@@ -81,7 +81,8 @@ public interface IDatabaseManager extends IModule,
      *         {@link #F8002}account字段冲突， {@link #EX2013}SQL插入执行异常 以及
      *         {@link #ER5001}调用参数非法，其他返回值均为非法值。
      */
-    StatusCodeBean insertUser(int mUserID, String mAccount, String mPassword, String mPhone);
+    StatusCodeBean insertUser(int mUserID, String mAccount, String mPassword,
+            String mPhone);
 
     /**
      * 插入一条token记录，作为登陆成功的凭证
@@ -101,7 +102,7 @@ public interface IDatabaseManager extends IModule,
      */
     StatusCodeBean insertToken(int mUserID, RequestInfoBean mRequestInfoBean,
             String mToken, long loginTime, long pastdueTime);
-    
+
     /**
      * 普通登陆检查
      * 
@@ -125,7 +126,8 @@ public interface IDatabaseManager extends IModule,
      * @param token
      *            令牌
      * @return 结果状态码，有且仅有以下几种，分别为{@link #S1000}合法，{@link #ER5001}调用参数非法，
-     *         {@link #R6006}Token非法，{@link #R6007}Token失效，{@link #EX2016}SQL查询执行异常。
+     *         {@link #R6006}Token非法，{@link #R6007}Token失效，{@link #EX2016}
+     *         SQL查询执行异常。
      */
     StatusCodeBean tokenLoginCheck(int userId, String token);
 
@@ -269,7 +271,8 @@ public interface IDatabaseManager extends IModule,
      *            用户ID
      * @param mEmail
      *            邮箱
-     * @return
+     * @return 认证码结果，包含状态码。状态值分别为{@link #S1000}查询成功，{@link #R6008}为无参数对应的数据，
+     *         {@link #ER5001}参数错误，{@link #EX2016}数据库查询异常。
      */
     AuthCodeStatusCodeBean getUserEmailAuthCode(int mUserID, String mEmail);
 
@@ -278,7 +281,7 @@ public interface IDatabaseManager extends IModule,
      * 
      * @param mUserID
      *            用户ID
-     * @return 包含用户注册状态的状态数据bean，状态值分别有{@link #S1000}查询成功，{@link #ER5001}参数错误，
+     * @return 用户邮箱验证结果，包含状态码，状态值分别有{@link #S1000}查询成功，{@link #ER5001}参数错误，
      *         {@link #R6008}无此UserID数据，{@link #EX2016}数据库查询异常。
      */
     UserEmailAuthStatusBean selectUserEmailStatus(int mUserID);
@@ -300,7 +303,8 @@ public interface IDatabaseManager extends IModule,
      * 
      * @param mUserID
      *            用户ID
-     * @return 结果状态码
+     * @return 用户Email结果，包含状态码，状态值分别有{@link #S1000}查询成功，{@link #ER5001}参数错误，
+     *         {@link #R6008}无此UserID数据，{@link #EX2016}数据库查询异常。
      */
     EmailStatusCodeBean selectUserEmail(int mUserID);
 
@@ -328,7 +332,8 @@ public interface IDatabaseManager extends IModule,
      *            用户ID
      * @param mEmail
      *            邮箱
-     * @return
+     * @return 认证码结果，包含状态码。状态值分别为{@link #S1000}查询成功，{@link #R6008}为无参数对应的数据，
+     *         {@link #ER5001}参数错误，{@link #EX2016}数据库查询异常。
      */
     AuthCodeStatusCodeBean getRetrieverPasswordAuthCode(int mUserID,
             String mEmail);

@@ -141,6 +141,11 @@ public final class StatusCode {
     public static final int ER5009 = 5009;
 
     /**
+     * 越权调用，妄图修改不属于自己的数据
+     */
+    public static final int ER5010 = 5010;
+
+    /**
      * 基础结果码
      */
     public static final int R6000 = 6000;
@@ -196,9 +201,19 @@ public final class StatusCode {
     public static final int R6010 = 6010;
 
     /**
-     * 邮箱未认证成功导致无法继续下一步操作
+     * 邮箱未认证，导致无法继续下一步操作
      */
     public static final int R6011 = 6011;
+
+    /**
+     * 邮箱认证失败，无法继续下一步操作
+     */
+    public static final int R6012 = 6012;
+
+    /**
+     * 邮箱认证成功，无法继续下一步操作
+     */
+    public static final int R6013 = 6013;
 
     /**
      * 基础失败码

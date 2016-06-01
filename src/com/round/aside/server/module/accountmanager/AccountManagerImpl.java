@@ -53,7 +53,7 @@ public final class AccountManagerImpl implements IAccountManager {
                 mBuilder.setStatusCodeBean(mStatusCodeBean);
                 break;
             case EX2016:
-                mBuilder.setStatusCode(EX2000).setMsg(mStatusCodeBean.getMsg());
+                mBuilder.setStatusCode(EX2010).setMsg(mStatusCodeBean.getMsg());
                 break;
             default:
                 throw new IllegalStateException("Illegal status code!");
@@ -89,7 +89,7 @@ public final class AccountManagerImpl implements IAccountManager {
                 mBuilder.setStatusCodeBean(mStatusCodeBean);
                 break;
             case EX2013:
-                mBuilder.setStatusCode(EX2000).setMsg("数据库操作异常，请重试");
+                mBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
                 break;
             default:
                 throw new IllegalStateException("Illegal Status Code!");
@@ -126,7 +126,7 @@ public final class AccountManagerImpl implements IAccountManager {
                 break;
             case EX2016:
                 mDBManager.release();
-                return mUserBuilder.setStatusCode(EX2000).setMsg("数据库操作异常，请重试")
+                return mUserBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试")
                         .build();
             case ER5003L:
             case ER5004L:
@@ -146,7 +146,7 @@ public final class AccountManagerImpl implements IAccountManager {
             mDBManager.closeTransaction();
             mDBManager.release();
             mGenerator.release();
-            return mUserBuilder.setStatusCode(EX2000).setMsg("数据库操作异常，请重试")
+            return mUserBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试")
                     .build();
         }
 
@@ -169,7 +169,7 @@ public final class AccountManagerImpl implements IAccountManager {
                     mUserBuilder.setStatusCode(F8003L).setMsg("账号重复");
                     break;
                 case EX2013:
-                    mUserBuilder.setStatusCode(EX2000).setMsg("数据库操作异常，请重试");
+                    mUserBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
                     break;
                 case ER5001:
                     mUserBuilder.setStatusCode(ER5001).setMsg("参数非法");
@@ -203,7 +203,7 @@ public final class AccountManagerImpl implements IAccountManager {
                 mUserBuilder.setStatusCode(S1000).setMsg("Token写入成功");
                 break;
             case EX2013:
-                mUserBuilder.setStatusCode(EX2000).setMsg("数据库操作异常，请重试");
+                mUserBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
                 break;
             case ER5001:
                 mUserBuilder.setStatusCodeBean(mStatusCodeBean);
@@ -230,7 +230,7 @@ public final class AccountManagerImpl implements IAccountManager {
                 mDBManager.closeTransaction();
                 mDBManager.release();
                 mGenerator.release();
-                mUserBuilder.setStatusCode(EX2000).setMsg("数据库操作异常，请重试");
+                mUserBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
             }
 
         } else {
@@ -270,7 +270,7 @@ public final class AccountManagerImpl implements IAccountManager {
                 return mUserBuilder.build();
             case EX2016:
                 mDBManager.release();
-                mUserBuilder.setStatusCode(EX2000).setMsg("数据库操作异常，请重试");
+                mUserBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
                 return mUserBuilder.build();
             default:
                 mDBManager.release();
@@ -287,6 +287,8 @@ public final class AccountManagerImpl implements IAccountManager {
         StatusCodeBean mStatusCodeBean = mDBManager.insertToken(
                 mLoginUserBean.getUserID(), mRequestInfoBean, mToken,
                 mCuttentTime, mCuttentTime + period);
+        mDBManager.release();
+        mGenerator.release();
 
         switch (mStatusCodeBean.getStatusCode()) {
             case S1000:
@@ -294,19 +296,15 @@ public final class AccountManagerImpl implements IAccountManager {
                         .setToken(mToken);
                 break;
             case EX2013:
-                mUserBuilder.setStatusCode(EX2000).setMsg("数据库操作异常，请重试");
+                mUserBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
                 break;
             case ER5001:
                 mUserBuilder.setStatusCodeBean(mStatusCodeBean);
                 break;
             default:
-                mDBManager.release();
-                mGenerator.release();
                 throw new IllegalStateException("Illegal Status Code!");
         }
 
-        mDBManager.release();
-        mGenerator.release();
         return mUserBuilder.build();
     }
 
@@ -331,7 +329,7 @@ public final class AccountManagerImpl implements IAccountManager {
                 mBuilder.setStatusCodeBean(mStatusCodeBean);
                 break;
             case EX2016:
-                mBuilder.setStatusCode(EX2000).setMsg("数据库操作异常");
+                mBuilder.setStatusCode(EX2010).setMsg("数据库操作异常");
                 break;
             default:
                 throw new IllegalStateException("Illegal Status Code!");
@@ -359,15 +357,17 @@ public final class AccountManagerImpl implements IAccountManager {
                 break;
             case S1000:
                 if (mUserEmailAuthSCB.getUserEmailStatus() == UserEmailStatusEnum.AUTHED) {
-                    mResultBuilder.setStatusCode(S1003)
+                    mResultBuilder.setStatusCode(R6013)
                             .setMsg("邮箱已验证通过，无需再次认证");
                 } else {
                     mResultBuilder.setStatusCodeBean(mUserEmailAuthSCB);
                 }
                 break;
             case ER5001:
-            case R6008:
                 mResultBuilder.setStatusCodeBean(mUserEmailAuthSCB);
+                break;
+            case R6008:
+                mResultBuilder.setStatusCodeBean(mUserEmailAuthSCB).setMsg("无此UserID用户");
                 break;
             default:
                 mDBManager.release();
@@ -503,7 +503,7 @@ public final class AccountManagerImpl implements IAccountManager {
                 break;
             case S1000:
                 if (mUserEmailAuthSCB.getUserEmailStatus() == UserEmailStatusEnum.AUTHLESS) {
-                    mResultBuilder.setStatusCode(R6011).setMsg(
+                    mResultBuilder.setStatusCode(R6012).setMsg(
                             "邮箱认证失败，不能用于寻回密码");
                 } else if (mUserEmailAuthSCB.getUserEmailStatus() == UserEmailStatusEnum.UNAUTH) {
                     mResultBuilder.setStatusCode(R6011).setMsg(

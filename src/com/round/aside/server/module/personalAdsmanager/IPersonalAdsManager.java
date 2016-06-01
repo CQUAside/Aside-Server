@@ -8,9 +8,9 @@ import com.round.aside.server.module.IModule;
  * 
  * @author ZhengJiaqin
  * @date 2016-04-18
- *
+ * 
  */
-public interface IPersonalAdsManager extends IModule{
+public interface IPersonalAdsManager extends IModule {
 
     /**
      * 收藏广告
@@ -19,7 +19,7 @@ public interface IPersonalAdsManager extends IModule{
      *            用户ID，unique值
      * @param adID
      *            广告ID，unique值
-     * @return 操作结果状态值，分别为{@link #S1000}成功即 收藏广告成功、{@link #EX2000}SQL操作异常 以及
+     * @return 操作结果状态值，分别为{@link #S1000}成功即 收藏广告成功、{@link #EX2010}数据库操作异常，请重试 以及
      *         {@link #ER5001}参数非法。
      */
     StatusCodeBean collectAds(int userID, int adID);
@@ -31,11 +31,10 @@ public interface IPersonalAdsManager extends IModule{
      *            用户ID，unique值
      * @param adID
      *            广告ID，unique值
-     * @return 操作结果状态值，分别为{@link #S1000}成功即表示取消收藏成功、{@link #EX2000}SQL操作异常 以及
-     *         {@link #ER5001}参数非法。
+     * @return 操作结果状态值，分别为{@link #S1000}成功即表示取消收藏成功、{@link #EX2010}数据库操作异常，请重试
+     *         以及 {@link #ER5001}参数非法。
      */
     StatusCodeBean cancelCollectAds(int userID, int adID);
-
 
     /**
      * 举报用户
@@ -46,7 +45,7 @@ public interface IPersonalAdsManager extends IModule{
      *            被举报用户ID，unique值
      * @param comment
      *            举报原因
-     * @return 操作结果状态值，分别为{@link #S1000}成功即 举报用户成功、{@link #EX2000}SQL执行异常 以及
+     * @return 操作结果状态值，分别为{@link #S1000}成功即 举报用户成功、{@link #EX2010}数据库操作异常，请重试 以及
      *         {@link #ER5001}参数非法。
      */
     StatusCodeBean informUser(int userID, int informedUserID,
@@ -59,7 +58,7 @@ public interface IPersonalAdsManager extends IModule{
      *            用户ID
      * @param adID
      *            广告ID
-     * @return操作结果状态值，分别为{@link #S1000}成功即 举报广告成功、{@link #EX2000}SQL执行异常 以及
+     * @return操作结果状态值，分别为{@link #S1000}成功即 举报广告成功、{@link #EX2010}数据库操作异常，请重试 以及
      *                          {@link #ER5001}参数非法。
      */
     StatusCodeBean informAd(int userID, int adID);

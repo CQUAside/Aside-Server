@@ -31,7 +31,7 @@ public class PersonalAdsManagerImpl implements IPersonalAdsManager {
         datamanager.release();
         switch (mStatusCodeBean.getStatusCode()) {
             case EX2013:
-                mResultBuilder.setStatusCode(EX2000).setMsg("数据库操作异常，请重试");
+                mResultBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
                 break;
             case S1000:
             case ER5001:
@@ -53,7 +53,7 @@ public class PersonalAdsManagerImpl implements IPersonalAdsManager {
         datamanager.release();
         switch (mStatusCodeBean.getStatusCode()) {
             case EX2015:
-                mResultBuilder.setStatusCode(EX2000).setMsg("数据库操作异常，请重试");
+                mResultBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
                 break;
             case S1000:
             case ER5001:
@@ -79,7 +79,7 @@ public class PersonalAdsManagerImpl implements IPersonalAdsManager {
         datamanager.release();
         switch (mStatusCodeBean.getStatusCode()) {
             case EX2013:
-                mResultBuilder.setStatusCode(EX2000).setMsg("数据库操作异常，请重试");
+                mResultBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
                 break;
             case S1000:
             case ER5001:
@@ -103,7 +103,7 @@ public class PersonalAdsManagerImpl implements IPersonalAdsManager {
         datamanager.release();
         switch (mStatusCodeBean.getStatusCode()) {
             case EX2013:
-                mResultBuilder.setStatusCode(EX2000).setMsg("数据库操作异常，请重试");
+                mResultBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
                 break;
             case S1000:
             case ER5001:

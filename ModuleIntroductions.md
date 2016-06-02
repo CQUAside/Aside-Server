@@ -1,9 +1,9 @@
 模块说明
 =================
-StatusCodeBean类型状态码数据bean说明
-—————————————————
+StatusCodeBean类型的状态码数据bean说明
+-----------------
 
-# StatusCodeBean
+#### StatusCodeBean
 ```java
 StatusCodeBean {
 	int statusCode;	//状态码
@@ -12,7 +12,7 @@ StatusCodeBean {
 ```
 适用条件：适用于那些只需要知道调用结果的接口，用作返回值使用。
 
-# AdStatusCodeBean
+#### AdStatusCodeBean
 ```java
 AdStatusCodeBean extends StatusCodeBean {
 	AdStatusEnum adStatus;	//广告状态
@@ -21,6 +21,6 @@ AdStatusCodeBean extends StatusCodeBean {
 	int userID;				//该广告对应的用户ID
 }
 ```
-使用条件：适用于DBManager模块的查询广告接口，该接口主要用于AdManager模块的审核广告、下架广告、增加广告浏览量、关注或取关广告。
+适用条件：适用于DBManager模块的查询广告接口，该接口主要用于AdManager模块的审核广告、下架广告、增加广告浏览量、关注或取关广告。
 
 

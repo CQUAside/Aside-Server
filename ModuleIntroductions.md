@@ -1,7 +1,7 @@
 # 模块说明
-
+===========
 ## StatusCodeBean类型的状态码数据bean说明
-
+-----------
 
 #### StatusCodeBean
 ```java

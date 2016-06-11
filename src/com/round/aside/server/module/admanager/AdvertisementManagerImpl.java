@@ -4,10 +4,10 @@ import static com.round.aside.server.constant.StatusCode.*;
 import static com.round.aside.server.enumeration.AdStatusEnum.*;
 
 import com.round.aside.server.bean.entity.AdStatusEntity;
+import com.round.aside.server.bean.entity.PublishAdEntity;
 import com.round.aside.server.bean.statuscode.AdStatusCodeBean;
 import com.round.aside.server.bean.statuscode.IncrementSumStatusCodeBean;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
-import com.round.aside.server.entity.AdvertisementEntity;
 import com.round.aside.server.enumeration.AdStatusEnum;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.dbmanager.IDatabaseManager;
@@ -21,12 +21,12 @@ import com.round.aside.server.module.dbmanager.IDatabaseManager;
 public class AdvertisementManagerImpl implements IAdvertisementManager {
 
     @Override
-    public StatusCodeBean uploadAD(AdvertisementEntity ad) {
+    public StatusCodeBean uploadAD(PublishAdEntity ad, int mUserID) {
         StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
 
         IDatabaseManager datamanager = ModuleObjectPool.getModuleObject(
                 IDatabaseManager.class, null);
-        StatusCodeBean mStatusCodeBean = datamanager.insertAD(ad);
+        StatusCodeBean mStatusCodeBean = datamanager.insertAD(ad, mUserID, AdStatusEnum.UNREVIEW);
         datamanager.release();
 
         switch (mStatusCodeBean.getStatusCode()) {

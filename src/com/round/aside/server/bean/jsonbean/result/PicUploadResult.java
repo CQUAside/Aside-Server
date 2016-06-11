@@ -11,12 +11,12 @@ public final class PicUploadResult {
 
     private final String picName;
     private final int order;
-    private final String picId;
+    private final String picID;
 
     public PicUploadResult(Builder mBuilder) {
         this.picName = mBuilder.picName;
         this.order = mBuilder.order;
-        this.picId = mBuilder.picId;
+        this.picID = mBuilder.picID;
     }
 
     public String getPicName() {
@@ -27,8 +27,8 @@ public final class PicUploadResult {
         return order;
     }
 
-    public String getPicId() {
-        return picId;
+    public String getPicID() {
+        return picID;
     }
 
 
@@ -43,7 +43,7 @@ public final class PicUploadResult {
 
         private String picName;
         private int order;
-        private String picId;
+        private String picID;
 
         public Builder() {
         }
@@ -58,8 +58,8 @@ public final class PicUploadResult {
             return this;
         }
 
-        public Builder setPicId(String picId) {
-            this.picId = picId;
+        public Builder setPicID(String picID) {
+            this.picID = picID;
             return this;
         }
 

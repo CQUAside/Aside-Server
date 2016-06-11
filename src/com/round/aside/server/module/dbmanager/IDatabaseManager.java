@@ -2,16 +2,17 @@ package com.round.aside.server.module.dbmanager;
 
 import com.round.aside.server.bean.RequestInfoBean;
 import com.round.aside.server.bean.entity.AdStatusEntity;
+import com.round.aside.server.bean.entity.PublishAdEntity;
 import com.round.aside.server.bean.statuscode.AdStatusCodeBean;
 import com.round.aside.server.bean.statuscode.AuthCodeStatusCodeBean;
 import com.round.aside.server.bean.statuscode.EmailStatusCodeBean;
 import com.round.aside.server.bean.statuscode.LoginUserBean;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
 import com.round.aside.server.bean.statuscode.UserEmailAuthStatusBean;
-import com.round.aside.server.entity.AdvertisementEntity;
 import com.round.aside.server.entity.InformAdsEntity;
 import com.round.aside.server.entity.InformUsersEntity;
 import com.round.aside.server.entity.PersonalCollectionEntity;
+import com.round.aside.server.enumeration.AdStatusEnum;
 import com.round.aside.server.enumeration.UserEmailStatusEnum;
 
 import com.round.aside.server.module.IModule;
@@ -165,11 +166,13 @@ public interface IDatabaseManager extends IModule,
      * 
      * @param ad
      *            广告实体
-     * @return 操作结果状态值，合法的结果值只有六种，分别为{@link #S1000}成功即 广告插入成功，{@link #F8001}
-     *         id字段冲突（包括adID、Thumbnail_ID、CarrouselID）， {@link #EX2013}SQL插入执行异常
-     *         以及{@link #ER5001}参数非法，其他返回值均为非法值。
+     * @param mUserID
+     *            用户ID
+     * @return 操作结果状态值，合法的结果值只有六种，分别为{@link #S1000}成功即 广告插入成功，{@link #F8001}，
+     *         {@link #EX2013}SQL插入执行异常 以及{@link #ER5001}参数非法，其他返回值均为非法值。
      */
-    StatusCodeBean insertAD(AdvertisementEntity ad);
+    StatusCodeBean insertAD(PublishAdEntity ad, int mUserID,
+            AdStatusEnum mAdStatusEnum);
 
     /**
      * 根据广告ID，查询一条广告信息记录

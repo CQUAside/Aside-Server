@@ -5,21 +5,24 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.round.aside.server.DB.DataSource;
 import com.round.aside.server.bean.RequestInfoBean;
 import com.round.aside.server.bean.entity.AdStatusEntity;
+import com.round.aside.server.bean.entity.PublishAdEntity;
 import com.round.aside.server.bean.statuscode.AdStatusCodeBean;
 import com.round.aside.server.bean.statuscode.AuthCodeStatusCodeBean;
 import com.round.aside.server.bean.statuscode.EmailStatusCodeBean;
 import com.round.aside.server.bean.statuscode.LoginUserBean;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
 import com.round.aside.server.bean.statuscode.UserEmailAuthStatusBean;
-import com.round.aside.server.entity.AdvertisementEntity;
 import com.round.aside.server.entity.InformAdsEntity;
 import com.round.aside.server.entity.InformUsersEntity;
 import com.round.aside.server.entity.PersonalCollectionEntity;
+import com.round.aside.server.enumeration.AdStatusEnum;
 import com.round.aside.server.enumeration.UserEmailStatusEnum;
 import com.round.aside.server.module.IModuleFactoryRecycleCallback;
 import com.round.aside.server.util.StringUtil;
@@ -47,6 +50,7 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
     private Connection mConnection;
 
     private PreparedStatement mPreState;
+    private PreparedStatement mPreTwoState;
     private ResultSet mResultSet;
 
     public RecyclableDatabaseManagerImpl()
@@ -408,60 +412,77 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
     }
 
     public static final String uploadingAdsql = "INSERT into aside_advertisement(AdID, Thumbnail_ID, CarrouselID, Title, Content, StartTime, Deadline, Money, Status, ClickCount, CollectCount, UserID) values(?, ?, ?,?,?,?,?,?,?,?,?,?)";
+    public static final String INSERT_AD = "INSERT into aside_advertisement(Thumbnail_ID, Title, Content, StartTime, Deadline, Status, UserID) values(?, ?, ?, ?, ?, ?, ?)";
+    public static final String QUERY_ADID = "SELECT AdID from aside_advertisement where UserID = ? and Thumbnail_ID = ? ORDER BY AdID DESC";
+    public static final String INSERT_ADAREA = "INSERT into aside_adarea(adId, areaId) values(?, ?)";
 
     @Override
-    public StatusCodeBean insertAD(AdvertisementEntity ad) {
+    public StatusCodeBean insertAD(PublishAdEntity ad, int mUserID, AdStatusEnum mAdStatusEnum) {
         StatusCodeBean.Builder mBuilder = new StatusCodeBean.Builder();
 
-        if (ad.getAdID() <= 0 || ad.getAdID() > 99999999)
-            return mBuilder.setStatusCode(ER5001).setMsg("AdID非法").build();
-
-        if (ad.getCarrouselID() <= 0 || ad.getCarrouselID() > 99999999)
-            return mBuilder.setStatusCode(ER5001).setMsg("轮播ID非法").build();
-
-        if (StringUtil.isEmpty(ad.getThumbnail_ID()))
+        if (StringUtil.isEmpty(ad.getAdLogoImgID()))
             return mBuilder.setStatusCode(ER5001).setMsg("缩略图ID非法").build();
 
-        if (ad.getUserID() <= 0)
+        if (mUserID <= 0)
             return mBuilder.setStatusCode(ER5001).setMsg("UserID非法").build();
 
-        if (ad.getTitle().equals("") || ad.getContent().equals("")
-                || ad.getStartTime().equals("") || ad.getDeadline().equals(""))
+        if (StringUtil.isEmptyInSet(ad.getAdTitle(), ad.getAdDescription()))
             return mBuilder.setStatusCode(ER5001).setMsg("广告参数非法").build();
+        
+        if (!ad.getAdEndTimestamp().after(new Date())) {
+            return mBuilder.setStatusCode(ER5001).setMsg("广告结束时间非法").build();
+        }
 
         try {
-            mPreState = mConnection.prepareStatement(uploadingAdsql);
-            mPreState.setInt(1, ad.getAdID());
-            mPreState.setString(2, ad.getThumbnail_ID());
-            mPreState.setInt(3, ad.getCarrouselID());
-            mPreState.setString(4, ad.getTitle());
-            mPreState.setString(5, ad.getContent());
-            mPreState.setString(6, ad.getStartTime());
-            mPreState.setString(7, ad.getDeadline());
-            mPreState.setDouble(8, ad.getMoney());
-            mPreState.setInt(9, ad.getStatus());
-            mPreState.setInt(10, ad.getClickCount());
-            mPreState.setInt(11, ad.getCollectCount());
-            mPreState.setInt(12, ad.getUserID());
+            mConnection.setAutoCommit(false);
+            
+            mPreState = mConnection.prepareStatement(INSERT_AD);
+            mPreState.setString(1, ad.getAdLogoImgID());
+            mPreState.setString(2, ad.getAdTitle());
+            mPreState.setString(3, ad.getAdDescription());
+            mPreState.setTimestamp(4, ad.getAdStartTimestamp());
+            mPreState.setTimestamp(5, ad.getAdEndTimestamp());
+            mPreState.setInt(6, mAdStatusEnum.getType());
+            mPreState.setInt(7, mUserID);
             mPreState.executeUpdate();
-
-            mBuilder.setStatusCode(S1000).setMsg("广告插入成功");
-        } catch (SQLIntegrityConstraintViolationException e) {
-            String mExMsg = e.getMessage();
-            if (mExMsg.indexOf("AdID") != -1
-                    || mExMsg.indexOf("Thumbnail_ID") != -1
-                    || mExMsg.indexOf("CarrouselID") != -1)
-                mBuilder.setStatusCode(F8001).setMsg("Unique约束字段插入失败");
-            else {
-                e.printStackTrace();
-                throw new IllegalStateException(
-                        "This is a improper exception, please check your code!");
+            closeMemberPreparedStatement();
+            
+            int mAdID = -1;
+            
+            mPreState = mConnection.prepareStatement(QUERY_ADID);
+            mPreState.setInt(1, mUserID);
+            mPreState.setString(2, ad.getAdLogoImgID());
+            mResultSet = mPreState.executeQuery();
+            while(mResultSet.next()) {
+                mAdID = mResultSet.getInt(1);
+                break;
             }
+            
+            if(mAdID != -1){
+                mBuilder.setStatusCode(EX2013).setMsg("数据库插入异常，请重试");
+            }
+            
+            mPreTwoState = mConnection.prepareStatement(INSERT_ADAREA);
+            List<String> mAreaSet = ad.getAdAreaSet();
+            for(String str : mAreaSet) {
+                mPreTwoState.setInt(1, mAdID);
+                mPreTwoState.setString(2, str);
+                mPreTwoState.addBatch();
+            }
+            mPreTwoState.executeBatch();
+
+            mConnection.commit();
+            
+            mBuilder.setStatusCode(S1000).setMsg("广告插入成功");
         } catch (SQLException e) {
+            rollbackTransaction();
             e.printStackTrace();
             mBuilder.setStatusCode(EX2013).setMsg("数据库插入异常，请重试");
         } finally {
+            closeTransaction();
+            closeMemberResultSet();
             closeMemberPreparedStatement();
+            closeMemberPreparedTwoStatement();
         }
         return mBuilder.build();
     }
@@ -928,6 +949,17 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             } catch (Exception e1) {
             } finally {
                 mPreState = null;
+            }
+        }
+    }
+
+    private void closeMemberPreparedTwoStatement() {
+        if (mPreTwoState != null) {
+            try {
+                mPreTwoState.close();
+            } catch (Exception e1) {
+            } finally {
+                mPreTwoState = null;
             }
         }
     }

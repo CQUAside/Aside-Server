@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
 
 import com.alibaba.fastjson.JSON;
+import com.round.aside.server.bean.UserIDTokenBean;
 import com.round.aside.server.bean.jsonbean.BaseResultBean;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
 import com.round.aside.server.module.ModuleObjectPool;
@@ -17,15 +18,7 @@ import com.round.aside.server.module.accountmanager.IAccountManager;
 import com.round.aside.server.module.netsecurity.INetSecurity;
 import com.round.aside.server.util.StringUtil;
 
-import static com.round.aside.server.constant.StatusCode.ER5001;
-import static com.round.aside.server.constant.StatusCode.ER5005;
-import static com.round.aside.server.constant.StatusCode.ER5006;
-import static com.round.aside.server.constant.StatusCode.EX2000;
-import static com.round.aside.server.constant.StatusCode.EX2016;
-import static com.round.aside.server.constant.StatusCode.R6006;
-import static com.round.aside.server.constant.StatusCode.R6007;
-import static com.round.aside.server.constant.StatusCode.S1000;
-import static com.round.aside.server.constant.StatusCode.S1002;
+import static com.round.aside.server.constant.StatusCode.*;
 import static com.round.aside.server.util.MethodUtils.*;
 
 /**
@@ -43,6 +36,40 @@ public abstract class BaseApiServlet extends HttpServlet {
     private static final long serialVersionUID = -4841445013440562966L;
 
     /**
+     * 读取UserID和Token
+     * 
+     * @param request
+     *            Servlet请求参数
+     * @param mUserIDTokenBuilder
+     *            填充UserID和Token所用
+     * @return 状态码
+     */
+    protected final StatusCodeBean readUserIDToken(HttpServletRequest request,
+            UserIDTokenBean.Builder mUserIDTokenBuilder) {
+        StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
+
+        String mUserIDStr = request.getParameter("userid");
+        int mUserID;
+        try {
+            mUserID = Integer.valueOf(mUserIDStr);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return mResultBuilder.setStatusCode(ER5005).setMsg("UserID参数非法")
+                    .build();
+        }
+        mUserIDTokenBuilder.setUserID(mUserID);
+
+        String mToken = request.getParameter("token");
+        if (StringUtil.isEmpty(mToken)) {
+            return mResultBuilder.setStatusCode(ER5006).setMsg("Token参数非法")
+                    .build();
+        }
+        mUserIDTokenBuilder.setToken(mToken);
+
+        return mResultBuilder.setStatusCode(S1000).build();
+    }
+
+    /**
      * Token合法性检查。用于那些带有Token验证的接口调用，用于验证token的合法性。
      * 
      * @param request
@@ -53,29 +80,13 @@ public abstract class BaseApiServlet extends HttpServlet {
      * @throws ServletException
      * @throws IOException
      */
-    protected final StatusCodeBean verifyToken(HttpServletRequest request)
-            throws ServletException, IOException {
-
-        String mUserIDStr = request.getParameter("userid");
-
-        int mUserID;
-        try {
-            mUserID = Integer.valueOf(mUserIDStr);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new StatusCodeBean.Builder().setStatusCode(ER5005)
-                    .setMsg("UserID参数非法").build();
-        }
-        String mToken = request.getParameter("token");
-        if (StringUtil.isEmpty(mToken)) {
-            return new StatusCodeBean.Builder().setStatusCode(ER5006)
-                    .setMsg("Token参数非法").build();
-        }
+    protected final StatusCodeBean verifyToken(HttpServletRequest request,
+            UserIDTokenBean mBean) {
 
         INetSecurity mNetSecurity = ModuleObjectPool.getModuleObject(
                 INetSecurity.class, null);
-        StatusCodeBean mStatusCodeBean = mNetSecurity.checkTokenLegal(mUserID,
-                mToken);
+        StatusCodeBean mStatusCodeBean = mNetSecurity.checkTokenLegal(
+                mBean.getUserID(), mBean.getToken());
         if (mStatusCodeBean.getStatusCode() != S1000) {
             return mStatusCodeBean;
         }
@@ -84,13 +95,14 @@ public abstract class BaseApiServlet extends HttpServlet {
 
         IAccountManager mAccountManager = ModuleObjectPool.getModuleObject(
                 IAccountManager.class, null);
-        mStatusCodeBean = mAccountManager.verifyToken(mUserID, mToken);
+        mStatusCodeBean = mAccountManager.verifyToken(mBean.getUserID(),
+                mBean.getToken());
         switch (mStatusCodeBean.getStatusCode()) {
             case S1000:
                 mBuilder.setStatusCode(S1002).setMsg("Token验证成功");
                 break;
             case EX2016:
-                mBuilder.setStatusCode(EX2000).setMsg("数据库操作异常，请重试");
+                mBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
                 break;
             case ER5001:
             case R6006:

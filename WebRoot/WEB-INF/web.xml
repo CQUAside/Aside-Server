@@ -68,6 +68,10 @@
     <servlet-name>PicUploadServlet</servlet-name>
     <servlet-class>com.round.aside.server.servlet.PicUploadServlet</servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>PublishAdServlet</servlet-name>
+    <servlet-class>com.round.aside.server.servlet.PublishAdServlet</servlet-class>
+  </servlet>
 
 
 
@@ -101,6 +105,10 @@
   <servlet-mapping>
     <servlet-name>PicUploadServlet</servlet-name>
     <url-pattern>/servlet/PicUploadServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>PublishAdServlet</servlet-name>
+    <url-pattern>/servlet/PublishAdServlet</url-pattern>
   </servlet-mapping>
 
 

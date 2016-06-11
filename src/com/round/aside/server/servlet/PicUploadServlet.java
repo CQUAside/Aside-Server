@@ -16,6 +16,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
+import com.round.aside.server.bean.UserIDTokenBean;
 import com.round.aside.server.bean.jsonbean.BaseResultBean;
 import com.round.aside.server.bean.jsonbean.result.PicUploadResult;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
@@ -89,7 +90,17 @@ public class PicUploadServlet extends BaseApiServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        StatusCodeBean mStatusCodeBean = verifyToken(request);
+        UserIDTokenBean.Builder mUserIDTokenBuilder = new UserIDTokenBean.Builder();
+        StatusCodeBean mStatusCodeBean = readUserIDToken(request, mUserIDTokenBuilder);
+        if (mStatusCodeBean.getStatusCode() != S1000) {
+            BaseResultBean mBean = new BaseResultBean.Builder()
+                    .setStatusCodeBean(mStatusCodeBean).build();
+            writeResponse(response, mBean);
+            return;
+        }
+        UserIDTokenBean mUserIDTokenBean = mUserIDTokenBuilder.build();
+
+        mStatusCodeBean = verifyToken(request, mUserIDTokenBean);
         if (mStatusCodeBean.getStatusCode() != S1002) {
             BaseResultBean mBean = new BaseResultBean.Builder()
                     .setStatusCodeBean(mStatusCodeBean).build();
@@ -118,7 +129,7 @@ public class PicUploadServlet extends BaseApiServlet {
         try {
 
             if (!mDBManager.beginTransaction()) {
-                writeErrorResponse(response, EX2000, "后台数据库异常，请重试");
+                writeErrorResponse(response, EX2010, "后台数据库异常，请重试");
                 return;
             }
 
@@ -150,10 +161,10 @@ public class PicUploadServlet extends BaseApiServlet {
                             case S1000:
                                 break LOOP;
                             case EX2017:
-                                break;
+                                continue;
                             case EX2013:
                                 mDBManager.rollbackTransaction();
-                                writeErrorResponse(response, EX2000,
+                                writeErrorResponse(response, EX2010,
                                         "后台数据库异常，请重试");
                                 return;
                             case ER5001:
@@ -177,7 +188,7 @@ public class PicUploadServlet extends BaseApiServlet {
                             break;
                         default:
                             mDBManager.rollbackTransaction();
-                            writeErrorResponse(response, ER5009, "原图片存储异常");
+                            writeErrorResponse(response, ER5009, "原图存储异常");
                             return;
                     }
 
@@ -206,7 +217,7 @@ public class PicUploadServlet extends BaseApiServlet {
                             return;
                         case EX2014:
                             mDBManager.rollbackTransaction();
-                            writeErrorResponse(response, EX2000, "后台数据库更新异常，请重试");
+                            writeErrorResponse(response, EX2010, "后台数据库更新异常，请重试");
                             return;
                         default:
                             mDBManager.rollbackTransaction();
@@ -215,7 +226,7 @@ public class PicUploadServlet extends BaseApiServlet {
                     }
 
                     PicUploadResult.Builder mPURBuilder = new PicUploadResult.Builder();
-                    mPURBuilder.setPicName(mPicName).setOrder(count).setPicId(mPicID);
+                    mPURBuilder.setPicName(mPicName).setOrder(count).setPicID(mPicID);
                     mPURList.add(mPURBuilder.build());
 
                     count++;
@@ -227,7 +238,7 @@ public class PicUploadServlet extends BaseApiServlet {
                 writeCorrectResponse(response, S1000, "成功", mPURList);
             } else {
                 mDBManager.rollbackTransaction();
-                writeErrorResponse(response, EX2000, "后台数据库事务提交异常，请重试");
+                writeErrorResponse(response, EX2010, "后台数据库事务提交异常，请重试");
             }
 
         } catch (FileUploadException e) {

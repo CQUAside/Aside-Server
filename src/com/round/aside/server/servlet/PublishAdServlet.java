@@ -1,5 +1,7 @@
 package com.round.aside.server.servlet;
 
+import static com.round.aside.server.constant.StatusCode.*;
+
 import java.io.IOException;
 
 import javax.servlet.ServletException;
@@ -7,29 +9,31 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.round.aside.server.bean.UserIDTokenBean;
+import com.round.aside.server.bean.entity.PublishAdEntity;
 import com.round.aside.server.bean.jsonbean.BaseResultBean;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
-
-import static com.round.aside.server.constant.StatusCode.*;
+import com.round.aside.server.datastruct.RequestParameterSet;
+import com.round.aside.server.module.ModuleObjectPool;
+import com.round.aside.server.module.admanager.IAdvertisementManager;
 
 /**
- * 获取用户上次设置的城市
+ * 发布广告Servlet
  * 
  * @author A Shuai
- * @date 2016-5-22
+ * @date 2016-6-1
  * 
  */
-public class GetLocateCityServlet extends BaseApiServlet {
+public class PublishAdServlet extends BaseApiServlet {
 
     /**
      * 
      */
-    private static final long serialVersionUID = -2022757181531825635L;
+    private static final long serialVersionUID = 4072732191000303810L;
 
     /**
      * Constructor of the object.
      */
-    public GetLocateCityServlet() {
+    public PublishAdServlet() {
         super();
     }
 
@@ -66,12 +70,12 @@ public class GetLocateCityServlet extends BaseApiServlet {
      * @throws IOException
      *             if an error occurred
      */
-    @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         UserIDTokenBean.Builder mUserIDTokenBuilder = new UserIDTokenBean.Builder();
-        StatusCodeBean mStatusCodeBean = readUserIDToken(request, mUserIDTokenBuilder);
+        StatusCodeBean mStatusCodeBean = readUserIDToken(request,
+                mUserIDTokenBuilder);
         if (mStatusCodeBean.getStatusCode() != S1000) {
             BaseResultBean mBean = new BaseResultBean.Builder()
                     .setStatusCodeBean(mStatusCodeBean).build();
@@ -88,6 +92,36 @@ public class GetLocateCityServlet extends BaseApiServlet {
             return;
         }
 
+        RequestParameterSet mParaSet = new RequestParameterSet();
+        mParaSet.addKey("adTitle", true).addKey("adLogoImgID", true)
+                .addKey("adImgIDSetStr", true).addKey("adDescription", true)
+                .addKey("adAreaSetStr", true).addKey("adStartTime", true)
+                .addKey("adEndTime", true).addKey("listPriority", false)
+                .addKey("carousel", false);
+        String readResult = mParaSet.readParameter(request);
+        if (readResult != null) {
+            writeErrorResponse(response, ER5001, readResult
+                    + " parameter isn't set");
+            return;
+        }
+
+        PublishAdEntity.Builder mPublishAdBuilder = new PublishAdEntity.Builder();
+        readResult = mPublishAdBuilder.fillField(mParaSet);
+        if (readResult != null) {
+            writeErrorResponse(response, ER5001, readResult);
+            return;
+        }
+        PublishAdEntity mPublishAdEntity = mPublishAdBuilder.build();
+
+        IAdvertisementManager mAdMana = ModuleObjectPool.getModuleObject(
+                IAdvertisementManager.class, null);
+        mStatusCodeBean = mAdMana.uploadAD(mPublishAdEntity,
+                mUserIDTokenBean.getUserID());
+
+        BaseResultBean mBean = new BaseResultBean.Builder().setStatusCodeBean(
+                mStatusCodeBean).build();
+
+        writeResponse(response, mBean);
     }
 
 }

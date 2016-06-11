@@ -1,8 +1,8 @@
 package com.round.aside.server.module.admanager;
 
+import com.round.aside.server.bean.entity.PublishAdEntity;
 import com.round.aside.server.bean.statuscode.IncrementSumStatusCodeBean;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
-import com.round.aside.server.entity.AdvertisementEntity;
 import com.round.aside.server.enumeration.AdStatusEnum;
 import com.round.aside.server.module.IModule;
 
@@ -20,12 +20,14 @@ public interface IAdvertisementManager extends IModule {
      * 
      * @param ad
      *            一个广告实体
+     * @param mUserID
+     *            用户ID
      * @return 操作结果状态值，合法的结果值只有六种，分别为{@link #S1000}成功即 广告上传成功；{@link #F8001}
      *         id字段冲突（包括adID、Thumbnail_ID、CarrouselID）； {@link #EX2010}
      *         数据库操作异常，请重试 以及{@link #ER5001}参数非法，其他返回值均为非法值。
      * 
      */
-    StatusCodeBean uploadAD(AdvertisementEntity ad);
+    StatusCodeBean uploadAD(PublishAdEntity ad, int mUserID);
 
     /**
      * 审核广告到指定状态（广告状态从未审核或审核通过状态到审核未通过或审核通过状态）

@@ -24,7 +24,7 @@ public final class RecyclableGeneratorImpl implements IGenerator{
 
     private IModuleFactoryRecycleCallback<IGenerator> mRecycleCallback;
     
-    private static final String PICID_FORMAT = "%s%10d%4d";
+    private static final String PICID_FORMAT = "%s%010d%4d";
     private static final String ORITOKEN_FORMAT = "%10d-%s-%s-%s";
     
     private final Random mRandom;

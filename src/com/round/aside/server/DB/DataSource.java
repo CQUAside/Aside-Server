@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import com.round.aside.server.constant.DBConfig;
+import com.round.aside.server.constant.GlobalParameter;
+import com.round.aside.server.devenvir.DevGlobalParameter;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -24,6 +26,9 @@ public class DataSource {
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+        if (GlobalParameter.DEV) {
+            config.setConnectionTimeout(DevGlobalParameter.DB_CONNECT_TIMEOUT);
+        }
         ds = new HikariDataSource(config);
     }
 

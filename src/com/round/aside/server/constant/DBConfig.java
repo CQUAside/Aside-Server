@@ -5,7 +5,7 @@ import java.io.FileInputStream;
 import java.util.Properties;
 
 /**
- * 数据库的配置信息类。单例模式，最为安全的实现方式之一。
+ * 数据库的配置信息类。内部类饿汉单例模式，较为安全的实现方式之一。
  * 
  * @author A Shuai
  * @date 2016-4-25

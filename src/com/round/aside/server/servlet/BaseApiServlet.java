@@ -13,6 +13,8 @@ import com.alibaba.fastjson.JSON;
 import com.round.aside.server.bean.UserIDTokenBean;
 import com.round.aside.server.bean.jsonbean.BaseResultBean;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
+import com.round.aside.server.constant.GlobalParameter;
+import com.round.aside.server.devenvir.Check;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.accountmanager.IAccountManager;
 import com.round.aside.server.module.netsecurity.INetSecurity;
@@ -83,6 +85,10 @@ public abstract class BaseApiServlet extends HttpServlet {
     protected final StatusCodeBean verifyToken(HttpServletRequest request,
             UserIDTokenBean mBean) {
 
+        if (GlobalParameter.DEV) {
+            return Check.verifyToken(mBean);
+        }
+
         INetSecurity mNetSecurity = ModuleObjectPool.getModuleObject(
                 INetSecurity.class, null);
         StatusCodeBean mStatusCodeBean = mNetSecurity.checkTokenLegal(
@@ -129,6 +135,7 @@ public abstract class BaseApiServlet extends HttpServlet {
         if (response == null || object == null) {
             throw new NullPointerException("the parameter shouldn't be null!");
         }
+        response.setContentType("text/html");
         response.setCharacterEncoding("utf-8");
         response.setStatus(200);
         PrintWriter out = null;

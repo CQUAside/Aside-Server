@@ -28,6 +28,8 @@ public class DataSource {
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
         if (GlobalParameter.DEV) {
             config.setConnectionTimeout(DevGlobalParameter.DB_CONNECT_TIMEOUT);
+            config.setIdleTimeout(DevGlobalParameter.DB_CONNECT_TIMEOUT);
+            config.setValidationTimeout(DevGlobalParameter.DB_CONNECT_TIMEOUT);
         }
         ds = new HikariDataSource(config);
     }

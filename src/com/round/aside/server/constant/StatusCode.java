@@ -91,6 +91,16 @@ public final class StatusCode {
     public static final int EX2017 = 2017;
 
     /**
+     * FileNotFoundException文件未发现异常
+     */
+    public static final int EX2031 = 2031;
+
+    /**
+     * IOException IO类型异常
+     */
+    public static final int EX2032 = 2032;
+
+    /**
      * 基础错误码
      */
     public static final int ER5000 = 5000;
@@ -214,6 +224,16 @@ public final class StatusCode {
      * 邮箱认证成功，无法继续下一步操作
      */
     public static final int R6013 = 6013;
+
+    /**
+     * 源图片文件不存在或读取失败
+     */
+    public static final int R6014 = 6014;
+
+    /**
+     * 目的图片文件目录创建失败或目的图写入失败
+     */
+    public static final int R6015 = 6015;
 
     /**
      * 基础失败码

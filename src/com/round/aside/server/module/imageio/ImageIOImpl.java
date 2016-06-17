@@ -69,7 +69,7 @@ public final class ImageIOImpl implements IImageIO {
         ReadImgStatusCodeBean.Builder mResultBuilder = new ReadImgStatusCodeBean.Builder();
 
         if (StringUtil.isEmpty(imgpath)) {
-            mResultBuilder.setStatusCode(ER5001).setMsg("参数非法");
+            mResultBuilder.setStatusCode(ER5001).setMsg("图片路径为空");
             return mResultBuilder.build();
         }
 
@@ -124,7 +124,7 @@ public final class ImageIOImpl implements IImageIO {
             mClipImgParentDir.delete();
         }
         if (!mClipImgParentDir.exists() && !mClipImgParentDir.mkdirs()) {
-            mResultBuilder.setStatusCode(R6015).setMsg("目的图片目录文件夹创建失败");
+            mResultBuilder.setStatusCode(R6015).setMsg("裁剪图片目录文件夹创建失败");
             return mResultBuilder.build();
         }
 
@@ -143,7 +143,6 @@ public final class ImageIOImpl implements IImageIO {
                 mOriImage.getScaledInstance(mMaxWidth, mMaxHeight,
                         Image.SCALE_SMOOTH), 0, 0, null);
         try {
-            // ImageIO.write(buffImg, "JPEG", new File(mThumbImgPath));
             ImageIO.write(mClipBufferedImage, mClipImgType, mClipImgFile);
 
             mResultBuilder.setStatusCode(S1000).setMsg("成功");
@@ -151,8 +150,8 @@ public final class ImageIOImpl implements IImageIO {
             e.printStackTrace();
             mResultBuilder.setStatusCode(EX2032).setMsg("裁切图写入异常");
         }
-        return mResultBuilder.build();
 
+        return mResultBuilder.build();
     }
 
     @Override
@@ -160,7 +159,57 @@ public final class ImageIOImpl implements IImageIO {
             String mExtension, int mMaxWidth, int mMaxHeight,
             String mThumbImgType) {
         StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
-        mResultBuilder.setStatusCode(S1000).setMsg("成功");
+
+        if (StringUtil.isEmptyInSet(mOriImgPath, mThumbImgPath, mExtension,
+                mThumbImgType)) {
+            mResultBuilder.setStatusCode(ER5001).setMsg("参数非法");
+            return mResultBuilder.build();
+        }
+
+        if (mMaxWidth <= 0 || mMaxHeight <= 0) {
+            mResultBuilder.setStatusCode(ER5001).setMsg("缩略图宽高大小非法");
+            return mResultBuilder.build();
+        }
+
+        File mOriImgFile = new File(mOriImgPath);
+        if (!mOriImgFile.exists()) {
+            mResultBuilder.setStatusCode(R6014).setMsg("源图不存在");
+            return mResultBuilder.build();
+        }
+
+        File mThumbImgFile = new File(mThumbImgPath);
+        File mThumbImgParentDir = mThumbImgFile.getParentFile();
+        if (mThumbImgParentDir.isFile()) {
+            mThumbImgParentDir.delete();
+        }
+        if (!mThumbImgParentDir.exists() && !mThumbImgParentDir.mkdirs()) {
+            mResultBuilder.setStatusCode(R6015).setMsg("缩略图片目录文件夹创建失败");
+            return mResultBuilder.build();
+        }
+
+        Image mOriImage = null;
+        try {
+            mOriImage = ImageIO.read(mOriImgFile);
+        } catch (IOException e) {
+            mResultBuilder.setStatusCode(R6014).setMsg("源图读取失败");
+            return mResultBuilder.build();
+        }
+
+        BufferedImage mClipBufferedImage = new BufferedImage(mMaxWidth,
+                mMaxHeight, BufferedImage.TYPE_INT_RGB);
+
+        mClipBufferedImage.getGraphics().drawImage(
+                mOriImage.getScaledInstance(mMaxWidth, mMaxHeight,
+                        Image.SCALE_SMOOTH), 0, 0, null);
+        try {
+            ImageIO.write(mClipBufferedImage, mThumbImgType, mThumbImgFile);
+
+            mResultBuilder.setStatusCode(S1000).setMsg("成功");
+        } catch (IOException e) {
+            e.printStackTrace();
+            mResultBuilder.setStatusCode(EX2032).setMsg("缩略图写入异常");
+        }
+
         return mResultBuilder.build();
     }
 

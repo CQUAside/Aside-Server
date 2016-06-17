@@ -26,7 +26,8 @@ public class AdvertisementManagerImpl implements IAdvertisementManager {
 
         IDatabaseManager datamanager = ModuleObjectPool.getModuleObject(
                 IDatabaseManager.class, null);
-        StatusCodeBean mStatusCodeBean = datamanager.insertAD(ad, mUserID, AdStatusEnum.UNREVIEW);
+        StatusCodeBean mStatusCodeBean = datamanager.insertAD(ad, mUserID,
+                AdStatusEnum.UNREVIEW);
         datamanager.release();
 
         switch (mStatusCodeBean.getStatusCode()) {
@@ -212,8 +213,8 @@ public class AdvertisementManagerImpl implements IAdvertisementManager {
         IncrementSumStatusCodeBean.Builder mResultBuilder = new IncrementSumStatusCodeBean.Builder();
 
         if (adID < 0) {
-            return mResultBuilder.setStatusCode(ER5001).setMsg("AdID参数非法")
-                    .build();
+            mResultBuilder.setStatusCode(ER5001).setMsg("AdID参数非法");
+            return mResultBuilder.build();
         }
 
         IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
@@ -275,8 +276,8 @@ public class AdvertisementManagerImpl implements IAdvertisementManager {
         IncrementSumStatusCodeBean.Builder mResultBuilder = new IncrementSumStatusCodeBean.Builder();
 
         if (increaseCount <= 0) {
-            return mResultBuilder.setStatusCode(ER5001).setMsg("点击量增加值必须为自然数")
-                    .build();
+            mResultBuilder.setStatusCode(ER5001).setMsg("点击量增加值必须为自然数");
+            return mResultBuilder.build();
         }
 
         IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(

@@ -265,8 +265,8 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
         LoginUserBean.Builder mBuilder = new LoginUserBean.Builder();
 
         if (StringUtil.isEmptyInSet(mAccount, mPassword) || period <= 0) {
-            return mBuilder.setStatusCode(ER5001).setMsg("账号或密码参数非法，请检查后重新输入")
-                    .build();
+            mBuilder.setStatusCode(ER5001).setMsg("账号或密码参数非法，请检查后重新输入");
+            return mBuilder.build();
         }
 
         String mTPassword = null;
@@ -285,8 +285,8 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             } else if (!mTPassword.equals(mPassword)) {
                 mBuilder.setStatusCode(R6005).setMsg("密码输入错误，请重新输入");
             } else {
-                mBuilder.setStatusCode(S1000).setMsg("账号密码验证通过")
-                        .setUserID(mResultSet.getInt(1));
+                mBuilder.setStatusCode(S1000).setMsg("账号密码验证通过");
+                mBuilder.setUserID(mResultSet.getInt(1));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -417,7 +417,8 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
     public static final String INSERT_ADAREA = "INSERT into aside_adarea(adId, areaId) values(?, ?)";
 
     @Override
-    public StatusCodeBean insertAD(PublishAdEntity ad, int mUserID, AdStatusEnum mAdStatusEnum) {
+    public StatusCodeBean insertAD(PublishAdEntity ad, int mUserID,
+            AdStatusEnum mAdStatusEnum) {
         StatusCodeBean.Builder mBuilder = new StatusCodeBean.Builder();
 
         if (StringUtil.isEmpty(ad.getAdLogoImgID()))
@@ -428,14 +429,14 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
 
         if (StringUtil.isEmptyInSet(ad.getAdTitle(), ad.getAdDescription()))
             return mBuilder.setStatusCode(ER5001).setMsg("广告参数非法").build();
-        
+
         if (!ad.getAdEndTimestamp().after(new Date())) {
             return mBuilder.setStatusCode(ER5001).setMsg("广告结束时间非法").build();
         }
 
         try {
             mConnection.setAutoCommit(false);
-            
+
             mPreState = mConnection.prepareStatement(INSERT_AD);
             mPreState.setString(1, ad.getAdLogoImgID());
             mPreState.setString(2, ad.getAdTitle());
@@ -446,25 +447,25 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             mPreState.setInt(7, mUserID);
             mPreState.executeUpdate();
             closeMemberPreparedStatement();
-            
+
             int mAdID = -1;
-            
+
             mPreState = mConnection.prepareStatement(QUERY_ADID);
             mPreState.setInt(1, mUserID);
             mPreState.setString(2, ad.getAdLogoImgID());
             mResultSet = mPreState.executeQuery();
-            while(mResultSet.next()) {
+            while (mResultSet.next()) {
                 mAdID = mResultSet.getInt(1);
                 break;
             }
-            
-            if(mAdID != -1){
+
+            if (mAdID != -1) {
                 mBuilder.setStatusCode(EX2013).setMsg("数据库插入异常，请重试");
             }
-            
+
             mPreTwoState = mConnection.prepareStatement(INSERT_ADAREA);
             List<String> mAreaSet = ad.getAdAreaSet();
-            for(String str : mAreaSet) {
+            for (String str : mAreaSet) {
                 mPreTwoState.setInt(1, mAdID);
                 mPreTwoState.setString(2, str);
                 mPreTwoState.addBatch();
@@ -472,7 +473,7 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             mPreTwoState.executeBatch();
 
             mConnection.commit();
-            
+
             mBuilder.setStatusCode(S1000).setMsg("广告插入成功");
         } catch (SQLException e) {
             rollbackTransaction();
@@ -493,8 +494,10 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
     @Override
     public AdStatusCodeBean queryAD(int adID) {
         AdStatusCodeBean.Builder mBuilder = new AdStatusCodeBean.Builder();
-        if (adID <= 0 || adID > 99999999)
-            return mBuilder.setStatusCode(ER5001).setMsg("广告ID非法").build();
+        if (adID <= 0 || adID > 99999999) {
+            mBuilder.setStatusCode(ER5001).setMsg("广告ID非法");
+            return mBuilder.build();
+        }
 
         try {
             boolean find = false;
@@ -751,11 +754,12 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
     private static final String SELECT_EMAIL_AUTHCODE = "select authcode from aside_authcode where userid = ? and email = ?";
 
     @Override
-    public AuthCodeStatusCodeBean getUserEmailAuthCode(int mUserID, String mEmail) {
+    public AuthCodeStatusCodeBean getUserEmailAuthCode(int mUserID,
+            String mEmail) {
         AuthCodeStatusCodeBean.Builder mResultBuilder = new AuthCodeStatusCodeBean.Builder();
         if (mUserID <= 0) {
-            return mResultBuilder.setStatusCode(ER5001).setMsg("UserID参数非法")
-                    .build();
+            mResultBuilder.setStatusCode(ER5001).setMsg("UserID参数非法");
+            return mResultBuilder.build();
         }
 
         try {
@@ -795,8 +799,8 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
         UserEmailAuthStatusBean.Builder mResultBuilder = new UserEmailAuthStatusBean.Builder();
 
         if (mUserID <= 0) {
-            return mResultBuilder.setStatusCode(ER5001).setMsg("UserID参数非法")
-                    .build();
+            mResultBuilder.setStatusCode(ER5001).setMsg("UserID参数非法");
+            return mResultBuilder.build();
         }
 
         mResultBuilder.setUserEmailStatusType(UserEmailStatusEnum.UNAUTH
@@ -869,8 +873,8 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
         EmailStatusCodeBean.Builder mResultBuilder = new EmailStatusCodeBean.Builder();
 
         if (mUserID <= 0) {
-            return mResultBuilder.setStatusCode(ER5001).setMsg("UserID参数非法")
-                    .build();
+            mResultBuilder.setStatusCode(ER5001).setMsg("UserID参数非法");
+            return mResultBuilder.build();
         }
 
         try {

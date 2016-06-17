@@ -107,12 +107,13 @@ public final class AccountManagerImpl implements IAccountManager {
 
         if (StringUtil.isEmptyInSet(mAccount, mPassword, mPhone, mAuthcode)
                 || mAuthcode.length() != 4) {
-            return mUserBuilder.setStatusCode(ER5001)
-                    .setMsg("账号或密码输入非法，请检查后重新输入").build();
+            mUserBuilder.setStatusCode(ER5001).setMsg("账号或密码输入非法，请检查后重新输入");
+            return mUserBuilder.build();
         }
 
         if (!VerifyUtils.isPhoneNumber(mPhone)) {
-            return mUserBuilder.setStatusCode(ER5002).setMsg("注册手机号非法").build();
+            mUserBuilder.setStatusCode(ER5002).setMsg("注册手机号非法");
+            return mUserBuilder.build();
         }
 
         IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
@@ -126,12 +127,13 @@ public final class AccountManagerImpl implements IAccountManager {
                 break;
             case EX2016:
                 mDBManager.release();
-                return mUserBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试")
-                        .build();
+                mUserBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
+                return mUserBuilder.build();
             case ER5003L:
             case ER5004L:
                 mDBManager.release();
-                return mUserBuilder.setStatusCodeBean(mStatusCodeBean).build();
+                mUserBuilder.setStatusCodeBean(mStatusCodeBean);
+                return mUserBuilder.build();
             case ER5001:
             default:
                 mDBManager.release();
@@ -146,8 +148,8 @@ public final class AccountManagerImpl implements IAccountManager {
             mDBManager.closeTransaction();
             mDBManager.release();
             mGenerator.release();
-            return mUserBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试")
-                    .build();
+            mUserBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
+            return mUserBuilder.build();
         }
 
         int mUserID = -1;
@@ -223,8 +225,8 @@ public final class AccountManagerImpl implements IAccountManager {
                 mDBManager.closeTransaction();
                 mDBManager.release();
                 mGenerator.release();
-                mUserBuilder.setStatusCode(S1000).setMsg("注册成功")
-                        .setUserID(mUserID).setToken(mToken);
+                mUserBuilder.setStatusCode(S1000).setMsg("注册成功");
+                mUserBuilder.setUserID(mUserID).setToken(mToken);
             } else {
                 mDBManager.rollbackTransaction();
                 mDBManager.closeTransaction();
@@ -249,8 +251,8 @@ public final class AccountManagerImpl implements IAccountManager {
         LoginUserBean.Builder mUserBuilder = new LoginUserBean.Builder();
 
         if (StringUtil.isEmptyInSet(mAccount, mPassword) || period <= 0) {
-            return mUserBuilder.setStatusCode(ER5001)
-                    .setMsg("账号或密码输入非法，请检查后重新输入").build();
+            mUserBuilder.setStatusCode(ER5001).setMsg("账号或密码输入非法，请检查后重新输入");
+            return mUserBuilder.build();
         }
         IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
                 IDatabaseManager.class, null);
@@ -292,8 +294,8 @@ public final class AccountManagerImpl implements IAccountManager {
 
         switch (mStatusCodeBean.getStatusCode()) {
             case S1000:
-                mUserBuilder.setStatusCode(S1000).setMsg("登陆成功")
-                        .setToken(mToken);
+                mUserBuilder.setStatusCode(S1000).setMsg("登陆成功");
+                mUserBuilder.setToken(mToken);
                 break;
             case EX2013:
                 mUserBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
@@ -367,7 +369,8 @@ public final class AccountManagerImpl implements IAccountManager {
                 mResultBuilder.setStatusCodeBean(mUserEmailAuthSCB);
                 break;
             case R6008:
-                mResultBuilder.setStatusCodeBean(mUserEmailAuthSCB).setMsg("无此UserID用户");
+                mResultBuilder.setStatusCodeBean(mUserEmailAuthSCB).setMsg(
+                        "无此UserID用户");
                 break;
             default:
                 mDBManager.release();

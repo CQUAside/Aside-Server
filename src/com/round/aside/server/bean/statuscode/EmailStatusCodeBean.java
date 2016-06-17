@@ -14,7 +14,7 @@ public class EmailStatusCodeBean extends StatusCodeBean {
     private final String userEmail;
 
     public EmailStatusCodeBean(Builder mBuilder) {
-        super(mBuilder.mPBuilder);
+        super(mBuilder);
         userEmail = mBuilder.userEmail;
     }
 
@@ -30,13 +30,11 @@ public class EmailStatusCodeBean extends StatusCodeBean {
      * @date 2016-5-31
      * 
      */
-    public static class Builder {
+    public static class Builder extends StatusCodeBean.Builder {
 
         private String userEmail;
-        private final StatusCodeBean.Builder mPBuilder;
 
         public Builder() {
-            mPBuilder = new StatusCodeBean.Builder();
         }
 
         public Builder setUserEmail(String userEmail) {
@@ -48,23 +46,8 @@ public class EmailStatusCodeBean extends StatusCodeBean {
             return this;
         }
 
-        public Builder setStatusCodeBean(StatusCodeBean statusCodeBean) {
-            mPBuilder.setStatusCode(statusCodeBean.getStatusCode());
-            mPBuilder.setMsg(statusCodeBean.getMsg());
-            return this;
-        }
-
-        public Builder setStatusCode(int statusCode) {
-            mPBuilder.setStatusCode(statusCode);
-            return this;
-        }
-
-        public Builder setMsg(String msg) {
-            mPBuilder.setMsg(msg);
-            return this;
-        }
-
         public EmailStatusCodeBean build() {
+            check();
             return new EmailStatusCodeBean(this);
         }
 

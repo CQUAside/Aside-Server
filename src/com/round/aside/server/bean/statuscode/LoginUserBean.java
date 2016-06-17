@@ -17,7 +17,7 @@ public class LoginUserBean extends StatusCodeBean {
     private final String token;
 
     public LoginUserBean(Builder mBuilder) {
-        super(mBuilder.mPBuilder);
+        super(mBuilder);
         userID = mBuilder.userID;
         token = mBuilder.token;
     }
@@ -30,6 +30,7 @@ public class LoginUserBean extends StatusCodeBean {
         return token;
     }
 
+
     /**
      * 建造者
      * 
@@ -37,30 +38,12 @@ public class LoginUserBean extends StatusCodeBean {
      * @date 2016-5-27
      * 
      */
-    public static class Builder {
+    public static class Builder extends StatusCodeBean.Builder {
 
         private int userID;
         private String token;
-        private final StatusCodeBean.Builder mPBuilder;
 
         public Builder() {
-            mPBuilder = new StatusCodeBean.Builder();
-        }
-
-        public Builder setStatusCodeBean(StatusCodeBean statusCodeBean) {
-            mPBuilder.setStatusCode(statusCodeBean.getStatusCode());
-            mPBuilder.setMsg(statusCodeBean.getMsg());
-            return this;
-        }
-
-        public Builder setStatusCode(int statusCode) {
-            mPBuilder.setStatusCode(statusCode);
-            return this;
-        }
-
-        public Builder setMsg(String msg) {
-            mPBuilder.setMsg(msg);
-            return this;
         }
 
         public Builder setUserID(int userID) {
@@ -78,6 +61,7 @@ public class LoginUserBean extends StatusCodeBean {
         }
 
         public LoginUserBean build() {
+            check();
             return new LoginUserBean(this);
         }
 

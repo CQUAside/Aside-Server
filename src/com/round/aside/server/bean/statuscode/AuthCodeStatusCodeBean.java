@@ -12,7 +12,7 @@ public class AuthCodeStatusCodeBean extends StatusCodeBean {
     private final String authCode;
 
     public AuthCodeStatusCodeBean(Builder mBuilder) {
-        super(mBuilder.mPBuilder);
+        super(mBuilder);
         this.authCode = mBuilder.authCode;
     }
 
@@ -28,13 +28,11 @@ public class AuthCodeStatusCodeBean extends StatusCodeBean {
      * @date 2016-5-29
      * 
      */
-    public static class Builder {
+    public static class Builder extends StatusCodeBean.Builder {
 
         private String authCode;
-        private final StatusCodeBean.Builder mPBuilder;
 
         public Builder() {
-            mPBuilder = new StatusCodeBean.Builder();
         }
 
         public Builder setAuthCode(String authCode) {
@@ -42,23 +40,8 @@ public class AuthCodeStatusCodeBean extends StatusCodeBean {
             return this;
         }
 
-        public Builder setStatusCodeBean(StatusCodeBean statusCodeBean) {
-            mPBuilder.setStatusCode(statusCodeBean.getStatusCode());
-            mPBuilder.setMsg(statusCodeBean.getMsg());
-            return this;
-        }
-
-        public Builder setStatusCode(int statusCode) {
-            mPBuilder.setStatusCode(statusCode);
-            return this;
-        }
-
-        public Builder setMsg(String msg) {
-            mPBuilder.setMsg(msg);
-            return this;
-        }
-
         public AuthCodeStatusCodeBean build() {
+            check();
             return new AuthCodeStatusCodeBean(this);
         }
 

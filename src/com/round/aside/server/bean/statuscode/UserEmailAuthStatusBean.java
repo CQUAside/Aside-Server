@@ -16,7 +16,7 @@ public class UserEmailAuthStatusBean extends StatusCodeBean {
     private final UserEmailStatusEnum userEmailStatus;
 
     public UserEmailAuthStatusBean(Builder mBuilder) {
-        super(mBuilder.mPBuilder);
+        super(mBuilder);
         this.userEmail = mBuilder.userEmail;
         userEmailStatus = UserEmailStatusEnum
                 .valueOf(mBuilder.userEmailStatusType);
@@ -30,6 +30,7 @@ public class UserEmailAuthStatusBean extends StatusCodeBean {
         return userEmailStatus;
     }
 
+
     /**
      * 建造者
      * 
@@ -37,15 +38,13 @@ public class UserEmailAuthStatusBean extends StatusCodeBean {
      * @date 2016-5-29
      * 
      */
-    public static class Builder {
+    public static class Builder extends StatusCodeBean.Builder {
 
         private String userEmail;
         private int userEmailStatusType;
-        private final StatusCodeBean.Builder mPBuilder;
 
         public Builder() {
             userEmailStatusType = -1;
-            mPBuilder = new StatusCodeBean.Builder();
         }
 
         public Builder setUserEmail(String userEmail) {
@@ -62,27 +61,18 @@ public class UserEmailAuthStatusBean extends StatusCodeBean {
             return this;
         }
 
-        public Builder setStatusCodeBean(StatusCodeBean statusCodeBean) {
-            mPBuilder.setStatusCode(statusCodeBean.getStatusCode());
-            mPBuilder.setMsg(statusCodeBean.getMsg());
-            return this;
-        }
-
-        public Builder setStatusCode(int statusCode) {
-            mPBuilder.setStatusCode(statusCode);
-            return this;
-        }
-
-        public Builder setMsg(String msg) {
-            mPBuilder.setMsg(msg);
-            return this;
-        }
-
-        public UserEmailAuthStatusBean build() {
+        @Override
+        protected void check() {
+            super.check();
             if (userEmailStatusType == -1) {
                 throw new IllegalStateException(
                         "User Status type must be assign!");
             }
+        }
+
+        @Override
+        public UserEmailAuthStatusBean build() {
+            check();
             return new UserEmailAuthStatusBean(this);
         }
 

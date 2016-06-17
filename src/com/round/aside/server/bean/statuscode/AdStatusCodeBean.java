@@ -17,7 +17,7 @@ public class AdStatusCodeBean extends StatusCodeBean {
     private final int userID;
 
     public AdStatusCodeBean(Builder mBuilder) {
-        super(mBuilder.mPBuilder);
+        super(mBuilder);
         adStatus = AdStatusEnum.valueOf(mBuilder.adStatusType);
         clickCount = mBuilder.clickCount;
         collectCount = mBuilder.collectCount;
@@ -40,6 +40,7 @@ public class AdStatusCodeBean extends StatusCodeBean {
         return userID;
     }
 
+
     /**
      * 建造者
      * 
@@ -47,16 +48,14 @@ public class AdStatusCodeBean extends StatusCodeBean {
      * @date 2016-5-28
      * 
      */
-    public static class Builder {
+    public static class Builder extends StatusCodeBean.Builder {
 
         private int adStatusType;
         private int clickCount;
         private int collectCount;
         private int userID;
-        private final StatusCodeBean.Builder mPBuilder;
 
         public Builder() {
-            mPBuilder = new StatusCodeBean.Builder();
         }
 
         public Builder setAdStatusType(int adStatusType) {
@@ -79,23 +78,8 @@ public class AdStatusCodeBean extends StatusCodeBean {
             return this;
         }
 
-        public Builder setStatusCodeBean(StatusCodeBean statusCodeBean) {
-            mPBuilder.setStatusCode(statusCodeBean.getStatusCode());
-            mPBuilder.setMsg(statusCodeBean.getMsg());
-            return this;
-        }
-
-        public Builder setStatusCode(int statusCode) {
-            mPBuilder.setStatusCode(statusCode);
-            return this;
-        }
-
-        public Builder setMsg(String msg) {
-            mPBuilder.setMsg(msg);
-            return this;
-        }
-
         public AdStatusCodeBean build() {
+            check();
             return new AdStatusCodeBean(this);
         }
 

@@ -5,14 +5,14 @@ package com.round.aside.server.bean.statuscode;
  * 
  * @author A Shuai
  * @date 2016-6-1
- *
+ * 
  */
 public class IncrementSumStatusCodeBean extends StatusCodeBean {
 
     private final int sum;
 
     public IncrementSumStatusCodeBean(Builder mBuilder) {
-        super(mBuilder.mPBuilder);
+        super(mBuilder);
         sum = mBuilder.sum;
     }
 
@@ -28,13 +28,11 @@ public class IncrementSumStatusCodeBean extends StatusCodeBean {
      * @date 2016-6-1
      * 
      */
-    public static class Builder {
+    public static class Builder extends StatusCodeBean.Builder {
 
         private int sum;
-        private final StatusCodeBean.Builder mPBuilder;
 
         public Builder() {
-            mPBuilder = new StatusCodeBean.Builder();
         }
 
         public Builder setSum(int sum) {
@@ -46,23 +44,8 @@ public class IncrementSumStatusCodeBean extends StatusCodeBean {
             return this;
         }
 
-        public Builder setStatusCodeBean(StatusCodeBean statusCodeBean) {
-            mPBuilder.setStatusCode(statusCodeBean.getStatusCode());
-            mPBuilder.setMsg(statusCodeBean.getMsg());
-            return this;
-        }
-
-        public Builder setStatusCode(int statusCode) {
-            mPBuilder.setStatusCode(statusCode);
-            return this;
-        }
-
-        public Builder setMsg(String msg) {
-            mPBuilder.setMsg(msg);
-            return this;
-        }
-
         public IncrementSumStatusCodeBean build() {
+            check();
             return new IncrementSumStatusCodeBean(this);
         }
 

@@ -25,6 +25,7 @@ public class StatusCodeBean {
         return msg;
     }
 
+
     /**
      * 建造者
      * 
@@ -57,10 +58,18 @@ public class StatusCodeBean {
             return this;
         }
 
-        public StatusCodeBean build() {
+        /**
+         * 检查函数<br>
+         * 各子类根据情况进行覆写，完成新增字段的检查。最后在调用build方法完成构建之前请务必调用此方法进行一次检查。
+         */
+        protected void check() {
             if (statusCode == 0) {
                 throw new IllegalStateException("status code must be assign!");
             }
+        }
+
+        public StatusCodeBean build() {
+            check();
             return new StatusCodeBean(this);
         }
 

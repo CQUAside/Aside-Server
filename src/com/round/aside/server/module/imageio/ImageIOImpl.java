@@ -11,101 +11,157 @@ import java.io.InputStream;
 import sun.misc.BASE64Encoder;
 import javax.imageio.ImageIO;
 
-import com.round.aside.server.module.imageio.ImageIOResultEnum.ImgClipResultEnum;
-import com.round.aside.server.module.imageio.ImageIOResultEnum.ImgRWResultEnum;
-import com.round.aside.server.module.imageio.ImageIOResultEnum.ImgZoomResultEnum;
+import com.round.aside.server.bean.statuscode.ReadImgStatusCodeBean;
+import com.round.aside.server.bean.statuscode.StatusCodeBean;
+import com.round.aside.server.util.StringUtil;
+
+import static com.round.aside.server.constant.StatusCode.*;
+import static com.round.aside.server.util.MethodUtils.*;
 
 public final class ImageIOImpl implements IImageIO {
 
-    @Override
-    public ImgRWResultEnum writeImg(InputStream mInput, String imgPath) {
+    private final BASE64Encoder mBASE64Encoder;
 
-        if (imgPath == null || mInput == null) {
-            return ImgRWResultEnum.UNKNOWN_ERR;
+    public ImageIOImpl() {
+        mBASE64Encoder = new BASE64Encoder();
+    }
+
+    @Override
+    public StatusCodeBean writeImg(InputStream mInput, String imgPath) {
+        StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
+
+        if (mInput == null || StringUtil.isEmpty(imgPath)) {
+            return mResultBuilder.setStatusCode(ER5001).setMsg("参数非法").build();
         }
         File file = new File(imgPath);
+        File mParentDir = file.getParentFile();
+        if (mParentDir.isFile()) {
+            mParentDir.delete();
+        }
+        if (!mParentDir.exists() && !mParentDir.mkdirs()) {
+            return mResultBuilder.setStatusCode(R6015).setMsg("目的图片目录文件夹创建失败")
+                    .build();
+        }
+        FileOutputStream out = null;
         try {
-            FileOutputStream out = new FileOutputStream(file);
-            try {
-                byte[] b = new byte[1024];
-                while (mInput.read(b) != -1) {
-                    out.write(b);
-                }
-                out.close();
-                return ImgRWResultEnum.SUCCESS;
-            } catch (IOException e) {
-                e.printStackTrace();
-                return ImgRWResultEnum.STREAM_EXCEPTION;
+            out = new FileOutputStream(file);
+            byte[] b = new byte[1024];
+            while (mInput.read(b) != -1) {
+                out.write(b);
             }
 
+            mResultBuilder.setStatusCode(S1000).setMsg("成功");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            return ImgRWResultEnum.FILE_EXCEPTION;
-        }
-
-    }
-
-    @Override
-    public ReadImageResultEntity readImg(String imgpath) {
-        ReadImageResultEntity entity = new ReadImageResultEntity();
-        File file = new File(imgpath);
-        try {
-            InputStream in = new FileInputStream(file);
-            try {
-                byte[] b = new byte[(int) file.length()];
-                in.read(b);
-                in.close();
-                String base64code = new BASE64Encoder().encode(b);
-                entity.setImgtobase64(base64code);
-                entity.setResult(ImgRWResultEnum.SUCCESS);
-                return entity;
-            } catch (IOException e) {
-                entity.setResult(ImgRWResultEnum.STREAM_EXCEPTION);
-                entity.setImgtobase64(null);
-                return entity;
-            }
-        } catch (FileNotFoundException e) {
-            entity.setResult(ImgRWResultEnum.FILE_EXCEPTION);
-            entity.setImgtobase64(null);
-            return entity;
-        }
-    }
-
-    @Override
-    public ImgClipResultEnum clipImg(String mOriImgPath, String mThumbImgPath,
-            int mMaxWidth, int mMaxHeight) {
-
-        File srcFile = new File(mOriImgPath);
-        if (!srcFile.exists()) {
-            return ImgClipResultEnum.ORIGINAL_IMG_NOT_EXIST;
-        }
-        Image srcImg;
-        try {
-            srcImg = ImageIO.read(srcFile);
+            mResultBuilder.setStatusCode(EX2031).setMsg("目的图片文件错误");
         } catch (IOException e) {
             e.printStackTrace();
-            return ImgClipResultEnum.ORIGINAL_IMG_RW_EXCEPTION;
+            mResultBuilder.setStatusCode(EX2032).setMsg("文件IO异常");
+        } finally {
+            closeAutoCloseable(mInput, out);
         }
-        BufferedImage buffImg = null;
-        buffImg = new BufferedImage(mMaxWidth, mMaxHeight,
-                BufferedImage.TYPE_INT_RGB);
-        buffImg.getGraphics().drawImage(
-                srcImg.getScaledInstance(mMaxWidth, mMaxHeight,
+
+        return mResultBuilder.build();
+    }
+
+    @Override
+    public ReadImgStatusCodeBean readImg(String imgpath) {
+        ReadImgStatusCodeBean.Builder mResultBuilder = new ReadImgStatusCodeBean.Builder();
+
+        if (StringUtil.isEmpty(imgpath)) {
+            mResultBuilder.setStatusCode(ER5001).setMsg("参数非法");
+            return mResultBuilder.build();
+        }
+
+        File file = new File(imgpath);
+        InputStream in = null;
+        try {
+            in = new FileInputStream(file);
+            byte[] b = new byte[(int) file.length()];
+            in.read(b);
+
+            mResultBuilder.setBase64ImgData(mBASE64Encoder.encode(b));
+            mResultBuilder.setStatusCode(S1000).setMsg("成功");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            mResultBuilder.setStatusCode(EX2031).setMsg("源图片文件不存在");
+        } catch (IOException e) {
+            e.printStackTrace();
+            mResultBuilder.setStatusCode(EX2032).setMsg("源图读取异常");
+        } finally {
+            closeAutoCloseable(in);
+        }
+
+        return mResultBuilder.build();
+    }
+
+    @Override
+    public StatusCodeBean clipImg(String mOriImgPath, String mClipImgPath,
+            String mExtension, int mMaxWidth, int mMaxHeight,
+            String mClipImgType) {
+        StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
+
+        if (StringUtil.isEmptyInSet(mOriImgPath, mClipImgPath, mExtension,
+                mClipImgType)) {
+            mResultBuilder.setStatusCode(ER5001).setMsg("参数非法");
+            return mResultBuilder.build();
+        }
+
+        if (mMaxWidth <= 0 || mMaxHeight <= 0) {
+            mResultBuilder.setStatusCode(ER5001).setMsg("裁切宽高大小非法");
+            return mResultBuilder.build();
+        }
+
+        File mOriImgFile = new File(mOriImgPath);
+        if (!mOriImgFile.exists()) {
+            mResultBuilder.setStatusCode(R6014).setMsg("源图不存在");
+            return mResultBuilder.build();
+        }
+
+        File mClipImgFile = new File(mClipImgPath);
+        File mClipImgParentDir = mClipImgFile.getParentFile();
+        if (mClipImgParentDir.isFile()) {
+            mClipImgParentDir.delete();
+        }
+        if (!mClipImgParentDir.exists() && !mClipImgParentDir.mkdirs()) {
+            mResultBuilder.setStatusCode(R6015).setMsg("目的图片目录文件夹创建失败");
+            return mResultBuilder.build();
+        }
+
+        Image mOriImage = null;
+        try {
+            mOriImage = ImageIO.read(mOriImgFile);
+        } catch (IOException e) {
+            mResultBuilder.setStatusCode(R6014).setMsg("源图读取失败");
+            return mResultBuilder.build();
+        }
+
+        BufferedImage mClipBufferedImage = new BufferedImage(mMaxWidth,
+                mMaxHeight, BufferedImage.TYPE_INT_RGB);
+
+        mClipBufferedImage.getGraphics().drawImage(
+                mOriImage.getScaledInstance(mMaxWidth, mMaxHeight,
                         Image.SCALE_SMOOTH), 0, 0, null);
         try {
-            ImageIO.write(buffImg, "JPEG", new File(mThumbImgPath));
+            // ImageIO.write(buffImg, "JPEG", new File(mThumbImgPath));
+            ImageIO.write(mClipBufferedImage, mClipImgType, mClipImgFile);
+
+            mResultBuilder.setStatusCode(S1000).setMsg("成功");
         } catch (IOException e) {
             e.printStackTrace();
-            return ImgClipResultEnum.CLIPPED_IMG_WRITE_EXCEPTION;
+            mResultBuilder.setStatusCode(EX2032).setMsg("裁切图写入异常");
         }
-        return ImgClipResultEnum.SUCCESS;
+        return mResultBuilder.build();
 
     }
 
     @Override
-    public ImgZoomResultEnum zoomImg(String mOriImgPath, String mThumbImgPath,
-            String mExtension, int mMaxWidth, int mMaxHeight) {
-        return ImgZoomResultEnum.SUCCESS;
+    public StatusCodeBean zoomImg(String mOriImgPath, String mThumbImgPath,
+            String mExtension, int mMaxWidth, int mMaxHeight,
+            String mThumbImgType) {
+        StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
+        mResultBuilder.setStatusCode(S1000).setMsg("成功");
+        return mResultBuilder.build();
     }
 
 }

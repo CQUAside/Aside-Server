@@ -10,12 +10,12 @@ package com.round.aside.server.bean.jsonbean.result;
 public final class PicUploadResult {
 
     private final String picName;
-    private final int order;
+    private final int ordinal;
     private final String picID;
 
     public PicUploadResult(Builder mBuilder) {
         this.picName = mBuilder.picName;
-        this.order = mBuilder.order;
+        this.ordinal = mBuilder.ordinal;
         this.picID = mBuilder.picID;
     }
 
@@ -23,8 +23,8 @@ public final class PicUploadResult {
         return picName;
     }
 
-    public int getOrder() {
-        return order;
+    public int getOrdinal() {
+        return ordinal;
     }
 
     public String getPicID() {
@@ -42,7 +42,7 @@ public final class PicUploadResult {
     public static class Builder {
 
         private String picName;
-        private int order;
+        private int ordinal;
         private String picID;
 
         public Builder() {
@@ -53,8 +53,8 @@ public final class PicUploadResult {
             return this;
         }
 
-        public Builder setOrder(int order) {
-            this.order = order;
+        public Builder setOrdinal(int ordinal) {
+            this.ordinal = ordinal;
             return this;
         }
 

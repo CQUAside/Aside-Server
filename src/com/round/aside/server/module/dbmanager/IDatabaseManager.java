@@ -147,7 +147,7 @@ public interface IDatabaseManager extends IModule,
      * 
      * @param picId
      *            图片ID
-     * @param order
+     * @param ordinal
      *            序号
      * @param originalPath
      *            原图相对路径
@@ -158,7 +158,7 @@ public interface IDatabaseManager extends IModule,
      * @return 结果状态码及其对应描述，有且仅有以下几种，分别为{@link #S1000}成功，{@link #ER5001}调用参数非法，
      *         {@link #EX2014}数据库更新异常。
      */
-    StatusCodeBean updatePicWithOutAdId(String picId, int order,
+    StatusCodeBean updatePicWithOutAdId(String picId, int ordinal,
             String originalPath, String thumbPath, String extension);
 
     /**

@@ -374,10 +374,10 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
         return mBuilder.build();
     }
 
-    private static final String UPDATE_PIC_FORMAT = "UPDATE aside_pic SET order = ?, originalpath = ?, thumbpath = ?, extension = ? WHERE picid = ?";
+    private static final String UPDATE_PIC_FORMAT = "UPDATE aside_pic SET ordinal = ?, originalpath = ?, thumbpath = ?, extension = ? WHERE picid = ?";
 
     @Override
-    public StatusCodeBean updatePicWithOutAdId(String picId, int order,
+    public StatusCodeBean updatePicWithOutAdId(String picId, int ordinal,
             String originalPath, String thumbPath, String extension) {
         StatusCodeBean.Builder mBuilder = new StatusCodeBean.Builder();
 
@@ -385,7 +385,7 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             return mBuilder.setStatusCode(ER5001)
                     .setMsg("参数非法，图片id、原图相对路径以及缩略图相对路径不可为空").build();
         }
-        if (order < 0) {
+        if (ordinal < 0) {
             return mBuilder.setStatusCode(ER5001).setMsg("参数非法，序号需为自然数")
                     .build();
         }
@@ -393,7 +393,7 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
         try {
             mPreState = mConnection.prepareStatement(UPDATE_PIC_FORMAT);
 
-            mPreState.setInt(1, order);
+            mPreState.setInt(1, ordinal);
             mPreState.setString(2, originalPath);
             mPreState.setString(3, thumbPath);
             mPreState.setString(4, extension);

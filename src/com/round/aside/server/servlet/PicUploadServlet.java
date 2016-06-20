@@ -1,6 +1,5 @@
 package com.round.aside.server.servlet;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,12 +8,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.FileItemFactory;
-import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import com.round.aside.server.bean.UserIDTokenBean;
 import com.round.aside.server.bean.jsonbean.BaseResultBean;
@@ -24,13 +19,12 @@ import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.dbmanager.IDatabaseManager;
 import com.round.aside.server.module.generator.IGenerator;
 import com.round.aside.server.module.imageio.IImageIO;
-import com.round.aside.server.module.imageio.ImageIOResultEnum.ImgRWResultEnum;
-import com.round.aside.server.module.imageio.ImageIOResultEnum.ImgZoomResultEnum;
 import com.round.aside.server.module.imagepath.IImagePath;
+import com.round.aside.server.servletexten.HttpServletRequestDecorator;
 import com.round.aside.server.util.FileUtils;
 import com.round.aside.server.util.VerifyUtils;
 
-import static com.round.aside.server.constant.Constants.*;
+//import static com.round.aside.server.constant.Constants.*;
 import static com.round.aside.server.constant.StatusCode.*;
 
 /**
@@ -90,8 +84,18 @@ public class PicUploadServlet extends BaseApiServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        HttpServletRequestDecorator mRequestDecorator;
+        try {
+            mRequestDecorator = new HttpServletRequestDecorator(request);
+        } catch (FileUploadException e1) {
+            e1.printStackTrace();
+            writeErrorResponse(response, F8000, "文件上传出错");
+            return;
+        }
+
         UserIDTokenBean.Builder mUserIDTokenBuilder = new UserIDTokenBean.Builder();
-        StatusCodeBean mStatusCodeBean = readUserIDToken(request, mUserIDTokenBuilder);
+        StatusCodeBean mStatusCodeBean = readUserIDToken(mRequestDecorator,
+                mUserIDTokenBuilder);
         if (mStatusCodeBean.getStatusCode() != S1000) {
             BaseResultBean mBean = new BaseResultBean.Builder()
                     .setStatusCodeBean(mStatusCodeBean).build();
@@ -108,16 +112,15 @@ public class PicUploadServlet extends BaseApiServlet {
             return;
         }
 
-        int mUserID = Integer.valueOf(request.getParameter("userid"));
+        int mUserID = mUserIDTokenBean.getUserID();
 
-        if (!ServletFileUpload.isMultipartContent(request)) {
+        if (!mRequestDecorator.isMultipartContent()) {
             writeErrorResponse(response, ER5007, "图片上传未使用multipart");
             return;
         }
 
-        FileItemFactory mDFIF = new DiskFileItemFactory(1024000, new File(
-                ORI_IMG_DIR));
-        ServletFileUpload mSFU = new ServletFileUpload(mDFIF);
+        List<FileItemStream> mFileItemList = mRequestDecorator
+                .getFileItemStreamList();
         IGenerator mGenerator = ModuleObjectPool.getModuleObject(
                 IGenerator.class, null);
         IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
@@ -133,16 +136,13 @@ public class PicUploadServlet extends BaseApiServlet {
                 return;
             }
 
-            FileItemIterator mFileIterator = mSFU.getItemIterator(request);
-
-            int count = 1;
+            int ordinal = 1;
             List<PicUploadResult> mPURList = new ArrayList<PicUploadResult>(5);
 
-            while (mFileIterator.hasNext()) {
-                FileItemStream mFileItemStream = mFileIterator.next();
+            for (int i = 0; i < mFileItemList.size(); i++) {
+                FileItemStream mFileItemStream = mFileItemList.get(i);
 
-                if (!mFileItemStream.isFormField()
-                        && mFileItemStream.getName().length() > 0) {
+                if (mFileItemStream.getName().length() > 0) {
                     String mPicName = mFileItemStream.getName();
                     String mPicExtenName = FileUtils.getFileExtension(mPicName);
                     if (!VerifyUtils.isLegalPicFormat(mPicExtenName)) {
@@ -175,37 +175,59 @@ public class PicUploadServlet extends BaseApiServlet {
                         }
                     }
 
-                    String mOriPicRelaPath = mImagePath.originalImgPath(
+                    String mOriPicRelaPath = mImagePath.getOriginalImgPath(
                             mUserID, mPicID, mPicExtenName);
-                    String mThuPicRelaPath = mImagePath.thumbImgPath(mUserID,
-                            mPicID, mPicExtenName);
+                    String mThuPicRelaPath = mImagePath.getThumbImgPath(
+                            mUserID, mPicID, mPicExtenName);
 
-                    ImgRWResultEnum mRWResult = mImageIO.writeImg(
-                            mFileItemStream.openStream(), ROOT_DIR
-                                    + mOriPicRelaPath);
-                    switch (mRWResult) {
-                        case SUCCESS:
+                    mStatusCodeBean = mImageIO.writeImg(
+                            mFileItemStream.openStream(), mOriPicRelaPath);
+                    switch (mStatusCodeBean.getStatusCode()) {
+                        case S1000:
                             break;
+                        case ER5001:
+                            mDBManager.rollbackTransaction();
+                            throw new IllegalStateException(
+                                    "Illegal parameter exception!");
+                        case R6015:
+                        case EX2031:
+                        case EX2032:
+                            mDBManager.rollbackTransaction();
+                            writeErrorResponse(response,
+                                    mStatusCodeBean.getStatusCode(),
+                                    mStatusCodeBean.getMsg());
+                            return;
                         default:
                             mDBManager.rollbackTransaction();
-                            writeErrorResponse(response, ER5009, "原图存储异常");
-                            return;
+                            throw new IllegalStateException(
+                                    "Illegal Status Code!");
                     }
 
-                    ImgZoomResultEnum mZoomResult = mImageIO.zoomImg(ROOT_DIR
-                            + mOriPicRelaPath, ROOT_DIR + mThuPicRelaPath,
-                            mPicExtenName, 200, 200);
-                    switch (mZoomResult) {
-                        case SUCCESS:
+                    mStatusCodeBean = mImageIO.zoomImg(mOriPicRelaPath,
+                            mThuPicRelaPath, mPicExtenName, 200, 200, "JPEG");
+                    switch (mStatusCodeBean.getStatusCode()) {
+                        case S1000:
                             break;
+                        case ER5001:
+                            mDBManager.rollbackTransaction();
+                            throw new IllegalStateException(
+                                    "Illegal parameter exception!");
+                        case R6014:
+                        case R6015:
+                        case EX2032:
+                            mDBManager.rollbackTransaction();
+                            writeErrorResponse(response,
+                                    mStatusCodeBean.getStatusCode(),
+                                    mStatusCodeBean.getMsg());
+                            return;
                         default:
                             mDBManager.rollbackTransaction();
-                            writeErrorResponse(response, ER5009, "缩略图存储异常");
-                            return;
+                            throw new IllegalStateException(
+                                    "Illegal Status Code!");
                     }
 
                     mStatusCodeBean = mDBManager.updatePicWithOutAdId(mPicID,
-                            count, mOriPicRelaPath, mThuPicRelaPath,
+                            ordinal, mOriPicRelaPath, mThuPicRelaPath,
                             mPicExtenName);
 
                     switch (mStatusCodeBean.getStatusCode()) {
@@ -213,11 +235,13 @@ public class PicUploadServlet extends BaseApiServlet {
                             break;
                         case ER5001:
                             mDBManager.rollbackTransaction();
-                            writeErrorResponse(response, ER5001, mStatusCodeBean.getMsg());
+                            writeErrorResponse(response, ER5001,
+                                    mStatusCodeBean.getMsg());
                             return;
                         case EX2014:
                             mDBManager.rollbackTransaction();
-                            writeErrorResponse(response, EX2010, "后台数据库更新异常，请重试");
+                            writeErrorResponse(response, EX2010,
+                                    "后台数据库更新异常，请重试");
                             return;
                         default:
                             mDBManager.rollbackTransaction();
@@ -226,22 +250,23 @@ public class PicUploadServlet extends BaseApiServlet {
                     }
 
                     PicUploadResult.Builder mPURBuilder = new PicUploadResult.Builder();
-                    mPURBuilder.setPicName(mPicName).setOrder(count).setPicID(mPicID);
+                    mPURBuilder.setPicName(mPicName).setOrdinal(ordinal)
+                            .setPicID(mPicID);
                     mPURList.add(mPURBuilder.build());
 
-                    count++;
+                    ordinal++;
                 }
 
             }
 
-            if(mDBManager.commitTransaction()){
+            if (mDBManager.commitTransaction()) {
                 writeCorrectResponse(response, S1000, "成功", mPURList);
             } else {
                 mDBManager.rollbackTransaction();
                 writeErrorResponse(response, EX2010, "后台数据库事务提交异常，请重试");
             }
 
-        } catch (FileUploadException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             mDBManager.rollbackTransaction();
             writeErrorResponse(response, F8000, "文件上传出错");

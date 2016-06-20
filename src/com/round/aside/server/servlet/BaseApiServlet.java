@@ -77,7 +77,7 @@ public abstract class BaseApiServlet extends HttpServlet {
      * @param request
      *            HttpRequest请求对象
      * @return 状态码数据bean，分别为{@link #S1002}Token验证通过，{@link #ER5005}userId输入非法，
-     *         {@link #ER5006}token输入非法，{@link #EX2000}SQL异常，{@link #5001} 参数非法，
+     *         {@link #ER5006}token输入非法，{@link #EX2010}SQL异常，{@link #5001} 参数非法，
      *         {@link #R6006}token非法，{@link #R6007}token失效
      * @throws ServletException
      * @throws IOException

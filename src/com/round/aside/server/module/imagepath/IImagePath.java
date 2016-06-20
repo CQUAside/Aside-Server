@@ -3,7 +3,8 @@ package com.round.aside.server.module.imagepath;
 import com.round.aside.server.module.IModule;
 
 /**
- * 图片目录模块超级接口
+ * 图片目录模块超级接口<br>
+ * 注意本模块构建的路径均是基于URL的相对路径。具体文件存储路径由各第三调用方自行包装。
  * 
  * @author Ghost_White
  * 

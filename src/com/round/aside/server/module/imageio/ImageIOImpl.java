@@ -15,6 +15,7 @@ import com.round.aside.server.bean.statuscode.ReadImgStatusCodeBean;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
 import com.round.aside.server.util.StringUtil;
 
+import static com.round.aside.server.constant.Constants.*;
 import static com.round.aside.server.constant.StatusCode.*;
 import static com.round.aside.server.util.MethodUtils.*;
 
@@ -27,13 +28,13 @@ public final class ImageIOImpl implements IImageIO {
     }
 
     @Override
-    public StatusCodeBean writeImg(InputStream mInput, String imgPath) {
+    public StatusCodeBean writeImg(InputStream mInput, String imgRelativePath) {
         StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
 
-        if (mInput == null || StringUtil.isEmpty(imgPath)) {
+        if (mInput == null || StringUtil.isEmpty(imgRelativePath)) {
             return mResultBuilder.setStatusCode(ER5001).setMsg("参数非法").build();
         }
-        File file = new File(imgPath);
+        File file = new File(ROOT_DIR + imgRelativePath);
         File mParentDir = file.getParentFile();
         if (mParentDir.isFile()) {
             mParentDir.delete();
@@ -65,15 +66,15 @@ public final class ImageIOImpl implements IImageIO {
     }
 
     @Override
-    public ReadImgStatusCodeBean readImg(String imgpath) {
+    public ReadImgStatusCodeBean readImg(String imgRelativePath) {
         ReadImgStatusCodeBean.Builder mResultBuilder = new ReadImgStatusCodeBean.Builder();
 
-        if (StringUtil.isEmpty(imgpath)) {
+        if (StringUtil.isEmpty(imgRelativePath)) {
             mResultBuilder.setStatusCode(ER5001).setMsg("图片路径为空");
             return mResultBuilder.build();
         }
 
-        File file = new File(imgpath);
+        File file = new File(ROOT_DIR + imgRelativePath);
         InputStream in = null;
         try {
             in = new FileInputStream(file);
@@ -96,12 +97,12 @@ public final class ImageIOImpl implements IImageIO {
     }
 
     @Override
-    public StatusCodeBean clipImg(String mOriImgPath, String mClipImgPath,
+    public StatusCodeBean clipImg(String mOriImgRelaPath, String mClipImgRelaPath,
             String mExtension, int mMaxWidth, int mMaxHeight,
             String mClipImgType) {
         StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
 
-        if (StringUtil.isEmptyInSet(mOriImgPath, mClipImgPath, mExtension,
+        if (StringUtil.isEmptyInSet(mOriImgRelaPath, mClipImgRelaPath, mExtension,
                 mClipImgType)) {
             mResultBuilder.setStatusCode(ER5001).setMsg("参数非法");
             return mResultBuilder.build();
@@ -112,13 +113,13 @@ public final class ImageIOImpl implements IImageIO {
             return mResultBuilder.build();
         }
 
-        File mOriImgFile = new File(mOriImgPath);
+        File mOriImgFile = new File(ROOT_DIR + mOriImgRelaPath);
         if (!mOriImgFile.exists()) {
             mResultBuilder.setStatusCode(R6014).setMsg("源图不存在");
             return mResultBuilder.build();
         }
 
-        File mClipImgFile = new File(mClipImgPath);
+        File mClipImgFile = new File(ROOT_DIR + mClipImgRelaPath);
         File mClipImgParentDir = mClipImgFile.getParentFile();
         if (mClipImgParentDir.isFile()) {
             mClipImgParentDir.delete();
@@ -155,12 +156,12 @@ public final class ImageIOImpl implements IImageIO {
     }
 
     @Override
-    public StatusCodeBean zoomImg(String mOriImgPath, String mThumbImgPath,
+    public StatusCodeBean zoomImg(String mOriImgRelaPath, String mThumbImgRelaPath,
             String mExtension, int mMaxWidth, int mMaxHeight,
             String mThumbImgType) {
         StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
 
-        if (StringUtil.isEmptyInSet(mOriImgPath, mThumbImgPath, mExtension,
+        if (StringUtil.isEmptyInSet(mOriImgRelaPath, mThumbImgRelaPath, mExtension,
                 mThumbImgType)) {
             mResultBuilder.setStatusCode(ER5001).setMsg("参数非法");
             return mResultBuilder.build();
@@ -171,13 +172,13 @@ public final class ImageIOImpl implements IImageIO {
             return mResultBuilder.build();
         }
 
-        File mOriImgFile = new File(mOriImgPath);
+        File mOriImgFile = new File(ROOT_DIR + mOriImgRelaPath);
         if (!mOriImgFile.exists()) {
             mResultBuilder.setStatusCode(R6014).setMsg("源图不存在");
             return mResultBuilder.build();
         }
 
-        File mThumbImgFile = new File(mThumbImgPath);
+        File mThumbImgFile = new File(ROOT_DIR + mThumbImgRelaPath);
         File mThumbImgParentDir = mThumbImgFile.getParentFile();
         if (mThumbImgParentDir.isFile()) {
             mThumbImgParentDir.delete();

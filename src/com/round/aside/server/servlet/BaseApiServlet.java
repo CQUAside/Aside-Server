@@ -151,6 +151,19 @@ public abstract class BaseApiServlet extends HttpServlet {
     }
 
     /**
+     * 向Servlet客户端写回处理错误的结果的重置方法。
+     * 
+     * @param response
+     *            Servlet响应
+     * @param mSCB
+     *            状态结果码
+     */
+    protected final void writeErrorResponse(HttpServletResponse response,
+            StatusCodeBean mSCB) {
+        writeErrorResponse(response, mSCB.getStatusCode(), mSCB.getMsg());
+    }
+
+    /**
      * 向Servlet响应端写回处理错误的结果。<br>
      * 注：最好只处理错误情况的结果写回。因此只包含状态码和对应的描述信息。
      * 
@@ -166,6 +179,21 @@ public abstract class BaseApiServlet extends HttpServlet {
         BaseResultBean.Builder mBuilder = new BaseResultBean.Builder();
         mBuilder.setStatusCode(statusCode).setMsg(msg);
         writeResponse(response, mBuilder.build());
+    }
+
+    /**
+     * 向Servlet响应端写回处理正确的结果的重置方法。
+     * 
+     * @param response
+     *            Servlet响应
+     * @param mSCB
+     *            结果状态码
+     * @param obj
+     *            结果对象
+     */
+    protected final void writeCorrectResponse(HttpServletResponse response,
+            StatusCodeBean mSCB, Object obj) {
+        writeCorrectResponse(response, mSCB.getStatusCode(), mSCB.getMsg(), obj);
     }
 
     /**

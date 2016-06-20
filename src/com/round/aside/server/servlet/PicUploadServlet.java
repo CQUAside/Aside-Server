@@ -193,9 +193,7 @@ public class PicUploadServlet extends BaseApiServlet {
                         case EX2031:
                         case EX2032:
                             mDBManager.rollbackTransaction();
-                            writeErrorResponse(response,
-                                    mStatusCodeBean.getStatusCode(),
-                                    mStatusCodeBean.getMsg());
+                            writeErrorResponse(response, mStatusCodeBean);
                             return;
                         default:
                             mDBManager.rollbackTransaction();
@@ -216,9 +214,7 @@ public class PicUploadServlet extends BaseApiServlet {
                         case R6015:
                         case EX2032:
                             mDBManager.rollbackTransaction();
-                            writeErrorResponse(response,
-                                    mStatusCodeBean.getStatusCode(),
-                                    mStatusCodeBean.getMsg());
+                            writeErrorResponse(response, mStatusCodeBean);
                             return;
                         default:
                             mDBManager.rollbackTransaction();

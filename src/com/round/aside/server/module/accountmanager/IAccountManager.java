@@ -1,7 +1,7 @@
 package com.round.aside.server.module.accountmanager;
 
 import com.round.aside.server.bean.RequestInfoBean;
-import com.round.aside.server.bean.statuscode.LoginUserBean;
+import com.round.aside.server.bean.statuscode.UserIDTokenSCBean;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
 import com.round.aside.server.module.IModule;
 
@@ -55,7 +55,7 @@ public interface IAccountManager extends IModule {
      *         {@link #ER5003L}手机号与认证码不符；{@link #ER5004L}手机认证码超时；{@link #F8003L}
      *         账号重复。
      */
-    LoginUserBean registerAccount(String mAccount, String mPassword,
+    UserIDTokenSCBean registerAccount(String mAccount, String mPassword,
             String mPhone, String mAuthcode, RequestInfoBean mRequestInfoBean);
 
     /**
@@ -73,7 +73,7 @@ public interface IAccountManager extends IModule {
      *         参数非法；{@link #R6004}账号不存在；{@link #R6005}密码错误；{@link #EX2010}
      *         数据库操作异常，请重试。
      */
-    LoginUserBean login(String mAccount, String mPassword, long period,
+    UserIDTokenSCBean login(String mAccount, String mPassword, long period,
             RequestInfoBean mRequestInfoBean);
 
     /**

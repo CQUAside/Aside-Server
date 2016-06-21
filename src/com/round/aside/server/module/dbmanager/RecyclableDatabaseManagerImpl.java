@@ -16,7 +16,7 @@ import com.round.aside.server.bean.entity.PublishAdEntity;
 import com.round.aside.server.bean.statuscode.AdStatusCodeBean;
 import com.round.aside.server.bean.statuscode.AuthCodeStatusCodeBean;
 import com.round.aside.server.bean.statuscode.EmailStatusCodeBean;
-import com.round.aside.server.bean.statuscode.LoginUserBean;
+import com.round.aside.server.bean.statuscode.UserIDTokenSCBean;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
 import com.round.aside.server.bean.statuscode.UserEmailAuthStatusBean;
 import com.round.aside.server.entity.InformAdsEntity;
@@ -260,9 +260,9 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
     private static final String SELECT_USERID_FORMAT = "select userid, password from aside_user where account = ?";
 
     @Override
-    public LoginUserBean loginCheck(String mAccount, String mPassword,
+    public UserIDTokenSCBean loginCheck(String mAccount, String mPassword,
             long period) {
-        LoginUserBean.Builder mBuilder = new LoginUserBean.Builder();
+        UserIDTokenSCBean.Builder mBuilder = new UserIDTokenSCBean.Builder();
 
         if (StringUtil.isEmptyInSet(mAccount, mPassword) || period <= 0) {
             mBuilder.setStatusCode(ER5001).setMsg("账号或密码参数非法，请检查后重新输入");
@@ -412,9 +412,11 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
     }
 
     public static final String uploadingAdsql = "INSERT into aside_advertisement(AdID, Thumbnail_ID, CarrouselID, Title, Content, StartTime, Deadline, Money, Status, ClickCount, CollectCount, UserID) values(?, ?, ?,?,?,?,?,?,?,?,?,?)";
-    public static final String INSERT_AD = "INSERT into aside_advertisement(Thumbnail_ID, Title, Content, StartTime, Deadline, Status, UserID) values(?, ?, ?, ?, ?, ?, ?)";
+    public static final String INSERT_AD = "INSERT into aside_advertisement(Thumbnail_ID, Title, Content, StartTime, DeadTime, Status, UserID) values(?, ?, ?, ?, ?, ?, ?)";
     public static final String QUERY_ADID = "SELECT AdID from aside_advertisement where UserID = ? and Thumbnail_ID = ? ORDER BY AdID DESC";
     public static final String INSERT_ADAREA = "INSERT into aside_adarea(adId, areaId) values(?, ?)";
+    public static final String UPDATE_LOGOPIC_ADID = "UPDATE aside_logopic SET adid = ? WHERE picid = ?";
+    public static final String UPDATE_PIC_ADID = "";
 
     @Override
     public StatusCodeBean insertAD(PublishAdEntity ad, int mUserID,
@@ -459,8 +461,10 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
                 break;
             }
 
-            if (mAdID != -1) {
+            if (mAdID == -1) {
+                rollbackTransaction();
                 mBuilder.setStatusCode(EX2013).setMsg("数据库插入异常，请重试");
+                return mBuilder.build();
             }
 
             mPreTwoState = mConnection.prepareStatement(INSERT_ADAREA);

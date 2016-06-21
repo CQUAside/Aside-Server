@@ -6,7 +6,7 @@ import com.round.aside.server.bean.entity.PublishAdEntity;
 import com.round.aside.server.bean.statuscode.AdStatusCodeBean;
 import com.round.aside.server.bean.statuscode.AuthCodeStatusCodeBean;
 import com.round.aside.server.bean.statuscode.EmailStatusCodeBean;
-import com.round.aside.server.bean.statuscode.LoginUserBean;
+import com.round.aside.server.bean.statuscode.UserIDTokenSCBean;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
 import com.round.aside.server.bean.statuscode.UserEmailAuthStatusBean;
 import com.round.aside.server.entity.InformAdsEntity;
@@ -117,7 +117,7 @@ public interface IDatabaseManager extends IModule,
      *         调用参数非法，{@link #R6004}账号不存在，{@link #R6005}密码错误，{@link #EX2016}
      *         SQL查询异常。
      */
-    LoginUserBean loginCheck(String mAccount, String mPassword, long period);
+    UserIDTokenSCBean loginCheck(String mAccount, String mPassword, long period);
 
     /**
      * Token令牌登陆检查

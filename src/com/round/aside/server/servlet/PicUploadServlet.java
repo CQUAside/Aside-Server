@@ -11,10 +11,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 
-import com.round.aside.server.bean.UserIDTokenBean;
 import com.round.aside.server.bean.jsonbean.BaseResultBean;
 import com.round.aside.server.bean.jsonbean.result.PicUploadResult;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
+import com.round.aside.server.bean.statuscode.UserIDTokenSCBean;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.dbmanager.IDatabaseManager;
 import com.round.aside.server.module.generator.IGenerator;
@@ -93,18 +93,15 @@ public class PicUploadServlet extends BaseApiServlet {
             return;
         }
 
-        UserIDTokenBean.Builder mUserIDTokenBuilder = new UserIDTokenBean.Builder();
-        StatusCodeBean mStatusCodeBean = readUserIDToken(mRequestDecorator,
-                mUserIDTokenBuilder);
-        if (mStatusCodeBean.getStatusCode() != S1000) {
+        UserIDTokenSCBean mUserIDTokenSCB = readUserIDToken(mRequestDecorator);
+        if (mUserIDTokenSCB.getStatusCode() != S1000) {
             BaseResultBean mBean = new BaseResultBean.Builder()
-                    .setStatusCodeBean(mStatusCodeBean).build();
+                    .setStatusCodeBean(mUserIDTokenSCB).build();
             writeResponse(response, mBean);
             return;
         }
-        UserIDTokenBean mUserIDTokenBean = mUserIDTokenBuilder.build();
 
-        mStatusCodeBean = verifyToken(request, mUserIDTokenBean);
+        StatusCodeBean mStatusCodeBean = verifyToken(request, mUserIDTokenSCB);
         if (mStatusCodeBean.getStatusCode() != S1002) {
             BaseResultBean mBean = new BaseResultBean.Builder()
                     .setStatusCodeBean(mStatusCodeBean).build();
@@ -112,7 +109,7 @@ public class PicUploadServlet extends BaseApiServlet {
             return;
         }
 
-        int mUserID = mUserIDTokenBean.getUserID();
+        int mUserID = mUserIDTokenSCB.getUserID();
 
         if (!mRequestDecorator.isMultipartContent()) {
             writeErrorResponse(response, ER5007, "图片上传未使用multipart");

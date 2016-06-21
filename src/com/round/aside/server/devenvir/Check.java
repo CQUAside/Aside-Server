@@ -1,7 +1,7 @@
 package com.round.aside.server.devenvir;
 
-import com.round.aside.server.bean.UserIDTokenBean;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
+import com.round.aside.server.bean.statuscode.UserIDTokenSCBean;
 
 import static com.round.aside.server.constant.StatusCode.*;
 
@@ -23,7 +23,7 @@ public final class Check {
      * @param mBean
      * @return
      */
-    public static StatusCodeBean verifyToken(UserIDTokenBean mBean) {
+    public static StatusCodeBean verifyToken(UserIDTokenSCBean mBean) {
         StatusCodeBean.Builder mBuilder = new StatusCodeBean.Builder();
         if (mBean.getUserID() != DevGlobalParameter.ADMIN_USERID) {
             mBuilder.setStatusCode(ER5001).setMsg("UserID非法");

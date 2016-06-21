@@ -6,9 +6,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.round.aside.server.bean.UserIDTokenBean;
 import com.round.aside.server.bean.jsonbean.BaseResultBean;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
+import com.round.aside.server.bean.statuscode.UserIDTokenSCBean;
 
 import static com.round.aside.server.constant.StatusCode.*;
 
@@ -70,17 +70,15 @@ public class GetLocateCityServlet extends BaseApiServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        UserIDTokenBean.Builder mUserIDTokenBuilder = new UserIDTokenBean.Builder();
-        StatusCodeBean mStatusCodeBean = readUserIDToken(request, mUserIDTokenBuilder);
-        if (mStatusCodeBean.getStatusCode() != S1000) {
+        UserIDTokenSCBean mUserIDTokenSCB = readUserIDToken(request);
+        if (mUserIDTokenSCB.getStatusCode() != S1000) {
             BaseResultBean mBean = new BaseResultBean.Builder()
-                    .setStatusCodeBean(mStatusCodeBean).build();
+                    .setStatusCodeBean(mUserIDTokenSCB).build();
             writeResponse(response, mBean);
             return;
         }
-        UserIDTokenBean mUserIDTokenBean = mUserIDTokenBuilder.build();
 
-        mStatusCodeBean = verifyToken(request, mUserIDTokenBean);
+        StatusCodeBean mStatusCodeBean = verifyToken(request, mUserIDTokenSCB);
         if (mStatusCodeBean.getStatusCode() != S1002) {
             BaseResultBean mBean = new BaseResultBean.Builder()
                     .setStatusCodeBean(mStatusCodeBean).build();

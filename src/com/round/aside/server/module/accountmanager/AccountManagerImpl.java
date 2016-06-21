@@ -2,7 +2,7 @@ package com.round.aside.server.module.accountmanager;
 
 import com.round.aside.server.bean.RequestInfoBean;
 import com.round.aside.server.bean.statuscode.AuthCodeStatusCodeBean;
-import com.round.aside.server.bean.statuscode.LoginUserBean;
+import com.round.aside.server.bean.statuscode.UserIDTokenSCBean;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
 import com.round.aside.server.bean.statuscode.UserEmailAuthStatusBean;
 import com.round.aside.server.enumeration.UserEmailStatusEnum;
@@ -101,9 +101,9 @@ public final class AccountManagerImpl implements IAccountManager {
      * 这里的业务逻辑首先向用户表插入一条账号注册记录，然后向token表插入一条登陆记录。这两部操作需要包装成一个事务。
      */
     @Override
-    public LoginUserBean registerAccount(String mAccount, String mPassword,
+    public UserIDTokenSCBean registerAccount(String mAccount, String mPassword,
             String mPhone, String mAuthcode, RequestInfoBean mRequestInfoBean) {
-        LoginUserBean.Builder mUserBuilder = new LoginUserBean.Builder();
+        UserIDTokenSCBean.Builder mUserBuilder = new UserIDTokenSCBean.Builder();
 
         if (StringUtil.isEmptyInSet(mAccount, mPassword, mPhone, mAuthcode)
                 || mAuthcode.length() != 4) {
@@ -218,7 +218,7 @@ public final class AccountManagerImpl implements IAccountManager {
                 throw new IllegalStateException("Illegal Status Code!");
         }
 
-        LoginUserBean mUserBean = mUserBuilder.build();
+        UserIDTokenSCBean mUserBean = mUserBuilder.build();
 
         if (mUserBean.getStatusCode() == S1000) {
             if (mDBManager.commitTransaction()) {
@@ -246,9 +246,9 @@ public final class AccountManagerImpl implements IAccountManager {
     }
 
     @Override
-    public LoginUserBean login(String mAccount, String mPassword, long period,
+    public UserIDTokenSCBean login(String mAccount, String mPassword, long period,
             RequestInfoBean mRequestInfoBean) {
-        LoginUserBean.Builder mUserBuilder = new LoginUserBean.Builder();
+        UserIDTokenSCBean.Builder mUserBuilder = new UserIDTokenSCBean.Builder();
 
         if (StringUtil.isEmptyInSet(mAccount, mPassword) || period <= 0) {
             mUserBuilder.setStatusCode(ER5001).setMsg("账号或密码输入非法，请检查后重新输入");
@@ -257,7 +257,7 @@ public final class AccountManagerImpl implements IAccountManager {
         IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
                 IDatabaseManager.class, null);
 
-        LoginUserBean mLoginUserBean = mDBManager.loginCheck(mAccount,
+        UserIDTokenSCBean mLoginUserBean = mDBManager.loginCheck(mAccount,
                 mPassword, period);
         switch (mLoginUserBean.getStatusCode()) {
             case S1000:

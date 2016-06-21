@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.round.aside.server.bean.RequestInfoBean;
 import com.round.aside.server.bean.jsonbean.BaseResultBean;
 import com.round.aside.server.bean.jsonbean.result.UserObjBean;
-import com.round.aside.server.bean.statuscode.LoginUserBean;
+import com.round.aside.server.bean.statuscode.UserIDTokenSCBean;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.accountmanager.IAccountManager;
 import com.round.aside.server.util.HttpRequestUtils;
@@ -83,7 +83,7 @@ public class RegisterAccountServlet extends BaseApiServlet {
 
         IAccountManager mAccountManager = ModuleObjectPool.getModuleObject(
                 IAccountManager.class, null);
-        LoginUserBean mLoginUserBean = mAccountManager.registerAccount(
+        UserIDTokenSCBean mLoginUserBean = mAccountManager.registerAccount(
                 mAccount, mPassword, mPhone, mAuthcode, mRequestInfoBean);
 
         BaseResultBean.Builder mBuilder = new BaseResultBean.Builder()

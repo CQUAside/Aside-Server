@@ -10,9 +10,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
 
 import com.alibaba.fastjson.JSON;
-import com.round.aside.server.bean.UserIDTokenBean;
 import com.round.aside.server.bean.jsonbean.BaseResultBean;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
+import com.round.aside.server.bean.statuscode.UserIDTokenSCBean;
 import com.round.aside.server.constant.GlobalParameter;
 import com.round.aside.server.devenvir.Check;
 import com.round.aside.server.module.ModuleObjectPool;
@@ -42,13 +42,10 @@ public abstract class BaseApiServlet extends HttpServlet {
      * 
      * @param request
      *            Servlet请求参数
-     * @param mUserIDTokenBuilder
-     *            填充UserID和Token所用
      * @return 状态码
      */
-    protected final StatusCodeBean readUserIDToken(HttpServletRequest request,
-            UserIDTokenBean.Builder mUserIDTokenBuilder) {
-        StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
+    protected final UserIDTokenSCBean readUserIDToken(HttpServletRequest request) {
+        UserIDTokenSCBean.Builder mResultBuilder = new UserIDTokenSCBean.Builder();
 
         String mUserIDStr = request.getParameter("userid");
         int mUserID;
@@ -56,19 +53,20 @@ public abstract class BaseApiServlet extends HttpServlet {
             mUserID = Integer.valueOf(mUserIDStr);
         } catch (Exception e) {
             e.printStackTrace();
-            return mResultBuilder.setStatusCode(ER5005).setMsg("UserID参数非法")
-                    .build();
+            mResultBuilder.setStatusCode(ER5005).setMsg("UserID参数非法");
+            return mResultBuilder.build();
         }
-        mUserIDTokenBuilder.setUserID(mUserID);
+        mResultBuilder.setUserID(mUserID);
 
         String mToken = request.getParameter("token");
         if (StringUtil.isEmpty(mToken)) {
-            return mResultBuilder.setStatusCode(ER5006).setMsg("Token参数非法")
-                    .build();
+            mResultBuilder.setStatusCode(ER5006).setMsg("Token参数非法");
+            return mResultBuilder.build();
         }
-        mUserIDTokenBuilder.setToken(mToken);
+        mResultBuilder.setToken(mToken);
 
-        return mResultBuilder.setStatusCode(S1000).build();
+        mResultBuilder.setStatusCode(S1000).setMsg("成功");
+        return mResultBuilder.build();
     }
 
     /**
@@ -83,7 +81,7 @@ public abstract class BaseApiServlet extends HttpServlet {
      * @throws IOException
      */
     protected final StatusCodeBean verifyToken(HttpServletRequest request,
-            UserIDTokenBean mBean) {
+            UserIDTokenSCBean mBean) {
 
         if (GlobalParameter.DEV) {
             return Check.verifyToken(mBean);

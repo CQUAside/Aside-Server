@@ -50,7 +50,6 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
     private Connection mConnection;
 
     private PreparedStatement mPreState;
-    private PreparedStatement mPreTwoState;
     private ResultSet mResultSet;
 
     public RecyclableDatabaseManagerImpl()
@@ -411,12 +410,11 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
         return mBuilder.build();
     }
 
-    public static final String uploadingAdsql = "INSERT into aside_advertisement(AdID, Thumbnail_ID, CarrouselID, Title, Content, StartTime, Deadline, Money, Status, ClickCount, CollectCount, UserID) values(?, ?, ?,?,?,?,?,?,?,?,?,?)";
-    public static final String INSERT_AD = "INSERT into aside_advertisement(Thumbnail_ID, Title, Content, StartTime, DeadTime, Status, UserID) values(?, ?, ?, ?, ?, ?, ?)";
-    public static final String QUERY_ADID = "SELECT AdID from aside_advertisement where UserID = ? and Thumbnail_ID = ? ORDER BY AdID DESC";
+    public static final String INSERT_AD = "INSERT into aside_advertisement(LogoPic_ID, Title, Content, StartTime, DeadTime, Status, UserID) values(?, ?, ?, ?, ?, ?, ?)";
+    public static final String QUERY_ADID = "SELECT AdID from aside_advertisement where UserID = ? and LogoPic_ID = ? ORDER BY AdID DESC";
     public static final String INSERT_ADAREA = "INSERT into aside_adarea(adId, areaId) values(?, ?)";
     public static final String UPDATE_LOGOPIC_ADID = "UPDATE aside_logopic SET adid = ? WHERE picid = ?";
-    public static final String UPDATE_PIC_ADID = "";
+    public static final String UPDATE_PIC_ADID = "UPDATE aside_pic SET adid = ?, ordinal = ? WHERE picid = ?";
 
     @Override
     public StatusCodeBean insertAD(PublishAdEntity ad, int mUserID,
@@ -460,6 +458,8 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
                 mAdID = mResultSet.getInt(1);
                 break;
             }
+            closeMemberResultSet();
+            closeMemberPreparedStatement();
 
             if (mAdID == -1) {
                 rollbackTransaction();
@@ -467,14 +467,32 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
                 return mBuilder.build();
             }
 
-            mPreTwoState = mConnection.prepareStatement(INSERT_ADAREA);
+            mPreState = mConnection.prepareStatement(INSERT_ADAREA);
             List<String> mAreaSet = ad.getAdAreaSet();
             for (String str : mAreaSet) {
-                mPreTwoState.setInt(1, mAdID);
-                mPreTwoState.setString(2, str);
-                mPreTwoState.addBatch();
+                mPreState.setInt(1, mAdID);
+                mPreState.setString(2, str);
+                mPreState.addBatch();
             }
-            mPreTwoState.executeBatch();
+            mPreState.executeBatch();
+            closeMemberPreparedStatement();
+
+            mPreState = mConnection.prepareStatement(UPDATE_LOGOPIC_ADID);
+            mPreState.setInt(1, mAdID);
+            mPreState.setString(2, ad.getAdLogoImgID());
+            mPreState.executeUpdate();
+            closeMemberPreparedStatement();
+
+            mPreState = mConnection.prepareStatement(UPDATE_PIC_ADID);
+            List<String> mImgIDSet = ad.getAdImgIDSet();
+            for (int i = 0, j = 1; i < mImgIDSet.size(); i++, j++) {
+                mPreState.setInt(1, mAdID);
+                mPreState.setInt(2, j);
+                mPreState.setString(3, mImgIDSet.get(i));
+                mPreState.addBatch();
+            }
+            mPreState.executeBatch();
+            closeMemberPreparedStatement();
 
             mConnection.commit();
 
@@ -487,7 +505,6 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             closeTransaction();
             closeMemberResultSet();
             closeMemberPreparedStatement();
-            closeMemberPreparedTwoStatement();
         }
         return mBuilder.build();
     }
@@ -961,17 +978,6 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
         }
     }
 
-    private void closeMemberPreparedTwoStatement() {
-        if (mPreTwoState != null) {
-            try {
-                mPreTwoState.close();
-            } catch (Exception e1) {
-            } finally {
-                mPreTwoState = null;
-            }
-        }
-    }
-
     /**
      * 关闭ResultSet的成员变量
      */
@@ -1040,7 +1046,6 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
     }
 
 }

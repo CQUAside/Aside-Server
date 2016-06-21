@@ -56,22 +56,22 @@
         <servlet-name>SendRegisterPhoneAuthCodeServlet</servlet-name>
         <servlet-class>com.round.aside.server.servlet.SendRegisterPhoneAuthCodeServlet</servlet-class>
     </servlet>
-  <servlet>
-    <servlet-name>LoginServlet</servlet-name>
-    <servlet-class>com.round.aside.server.servlet.LoginServlet</servlet-class>
-  </servlet>
-  <servlet>
-    <servlet-name>GetLocateCityServlet</servlet-name>
-    <servlet-class>com.round.aside.server.servlet.GetLocateCityServlet</servlet-class>
-  </servlet>
-  <servlet>
-    <servlet-name>PicUploadServlet</servlet-name>
-    <servlet-class>com.round.aside.server.servlet.PicUploadServlet</servlet-class>
-  </servlet>
-  <servlet>
-    <servlet-name>PublishAdServlet</servlet-name>
-    <servlet-class>com.round.aside.server.servlet.PublishAdServlet</servlet-class>
-  </servlet>
+    <servlet>
+        <servlet-name>LoginServlet</servlet-name>
+        <servlet-class>com.round.aside.server.servlet.LoginServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>GetLocateCityServlet</servlet-name>
+        <servlet-class>com.round.aside.server.servlet.GetLocateCityServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>PicUploadServlet</servlet-name>
+        <servlet-class>com.round.aside.server.servlet.PicUploadServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>PublishAdServlet</servlet-name>
+        <servlet-class>com.round.aside.server.servlet.PublishAdServlet</servlet-class>
+    </servlet>
 
 
 
@@ -94,22 +94,22 @@
         <servlet-name>SendRegisterPhoneAuthCodeServlet</servlet-name>
         <url-pattern>/servlet/SendRegisterPhoneAuthCodeServlet</url-pattern>
     </servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>LoginServlet</servlet-name>
-    <url-pattern>/servlet/LoginServlet</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>GetLocateCityServlet</servlet-name>
-    <url-pattern>/servlet/GetLocateCityServlet</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>PicUploadServlet</servlet-name>
-    <url-pattern>/servlet/PicUploadServlet</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>PublishAdServlet</servlet-name>
-    <url-pattern>/servlet/PublishAdServlet</url-pattern>
-  </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>LoginServlet</servlet-name>
+        <url-pattern>/servlet/LoginServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>GetLocateCityServlet</servlet-name>
+        <url-pattern>/servlet/GetLocateCityServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>PicUploadServlet</servlet-name>
+        <url-pattern>/servlet/PicUploadServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>PublishAdServlet</servlet-name>
+        <url-pattern>/servlet/PublishAdServlet</url-pattern>
+    </servlet-mapping>
 
 
     <filter>

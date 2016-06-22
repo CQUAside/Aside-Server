@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 
 import com.alibaba.fastjson.JSON;
 import com.round.aside.server.bean.jsonbean.BaseResultBean;
+import com.round.aside.server.bean.requestparameter.UserIDTokenRequestPara;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
 import com.round.aside.server.bean.statuscode.UserIDTokenSCBean;
 import com.round.aside.server.constant.GlobalParameter;
@@ -38,6 +39,7 @@ public abstract class BaseApiServlet extends HttpServlet {
 
     /**
      * 对Post请求中的UserID和Token验证的完全方法。<br>
+     * 已弃用该方法。请使用{@link #doVerifyTokenInPost(UserIDTokenRequestPara)}方法替代。
      * 
      * @param request
      *            客户端发送给服务器的请求
@@ -45,6 +47,7 @@ public abstract class BaseApiServlet extends HttpServlet {
      *            服务器发送给客户端的响应
      * @return true为验证通过，false为验证失败
      */
+    @Deprecated
     protected final boolean doVerifyTokenInPost(HttpServletRequest request,
             HttpServletResponse response) {
         BaseResultBean.Builder mResultBuilder = new BaseResultBean.Builder();
@@ -66,12 +69,14 @@ public abstract class BaseApiServlet extends HttpServlet {
     }
 
     /**
-     * 读取UserID和Token
+     * 读取UserID和Token<br>
+     * 已弃用，无替代方法。
      * 
      * @param request
      *            Servlet请求参数
      * @return 状态码
      */
+    @Deprecated
     protected final UserIDTokenSCBean readUserIDToken(HttpServletRequest request) {
         UserIDTokenSCBean.Builder mResultBuilder = new UserIDTokenSCBean.Builder();
 
@@ -98,7 +103,8 @@ public abstract class BaseApiServlet extends HttpServlet {
     }
 
     /**
-     * Token合法性检查。用于那些带有Token验证的接口调用，用于验证token的合法性。
+     * Token合法性检查。用于那些带有Token验证的接口调用，用于验证token的合法性。<br>
+     * 已弃用。请使用{@link #verifyToken(UserIDTokenRequestPara)}方法替代。
      * 
      * @param request
      *            HttpRequest请求对象
@@ -106,6 +112,7 @@ public abstract class BaseApiServlet extends HttpServlet {
      *         {@link #ER5006}token输入非法，{@link #EX2010}SQL异常，{@link #5001} 参数非法，
      *         {@link #R6006}token非法，{@link #R6007}token失效。
      */
+    @Deprecated
     protected final StatusCodeBean verifyToken(HttpServletRequest request,
             UserIDTokenSCBean mBean) {
 
@@ -144,6 +151,78 @@ public abstract class BaseApiServlet extends HttpServlet {
         }
 
         return mBuilder.build();
+    }
+
+    /**
+     * 对Post请求中的UserID和Token验证的完全方法。<br>
+     * 
+     * @param response
+     *            服务器发送给客户端的响应
+     * @param mUserIDTokenRP
+     *            包含UserID和Token的请求参数集
+     * @return true为验证通过，false为验证失败
+     */
+    protected final boolean doVerifyTokenInPost(HttpServletResponse response,
+            UserIDTokenRequestPara mUserIDTokenRP) {
+        BaseResultBean.Builder mResultBuilder = new BaseResultBean.Builder();
+
+        StatusCodeBean mStatusCodeBean = verifyToken(mUserIDTokenRP);
+        if (mStatusCodeBean.getStatusCode() != S1002) {
+            mResultBuilder.setStatusCodeBean(mStatusCodeBean);
+            writeResponse(response, mResultBuilder.build());
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Token合法性检查。用于那些带有Token验证的接口调用，用于验证token的合法性。
+     * 
+     * @param mUserIDTokenRP
+     *            包含UserID和Token的请求参数集
+     * @return 状态码数据bean，分别为{@link #S1002}Token验证通过，{@link #ER5005}userId输入非法，
+     *         {@link #ER5006}token输入非法，{@link #EX2010}SQL异常，{@link #5001} 参数非法，
+     *         {@link #R6006}token非法，{@link #R6007}token失效。
+     */
+    protected final StatusCodeBean verifyToken(
+            UserIDTokenRequestPara mUserIDTokenRP) {
+
+        if (GlobalParameter.DEV) {
+            return Check.verifyToken(mUserIDTokenRP);
+        }
+
+        INetSecurity mNetSecurity = ModuleObjectPool.getModuleObject(
+                INetSecurity.class, null);
+        StatusCodeBean mStatusCodeBean = mNetSecurity.checkTokenLegal(
+                mUserIDTokenRP.getUserID(), mUserIDTokenRP.getToken());
+        if (mStatusCodeBean.getStatusCode() != S1000) {
+            return mStatusCodeBean;
+        }
+
+        StatusCodeBean.Builder mBuilder = new StatusCodeBean.Builder();
+
+        IAccountManager mAccountManager = ModuleObjectPool.getModuleObject(
+                IAccountManager.class, null);
+        mStatusCodeBean = mAccountManager.verifyToken(
+                mUserIDTokenRP.getUserID(), mUserIDTokenRP.getToken());
+        switch (mStatusCodeBean.getStatusCode()) {
+            case S1000:
+                mBuilder.setStatusCode(S1002).setMsg("Token验证成功");
+                break;
+            case EX2016:
+                mBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
+                break;
+            case ER5001:
+            case R6006:
+            case R6007:
+                mBuilder.setStatusCodeBean(mStatusCodeBean);
+                break;
+            default:
+                throw new IllegalStateException("Illegal Status Code!");
+        }
+
+        return mBuilder.build();
+
     }
 
     /**

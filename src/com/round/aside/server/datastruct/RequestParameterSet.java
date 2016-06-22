@@ -97,6 +97,21 @@ public final class RequestParameterSet {
         return mKeyValueMap.get(key);
     }
 
+    public int getValueAsInt(String key) throws NumberFormatException {
+        String mValueStr = mKeyValueMap.get(key);
+        return Integer.parseInt(mValueStr);
+    }
+
+    /**
+     * 清空重置
+     */
+    public void clear() {
+        mIndex = 0;
+        mKeyList.clear();
+        mKeyIndexMap.clear();
+        mKeyValueMap.clear();
+    }
+
     /**
      * 用于Map中的Key
      * 

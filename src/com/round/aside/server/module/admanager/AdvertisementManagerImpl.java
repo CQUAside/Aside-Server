@@ -115,6 +115,13 @@ public class AdvertisementManagerImpl implements IAdvertisementManager {
     }
 
     @Override
+    public StatusCodeBean putawayAD(int mAdID, int mUserID) {
+        StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
+        mResultBuilder.setStatusCode(S1000).setMsg("广告上架成功");
+        return mResultBuilder.build();
+    }
+
+    @Override
     public StatusCodeBean abolishAD(int adID, int userID) {
         StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
 
@@ -205,6 +212,78 @@ public class AdvertisementManagerImpl implements IAdvertisementManager {
             default:
                 throw new IllegalStateException("Illegal status code!");
         }
+        return mResultBuilder.build();
+    }
+
+    @Override
+    public StatusCodeBean deleteAD(int adID, int userID) {
+        StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
+
+        if (userID <= 0) {
+            return mResultBuilder.setStatusCode(ER5001).setMsg("UserID参数非法")
+                    .build();
+        }
+
+        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
+
+        AdStatusCodeBean mAdStatusBean = mDBManager.queryAD(adID);
+        switch (mAdStatusBean.getStatusCode()) {
+            case S1000:
+                mResultBuilder.setStatusCode(S1000).setMsg("广告状态相关信息查询成功");
+                break;
+            case EX2016:
+                mResultBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
+                break;
+            case ER5001:
+            case R6008:
+                mResultBuilder.setStatusCodeBean(mAdStatusBean);
+                break;
+            default:
+                mDBManager.release();
+                throw new IllegalStateException("Illegal status code!");
+        }
+
+        if (mAdStatusBean.getStatusCode() != S1000) {
+            mDBManager.release();
+            return mResultBuilder.build();
+        }
+
+        if (mAdStatusBean.getUserID() != userID) {
+            return mResultBuilder.setStatusCode(ER5010)
+                    .setMsg(adID + "广告不属于" + userID + "用户").build();
+        }
+
+        AdStatusEnum mAdStatus = mAdStatusBean.getAdStatus();
+        if (mAdStatus != REMOVAL) {
+
+            AdStatusEntity.Builder mAdStatusEntityBuilder = new AdStatusEntity.Builder()
+                    .setAdStatusCodeBean(mAdStatusBean);
+            mAdStatusEntityBuilder.setAdStatusType(REMOVAL.getType());
+
+            StatusCodeBean mStatusBean = mDBManager.updateAD(adID,
+                    mAdStatusEntityBuilder.build());
+
+            switch (mStatusBean.getStatusCode()) {
+                case S1000:
+                    mResultBuilder.setStatusCode(S1000).setMsg("广告删除成功");
+                    break;
+                case EX2014:
+                    mResultBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
+                    break;
+                case ER5001:
+                    mResultBuilder.setStatusCodeBean(mStatusBean);
+                    break;
+                default:
+                    mDBManager.release();
+                    throw new IllegalStateException("Illegal status code!");
+            }
+
+        } else {
+            mResultBuilder.setStatusCode(F8004).setMsg("广告已被删除");
+        }
+
+        mDBManager.release();
         return mResultBuilder.build();
     }
 

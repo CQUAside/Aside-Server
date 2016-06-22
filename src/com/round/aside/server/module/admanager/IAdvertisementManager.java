@@ -43,6 +43,17 @@ public interface IAdvertisementManager extends IModule {
     StatusCodeBean checkAD(int adID, AdStatusEnum finalState);
 
     /**
+     * 上架广告
+     * 
+     * @param mAdID
+     *            广告ID
+     * @param mUserID
+     *            用户ID，自然数
+     * @return 结果状态数据bean
+     */
+    StatusCodeBean putawayAD(int mAdID, int mUserID);
+
+    /**
      * 下架广告
      * 
      * @param adID
@@ -64,6 +75,18 @@ public interface IAdvertisementManager extends IModule {
      *         数据库操作异常，请重试以及{@link #ER5001}参数非法，其他返回值均为非法值。
      */
     StatusCodeBean deleteAD(int adID);
+
+    /**
+     * 删除广告
+     * 
+     * @param adID
+     *            广告ID
+     * @param userID
+     *            用户ID，自然数
+     * @return 为删除成功 合法的结果值只有六种，分别为{@link #S1000}广告删除成功； {@link #EX2010}
+     *         数据库操作异常，请重试以及{@link #ER5001}参数非法，其他返回值均为非法值。
+     */
+    StatusCodeBean deleteAD(int adID, int userID);
 
     /**
      * 增加关注度即收藏量CollectCount

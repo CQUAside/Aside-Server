@@ -258,11 +258,10 @@ public final class StatusCode {
     public static final int F8003L = 8003;
 
     /**
-     * 状态不符合审核要求
+     * 广告状态不符合操作要求<br>
      * 
-     * {@link IAdvertisementManager#checkAD(int)}方法
-     * 
-     * 审核广告时，若广告所处状态不是未审核状态时则，返回该状态码，表明广告在该状态下不能进行审核操作
+     * 例如{@link IAdvertisementManager#checkAD(int)}
+     * 方法审核广告时，若广告所处状态不是未审核状态时则，返回该状态码，表明广告在该状态下不能进行审核操作。
      */
     public static final int F8004 = 8004;
 

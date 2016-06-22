@@ -72,6 +72,11 @@
         <servlet-name>PublishAdServlet</servlet-name>
         <servlet-class>com.round.aside.server.servlet.PublishAdServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>UserOperateAdServlet</servlet-name>
+        <servlet-class>com.round.aside.server.servlet.UserOperateAdServlet</servlet-class>
+    </servlet>
+
 
 
 
@@ -109,6 +114,10 @@
     <servlet-mapping>
         <servlet-name>PublishAdServlet</servlet-name>
         <url-pattern>/servlet/PublishAdServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UserOperateAdServlet</servlet-name>
+        <url-pattern>/servlet/UserOperateAdServlet</url-pattern>
     </servlet-mapping>
 
 

@@ -1,48 +1,39 @@
 package com.round.aside.server.enumeration;
 
 /**
- * 广告状态枚举，如未审核，审核未通过，审核通过且有效，审核通过已下架，审核通过已过期，用户删除。
+ * 广告状态操作枚举。<br>
+ * 分别为上架，下架，删除，审核
  * 
  * @author A Shuai
- * @date 2016-5-28
+ * @date 2016-6-21
  * 
  */
-public enum AdStatusEnum {
+public enum AdStatusOpeEnum {
 
     /**
-     * 未审核
+     * 上架
      */
-    UNREVIEW(0),
-
-    /**
-     * 审核未通过
-     */
-    NOTPASS(1),
-
-    /**
-     * 审核通过且处于有效期内
-     */
-    VALID(2),
+    PUTAWAY(0),
 
     /**
      * 下架
      */
-    OFFSHELF(3),
+    UNSHELVE(1),
 
     /**
-     * 过期
+     * 删除
      */
-    OVERDUE(4),
+    DELETE(2),
 
     /**
-     * 已删除
+     * 审核
      */
-    REMOVAL(5);
+    CHECK(3);
 
     // 类型参数
     private final int type;
 
-    private AdStatusEnum(int type) {
+    private AdStatusOpeEnum(int type) {
         this.type = type;
     }
 
@@ -57,8 +48,8 @@ public enum AdStatusEnum {
      *            类型参数
      * @return
      */
-    public static AdStatusEnum valueOf(int type) {
-        for (AdStatusEnum mItem : values()) {
+    public static AdStatusOpeEnum valueOf(int type) {
+        for (AdStatusOpeEnum mItem : values()) {
             if (mItem.getType() == type) {
                 return mItem;
             }

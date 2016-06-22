@@ -27,8 +27,8 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
         var token = 'YTU4NTA5YWFmYzQ2ZmQ3YjJhMTY1OWU3MGU0N2M3Yjc=';
         
         var adTitle = document.getElementById('adTitle').value;
-        var adLogoImgID = '2016062017034511700000100005477';
-        var adImgIDSetStr = '2016062017034511700000100005477-2016062017034625700000100005026';
+        var adLogoImgID = '2016062116591016800000100007278';
+        var adImgIDSetStr = '2016062116591016800000100007278-2016062116591261100000100007900';
         var adDescription = document.getElementById('adDescription').value;
         var adAreaSetStr = '1001-1002-1003';
         var mDate = new Date();

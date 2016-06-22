@@ -9,7 +9,7 @@
   <head>
     <base href="<%=basePath%>">
     
-    <title>TestUserOpeAd</title>
+    <title>TestCheckAd</title>
     
     <meta http-equiv="pragma" content="no-cache">
     <meta http-equiv="cache-control" content="no-cache">
@@ -23,19 +23,20 @@
     <script language="javascript" src="<%=basePath%>js/jquery-1.9.1.js" ></script>
     <script type="text/javascript">
 
-    function onOpeAdStatusClick() {
+    function onCheckAdClick() {
         var userid = 10000;
         var token = 'YTU4NTA5YWFmYzQ2ZmQ3YjJhMTY1OWU3MGU0N2M3Yjc=';
         var adID = document.getElementById('adID').value;
-        var adOpe = document.getElementById('adOpe').value;
+        var adFinalState = document.getElementById('adFinalState').value;
         
         htmlobj = $.ajax({
-            url : 'servlet/UserOperateAdServlet',
+            url : 'servlet/CheckAdServlet',
             data : {
                 userid : userid,
                 token : token,
                 adID : adID,
-                adOpe : adOpe,
+                adOpe : '3',
+                adFinalState : adFinalState
             },
             type : 'post',
             async : true,
@@ -47,22 +48,23 @@
     }
 
     </script>
+
   </head>
   
   <body>
     <div id="result" style="FONT:12px 宋体"></div>
     <br>
-    <form action="${pageContext.request.contextPath}/servlet/UserOperateAdServlet" method="post">
+    <form action="${pageContext.request.contextPath}/servlet/CheckAdServlet" method="post">
         <table class="table">
             <tbody>
                 <tr>
                     <td><label>广告ID</label></td><td><input type="text" name="adID" id="adID" value="8" ></td>
                 </tr>
                 <tr>
-                    <td><label>操作类型</label></td><td><input type="text" name="adOpe" id="adOpe" value="1"></td>
+                    <td><label>审核结果</label></td><td><input type="text" name="adFinalState" id="adFinalState" value="1"></td>
                 </tr>
                 <tr>
-                    <td><input type="button" value="发布" onclick="onOpeAdStatusClick()"></td>
+                    <td><input type="button" value="审核" onclick="onCheckAdClick()"></td>
                 </tr>
             </tbody>
         </table>

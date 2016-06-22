@@ -95,18 +95,18 @@ public class UserOperateAdServlet extends BaseApiServlet {
         }
 
         RequestParameterSet mParaSet = new RequestParameterSet();
-        mParaSet.addKey("adID", true).addKey("adState", true);
-        String readResult = mParaSet.readParameter(request);
-        if (!StringUtil.isEmpty(readResult)) {
-            writeErrorResponse(response, ER5001, readResult
+        mParaSet.addKey("adID", true).addKey("adOpe", true);
+        String error = mParaSet.readParameter(request);
+        if (!StringUtil.isEmpty(error)) {
+            writeErrorResponse(response, ER5001, error
                     + " parameter isn't set");
             return;
         }
 
         AdStatusOpeEntity.Builder mAdSOEBuilder = new AdStatusOpeEntity.Builder();
-        readResult = mAdSOEBuilder.fillField(mParaSet);
-        if (!StringUtil.isEmpty(readResult)) {
-            writeErrorResponse(response, ER5001, readResult);
+        error = mAdSOEBuilder.fillField(mParaSet);
+        if (!StringUtil.isEmpty(error)) {
+            writeErrorResponse(response, ER5001, error);
             return;
         }
 
@@ -138,10 +138,8 @@ public class UserOperateAdServlet extends BaseApiServlet {
                 return;
         }
 
-        BaseResultBean mBean = new BaseResultBean.Builder().setStatusCodeBean(
-                mStatusCodeBean).build();
-
-        writeResponse(response, mBean);
+        mResultBuilder.setStatusCodeBean(mStatusCodeBean);
+        writeResponse(response, mResultBuilder.build());
     }
 
 }

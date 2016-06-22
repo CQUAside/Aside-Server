@@ -51,7 +51,7 @@ public class AdvertisementManagerImpl implements IAdvertisementManager {
     public StatusCodeBean checkAD(int adID, AdStatusEnum finalState) {
         StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
 
-        if (finalState != NOTPASS || finalState != VALID) {
+        if (finalState != NOTPASS && finalState != VALID) {
             return mResultBuilder.setStatusCode(ER5001).setMsg("审核广告的结果状态参数非法")
                     .build();
         }

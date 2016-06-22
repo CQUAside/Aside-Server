@@ -76,10 +76,10 @@
         <servlet-name>UserOperateAdServlet</servlet-name>
         <servlet-class>com.round.aside.server.servlet.UserOperateAdServlet</servlet-class>
     </servlet>
-
-
-
-
+    <servlet>
+        <servlet-name>CheckAdServlet</servlet-name>
+        <servlet-class>com.round.aside.server.servlet.CheckAdServlet</servlet-class>
+    </servlet>
 
 
     <servlet-mapping>
@@ -119,6 +119,10 @@
         <servlet-name>UserOperateAdServlet</servlet-name>
         <url-pattern>/servlet/UserOperateAdServlet</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CheckAdServlet</servlet-name>
+        <url-pattern>/servlet/CheckAdServlet</url-pattern>
+    </servlet-mapping>
 
 
     <filter>
@@ -137,7 +141,5 @@
         <filter-name>characterEncodingFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
-
-
 
 </web-app>

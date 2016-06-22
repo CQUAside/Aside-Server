@@ -3,7 +3,6 @@ package com.round.aside.server.servlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -36,6 +35,35 @@ public abstract class BaseApiServlet extends HttpServlet {
      * 
      */
     private static final long serialVersionUID = -4841445013440562966L;
+
+    /**
+     * 对Post请求中的UserID和Token验证的完全方法。<br>
+     * 
+     * @param request
+     *            客户端发送给服务器的请求
+     * @param response
+     *            服务器发送给客户端的响应
+     * @return true为验证通过，false为验证失败
+     */
+    protected final boolean doVerifyTokenInPost(HttpServletRequest request,
+            HttpServletResponse response) {
+        BaseResultBean.Builder mResultBuilder = new BaseResultBean.Builder();
+
+        UserIDTokenSCBean mUserIDTokenSCB = readUserIDToken(request);
+        if (mUserIDTokenSCB.getStatusCode() != S1000) {
+            mResultBuilder.setStatusCodeBean(mUserIDTokenSCB);
+            writeResponse(response, mResultBuilder.build());
+            return false;
+        }
+
+        StatusCodeBean mStatusCodeBean = verifyToken(request, mUserIDTokenSCB);
+        if (mStatusCodeBean.getStatusCode() != S1002) {
+            mResultBuilder.setStatusCodeBean(mStatusCodeBean);
+            writeResponse(response, mResultBuilder.build());
+            return false;
+        }
+        return true;
+    }
 
     /**
      * 读取UserID和Token
@@ -76,9 +104,7 @@ public abstract class BaseApiServlet extends HttpServlet {
      *            HttpRequest请求对象
      * @return 状态码数据bean，分别为{@link #S1002}Token验证通过，{@link #ER5005}userId输入非法，
      *         {@link #ER5006}token输入非法，{@link #EX2010}SQL异常，{@link #5001} 参数非法，
-     *         {@link #R6006}token非法，{@link #R6007}token失效
-     * @throws ServletException
-     * @throws IOException
+     *         {@link #R6006}token非法，{@link #R6007}token失效。
      */
     protected final StatusCodeBean verifyToken(HttpServletRequest request,
             UserIDTokenSCBean mBean) {

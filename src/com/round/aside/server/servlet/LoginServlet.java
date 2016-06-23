@@ -11,10 +11,12 @@ import javax.servlet.http.HttpServletResponse;
 import com.round.aside.server.bean.RequestInfoBean;
 import com.round.aside.server.bean.jsonbean.BaseResultBean;
 import com.round.aside.server.bean.jsonbean.result.UserObjBean;
+import com.round.aside.server.bean.requestparameter.LoginRequestPara;
 import com.round.aside.server.bean.statuscode.UserIDTokenSCBean;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.accountmanager.IAccountManager;
 import com.round.aside.server.util.HttpRequestUtils;
+import com.round.aside.server.util.StringUtil;
 
 /**
  * 登陆Servlet
@@ -73,21 +75,35 @@ public class LoginServlet extends BaseApiServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String mAccount = request.getParameter("account");
-        String mPassword = request.getParameter("password");
+        LoginRequestPara.Builder mLoginRPBuilder = new LoginRequestPara.Builder();
+        mLoginRPBuilder.fillFieldKey();
+        String error = mLoginRPBuilder.readParameterFromRequest(request);
+        if (!StringUtil.isEmpty(error)) {
+            writeErrorResponse(response, ER5001, error);
+            return;
+        }
+        error = mLoginRPBuilder.fillField();
+        if (!StringUtil.isEmpty(error)) {
+            writeErrorResponse(response, ER5001, error);
+            return;
+        }
+        LoginRequestPara mLoginRP = mLoginRPBuilder.build();
 
         RequestInfoBean mRequestInfoBean = HttpRequestUtils
                 .getOSBrowserInfo(request);
 
         IAccountManager mAccountManager = ModuleObjectPool.getModuleObject(
                 IAccountManager.class, null);
-        UserIDTokenSCBean mLoginUserBean = mAccountManager.login(mAccount,
-                mPassword, 7 * 24 * 60 * 60 * 1000, mRequestInfoBean);
+        UserIDTokenSCBean mLoginUserBean = mAccountManager.login(
+                mLoginRP.getAccount(), mLoginRP.getPassword(), 7 * 24 * 60 * 60
+                        * 1000, mRequestInfoBean);
 
-        BaseResultBean.Builder mBuilder = new BaseResultBean.Builder().setStatusCodeBean(mLoginUserBean);
+        BaseResultBean.Builder mBuilder = new BaseResultBean.Builder()
+                .setStatusCodeBean(mLoginUserBean);
 
         if (mLoginUserBean.getStatusCode() == S1000) {
-            UserObjBean mObjBean = new UserObjBean(mLoginUserBean.getUserID(), mLoginUserBean.getToken());
+            UserObjBean mObjBean = new UserObjBean(mLoginUserBean.getUserID(),
+                    mLoginUserBean.getToken());
             mBuilder.setObj(mObjBean);
         }
 

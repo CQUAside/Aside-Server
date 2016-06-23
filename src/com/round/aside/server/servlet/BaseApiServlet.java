@@ -70,7 +70,7 @@ public abstract class BaseApiServlet extends HttpServlet {
 
     /**
      * 读取UserID和Token<br>
-     * 已弃用，无替代方法。
+     * 已弃用，无需替代方法。
      * 
      * @param request
      *            Servlet请求参数

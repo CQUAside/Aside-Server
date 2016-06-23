@@ -76,7 +76,7 @@ public class SendRegisterPhoneAuthCodeServlet extends BaseApiServlet {
         StatusCodeBean mStatusCodeBean = mAccountManager
                 .sendPhoneAuthcode(mPhone);
         BaseResultBean.Builder mBuilder = new BaseResultBean.Builder();
-        if(mStatusCodeBean.getStatusCode() == S1000){
+        if (mStatusCodeBean.getStatusCode() == S1000) {
             mBuilder.setStatusCode(S1000).setMsg("验证码发送成功");
         } else {
             mBuilder.setStatusCodeBean(mStatusCodeBean);

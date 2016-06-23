@@ -11,10 +11,12 @@ import javax.servlet.http.HttpServletResponse;
 import com.round.aside.server.bean.RequestInfoBean;
 import com.round.aside.server.bean.jsonbean.BaseResultBean;
 import com.round.aside.server.bean.jsonbean.result.UserObjBean;
+import com.round.aside.server.bean.requestparameter.RegisterAccountRequestPara;
 import com.round.aside.server.bean.statuscode.UserIDTokenSCBean;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.accountmanager.IAccountManager;
 import com.round.aside.server.util.HttpRequestUtils;
+import com.round.aside.server.util.StringUtil;
 
 /**
  * 注册账号所用的Servlet
@@ -73,10 +75,19 @@ public class RegisterAccountServlet extends BaseApiServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String mAccount = request.getParameter("account");
-        String mPassword = request.getParameter("password");
-        String mPhone = request.getParameter("phone");
-        String mAuthcode = request.getParameter("authcode");
+        RegisterAccountRequestPara.Builder mRegisterRPBuilder = new RegisterAccountRequestPara.Builder();
+        mRegisterRPBuilder.fillFieldKey();
+        String error = mRegisterRPBuilder.readParameterFromRequest(request);
+        if (!StringUtil.isEmpty(error)) {
+            writeErrorResponse(response, ER5001, error);
+            return;
+        }
+        error = mRegisterRPBuilder.fillField();
+        if (!StringUtil.isEmpty(error)) {
+            writeErrorResponse(response, ER5001, error);
+            return;
+        }
+        RegisterAccountRequestPara mRegisterRP = mRegisterRPBuilder.build();
 
         RequestInfoBean mRequestInfoBean = HttpRequestUtils
                 .getOSBrowserInfo(request);
@@ -84,7 +95,9 @@ public class RegisterAccountServlet extends BaseApiServlet {
         IAccountManager mAccountManager = ModuleObjectPool.getModuleObject(
                 IAccountManager.class, null);
         UserIDTokenSCBean mLoginUserBean = mAccountManager.registerAccount(
-                mAccount, mPassword, mPhone, mAuthcode, mRequestInfoBean);
+                mRegisterRP.getAccount(), mRegisterRP.getPassword(),
+                mRegisterRP.getPhone(), mRegisterRP.getAuthcode(),
+                mRequestInfoBean);
 
         BaseResultBean.Builder mBuilder = new BaseResultBean.Builder()
                 .setStatusCodeBean(mLoginUserBean);

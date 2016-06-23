@@ -10,7 +10,7 @@ import com.round.aside.server.util.StringUtil;
  * @date 2016-6-22
  * 
  */
-public class RegisterAccountRequestPara extends BaseRequestPara {
+public class RegisterAccountRequestPara extends AbsRequestPara {
 
     private final String account;
     private final String password;
@@ -18,6 +18,8 @@ public class RegisterAccountRequestPara extends BaseRequestPara {
     private final String authcode;
 
     public RegisterAccountRequestPara(Builder mTBuilder) {
+        super();
+
         account = mTBuilder.mAccount;
         password = mTBuilder.mPassword;
         phone = mTBuilder.mPhone;
@@ -48,7 +50,7 @@ public class RegisterAccountRequestPara extends BaseRequestPara {
      * 
      */
     public static class Builder extends
-            BaseRequestPara.Builder<RegisterAccountRequestPara> {
+            AbsRequestPara.Builder<RegisterAccountRequestPara> {
 
         private String mAccount;
         private String mPassword;

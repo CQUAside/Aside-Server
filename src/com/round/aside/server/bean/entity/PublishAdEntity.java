@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.round.aside.server.bean.requestparameter.PublishAdRequestPara;
 import com.round.aside.server.datastruct.RequestParameterSet;
 import com.round.aside.server.util.StringUtil;
 
@@ -29,6 +30,7 @@ public class PublishAdEntity {
     private final boolean listPriority; // 是否列表优先
     private final boolean carousel; // 是否轮播
 
+    @Deprecated
     public PublishAdEntity(Builder mBuilder) {
         adTitle = mBuilder.adTitle;
         adLogoImgID = mBuilder.adLogoImgID;
@@ -39,6 +41,18 @@ public class PublishAdEntity {
         adEndTimestamp = new Timestamp(mBuilder.adEndDate.getTime());
         listPriority = mBuilder.listPriority;
         carousel = mBuilder.carousel;
+    }
+
+    public PublishAdEntity(PublishAdRequestPara mPubAdRP) {
+        adTitle = mPubAdRP.getAdTitle();
+        adLogoImgID = mPubAdRP.getAdLogoImgID();
+        adImgIDSet = mPubAdRP.getAdImgIDSet();
+        adDescription = mPubAdRP.getAdDescription();
+        adAreaSet = mPubAdRP.getAdAreaSet();
+        adStartTimestamp = mPubAdRP.getAdStartTimestamp();
+        adEndTimestamp = mPubAdRP.getAdEndTimestamp();
+        listPriority = mPubAdRP.isListPriority();
+        carousel = mPubAdRP.isCarousel();
     }
 
     public String getAdTitle() {
@@ -84,6 +98,7 @@ public class PublishAdEntity {
      * @date 2016-6-8
      * 
      */
+    @Deprecated
     public static class Builder {
 
         private boolean init;
@@ -115,6 +130,7 @@ public class PublishAdEntity {
          * @return
          * @throws IllegalArgumentException
          */
+        @Deprecated
         public Builder fillField(HttpServletRequest request)
                 throws IllegalArgumentException {
             adTitle = request.getParameter("adTitle");
@@ -182,6 +198,7 @@ public class PublishAdEntity {
             return this;
         }
 
+        @Deprecated
         public String fillField(RequestParameterSet mParaSet) {
             adTitle = mParaSet.getValue("adTitle");
             adLogoImgID = mParaSet.getValue("adLogoImgID");

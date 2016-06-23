@@ -6,9 +6,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.round.aside.server.bean.jsonbean.BaseResultBean;
-import com.round.aside.server.bean.statuscode.StatusCodeBean;
-import com.round.aside.server.bean.statuscode.UserIDTokenSCBean;
+import com.round.aside.server.bean.requestparameter.GetLocateCityRequestPara;
+import com.round.aside.server.util.StringUtil;
 
 import static com.round.aside.server.constant.StatusCode.*;
 
@@ -70,19 +69,21 @@ public class GetLocateCityServlet extends BaseApiServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        UserIDTokenSCBean mUserIDTokenSCB = readUserIDToken(request);
-        if (mUserIDTokenSCB.getStatusCode() != S1000) {
-            BaseResultBean mBean = new BaseResultBean.Builder()
-                    .setStatusCodeBean(mUserIDTokenSCB).build();
-            writeResponse(response, mBean);
+        GetLocateCityRequestPara.Builder mGetLocationRPBuilder = new GetLocateCityRequestPara.Builder();
+        mGetLocationRPBuilder.fillFieldKey();
+        String error = mGetLocationRPBuilder.readParameterFromRequest(request);
+        if (!StringUtil.isEmpty(error)) {
+            writeErrorResponse(response, ER5001, error);
             return;
         }
+        error = mGetLocationRPBuilder.fillField();
+        if (!StringUtil.isEmpty(error)) {
+            writeErrorResponse(response, ER5001, error);
+            return;
+        }
+        GetLocateCityRequestPara mGetLocationRP = mGetLocationRPBuilder.build();
 
-        StatusCodeBean mStatusCodeBean = verifyToken(request, mUserIDTokenSCB);
-        if (mStatusCodeBean.getStatusCode() != S1002) {
-            BaseResultBean mBean = new BaseResultBean.Builder()
-                    .setStatusCodeBean(mStatusCodeBean).build();
-            writeResponse(response, mBean);
+        if (!doVerifyTokenInPost(response, mGetLocationRP)) {
             return;
         }
 

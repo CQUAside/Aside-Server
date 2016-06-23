@@ -10,9 +10,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.round.aside.server.bean.entity.PublishAdEntity;
 import com.round.aside.server.bean.jsonbean.BaseResultBean;
+import com.round.aside.server.bean.requestparameter.PublishAdRequestPara;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
-import com.round.aside.server.bean.statuscode.UserIDTokenSCBean;
-import com.round.aside.server.datastruct.RequestParameterSet;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.admanager.IAdvertisementManager;
 import com.round.aside.server.util.StringUtil;
@@ -74,47 +73,30 @@ public class PublishAdServlet extends BaseApiServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        UserIDTokenSCBean mUserIDTokenSCB = readUserIDToken(request);
-        if (mUserIDTokenSCB.getStatusCode() != S1000) {
-            BaseResultBean mBean = new BaseResultBean.Builder()
-                    .setStatusCodeBean(mUserIDTokenSCB).build();
-            writeResponse(response, mBean);
+        PublishAdRequestPara.Builder mPubAdRPBuilder = new PublishAdRequestPara.Builder();
+        mPubAdRPBuilder.fillFieldKey();
+        String error = mPubAdRPBuilder.readParameterFromRequest(request);
+        if (!StringUtil.isEmpty(error)) {
+            writeErrorResponse(response, ER5001, error);
             return;
         }
+        error = mPubAdRPBuilder.fillField();
+        if (!StringUtil.isEmpty(error)) {
+            writeErrorResponse(response, ER5001, error);
+            return;
+        }
+        PublishAdRequestPara mPubAdRP = mPubAdRPBuilder.build();
 
-        StatusCodeBean mStatusCodeBean = verifyToken(request, mUserIDTokenSCB);
-        if (mStatusCodeBean.getStatusCode() != S1002) {
-            BaseResultBean mBean = new BaseResultBean.Builder()
-                    .setStatusCodeBean(mStatusCodeBean).build();
-            writeResponse(response, mBean);
+        if (!doVerifyTokenInPost(response, mPubAdRP)) {
             return;
         }
-
-        RequestParameterSet mParaSet = new RequestParameterSet();
-        mParaSet.addKey("adTitle", true).addKey("adLogoImgID", true)
-                .addKey("adImgIDSetStr", true).addKey("adDescription", true)
-                .addKey("adAreaSetStr", true).addKey("adStartTime", true)
-                .addKey("adEndTime", true).addKey("listPriority", false)
-                .addKey("carousel", false);
-        String readResult = mParaSet.readParameter(request);
-        if (!StringUtil.isEmpty(readResult)) {
-            writeErrorResponse(response, ER5001, readResult
-                    + " parameter isn't set");
-            return;
-        }
-
-        PublishAdEntity.Builder mPublishAdBuilder = new PublishAdEntity.Builder();
-        readResult = mPublishAdBuilder.fillField(mParaSet);
-        if (!StringUtil.isEmpty(readResult)) {
-            writeErrorResponse(response, ER5001, readResult);
-            return;
-        }
-        PublishAdEntity mPublishAdEntity = mPublishAdBuilder.build();
 
         IAdvertisementManager mAdMana = ModuleObjectPool.getModuleObject(
                 IAdvertisementManager.class, null);
-        mStatusCodeBean = mAdMana.uploadAD(mPublishAdEntity,
-                mUserIDTokenSCB.getUserID());
+
+        PublishAdEntity mPublishAdEntity = new PublishAdEntity(mPubAdRP);
+        StatusCodeBean mStatusCodeBean = mAdMana.uploadAD(mPublishAdEntity,
+                mPubAdRP.getUserID());
 
         BaseResultBean mBean = new BaseResultBean.Builder().setStatusCodeBean(
                 mStatusCodeBean).build();

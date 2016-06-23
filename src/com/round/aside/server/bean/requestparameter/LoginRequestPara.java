@@ -10,12 +10,14 @@ import com.round.aside.server.util.StringUtil;
  * @date 2016-6-22
  * 
  */
-public final class LoginRequestPara extends BaseRequestPara {
+public final class LoginRequestPara extends AbsRequestPara {
 
     private final String account;
     private final String password;
 
     public LoginRequestPara(Builder mTBuilder) {
+        super();
+
         account = mTBuilder.mAccount;
         password = mTBuilder.mPassword;
     }
@@ -36,7 +38,7 @@ public final class LoginRequestPara extends BaseRequestPara {
      * 
      */
     public static class Builder extends
-            BaseRequestPara.Builder<LoginRequestPara> {
+            AbsRequestPara.Builder<LoginRequestPara> {
 
         private String mAccount;
         private String mPassword;

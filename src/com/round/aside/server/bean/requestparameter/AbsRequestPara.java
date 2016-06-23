@@ -14,7 +14,7 @@ import com.round.aside.server.util.StringUtil;
  * @date 2016-6-21
  * 
  */
-public abstract class BaseRequestPara {
+public abstract class AbsRequestPara {
 
     /**
      * 基础RequestPara请求参数集类的建造者<br>
@@ -31,7 +31,7 @@ public abstract class BaseRequestPara {
      * 
      * @param <P>
      */
-    public static abstract class Builder<P extends BaseRequestPara> {
+    public static abstract class Builder<P extends AbsRequestPara> {
 
         private boolean init;
 

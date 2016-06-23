@@ -11,10 +11,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 
-import com.round.aside.server.bean.jsonbean.BaseResultBean;
 import com.round.aside.server.bean.jsonbean.result.PicUploadResult;
+import com.round.aside.server.bean.requestparameter.PicUploadRequestPara;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
-import com.round.aside.server.bean.statuscode.UserIDTokenSCBean;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.dbmanager.IDatabaseManager;
 import com.round.aside.server.module.generator.IGenerator;
@@ -22,9 +21,9 @@ import com.round.aside.server.module.imageio.IImageIO;
 import com.round.aside.server.module.imagepath.IImagePath;
 import com.round.aside.server.servletexten.HttpServletRequestDecorator;
 import com.round.aside.server.util.FileUtils;
+import com.round.aside.server.util.StringUtil;
 import com.round.aside.server.util.VerifyUtils;
 
-//import static com.round.aside.server.constant.Constants.*;
 import static com.round.aside.server.constant.StatusCode.*;
 
 /**
@@ -93,23 +92,27 @@ public class PicUploadServlet extends BaseApiServlet {
             return;
         }
 
-        UserIDTokenSCBean mUserIDTokenSCB = readUserIDToken(mRequestDecorator);
-        if (mUserIDTokenSCB.getStatusCode() != S1000) {
-            BaseResultBean mBean = new BaseResultBean.Builder()
-                    .setStatusCodeBean(mUserIDTokenSCB).build();
-            writeResponse(response, mBean);
+        PicUploadRequestPara.Builder mPicUploadRPBuilder = new PicUploadRequestPara.Builder();
+        mPicUploadRPBuilder.fillFieldKey();
+        String error = mPicUploadRPBuilder.readParameterFromRequest(request);
+        if (!StringUtil.isEmpty(error)) {
+            writeErrorResponse(response, ER5001, error);
+            return;
+        }
+        error = mPicUploadRPBuilder.fillField();
+        if (!StringUtil.isEmpty(error)) {
+            writeErrorResponse(response, ER5001, error);
+            return;
+        }
+        PicUploadRequestPara mPicUploadRP = mPicUploadRPBuilder.build();
+
+        if (!doVerifyTokenInPost(response, mPicUploadRP)) {
             return;
         }
 
-        StatusCodeBean mStatusCodeBean = verifyToken(request, mUserIDTokenSCB);
-        if (mStatusCodeBean.getStatusCode() != S1002) {
-            BaseResultBean mBean = new BaseResultBean.Builder()
-                    .setStatusCodeBean(mStatusCodeBean).build();
-            writeResponse(response, mBean);
-            return;
-        }
+        StatusCodeBean mStatusCodeBean;
 
-        int mUserID = mUserIDTokenSCB.getUserID();
+        int mUserID = mPicUploadRP.getUserID();
 
         if (!mRequestDecorator.isMultipartContent()) {
             writeErrorResponse(response, ER5007, "图片上传未使用multipart");

@@ -136,7 +136,12 @@ public abstract class AbsRequestPara {
          */
         public final P build() {
             checkBeforeBuild();
-            return buildInstance();
+            P mInstance = buildInstance();
+            if (mInstance == null) {
+                throw new NullPointerException(
+                        "subclass must construct a instance!");
+            }
+            return mInstance;
         }
 
         /**

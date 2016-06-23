@@ -13,8 +13,8 @@ public class DataSource {
 
     private static HikariDataSource ds;
 
-    private static final String DB_FROMAT = "jdbc:mysql://%s:%s/%s?useUnicode=true&amp;characterEncoding=UTF-8";
-    
+    private static final String DB_FROMAT = "jdbc:mysql://%s:%s/%s";
+
     private static final DBConfig DBCONFIG_INSTANCE = DBConfig.getInstance();
 
     public static void init() {
@@ -23,6 +23,8 @@ public class DataSource {
         config.setJdbcUrl(String.format(DB_FROMAT, DBCONFIG_INSTANCE.getDBIP(), DBCONFIG_INSTANCE.getDBPort(), DBCONFIG_INSTANCE.getDBName()));
         config.setUsername(DBCONFIG_INSTANCE.getDBAccount());
         config.setPassword(DBCONFIG_INSTANCE.getDBPassword());
+        config.addDataSourceProperty("useUnicode", "true");
+        config.addDataSourceProperty("characterEncoding", "utf8");
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");

@@ -151,9 +151,16 @@ public final class StatusCode {
     public static final int ER5009 = 5009;
 
     /**
-     * 越权调用，妄图修改不属于自己的数据
+     * 越权调用，妄图修改不属于自己的数据<br>
+     * 一般是平级用户，即调用方和数据持有方为同一权限。
      */
     public static final int ER5010 = 5010;
+
+    /**
+     * 越权操作。<br>
+     * 即低权限用户妄图操作高权限用户的数据。
+     */
+    public static final int ER5011 = 5011;
 
     /**
      * 基础结果码

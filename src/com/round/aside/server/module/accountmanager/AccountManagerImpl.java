@@ -341,6 +341,36 @@ public final class AccountManagerImpl implements IAccountManager {
     }
 
     @Override
+    public StatusCodeBean verifyAdminPermission(int mUserID) {
+        StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
+
+        if (mUserID < 0) {
+            mResultBuilder.setStatusCode(ER5001).setMsg("UserID参数非法");
+            return mResultBuilder.build();
+        }
+
+        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
+        StatusCodeBean mSCB = mDBManager.adminPermissionCheck(mUserID);
+        mDBManager.release();
+        switch (mSCB.getStatusCode()) {
+            case EX2016:
+                mResultBuilder.setStatusCode(EX2010).setMsg("数据库操作异常，请重试");
+                break;
+            case S1000:
+            case ER5001:
+            case R6008:
+            case ER5011:
+                mResultBuilder.setStatusCodeBean(mSCB);
+                break;
+            default:
+                throw new IllegalStateException("Illegal Status Code!");
+        }
+
+        return mResultBuilder.build();
+    }
+
+    @Override
     public StatusCodeBean activateEmail(int mUserID) {
         StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
 

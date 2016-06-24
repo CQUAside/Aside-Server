@@ -133,6 +133,17 @@ public interface IDatabaseManager extends IModule,
     StatusCodeBean tokenLoginCheck(int userId, String token);
 
     /**
+     * 管理员权限检查
+     * 
+     * @param mUserID
+     *            带检查的用户ID
+     * @return 结果状态码，有且仅有以下几种，分别为{@link #S1000}权限确认；{@link #ER5011}越权；
+     *         {@link #R6008}无此UserID用户；{@link #ER5001}调用参数非法；{@link #EX2016}
+     *         数据库查询异常，请重试。
+     */
+    StatusCodeBean adminPermissionCheck(int mUserID);
+
+    /**
      * 插入一条图片记录，但只插入PicId字段，以避免PicId重复
      * 
      * @param picId

@@ -1,6 +1,6 @@
 package com.round.aside.server.servlet;
 
-import static com.round.aside.server.constant.StatusCode.ER5001;
+import static com.round.aside.server.constant.StatusCode.*;
 
 import java.io.IOException;
 
@@ -12,6 +12,7 @@ import com.round.aside.server.bean.jsonbean.BaseResultBean;
 import com.round.aside.server.bean.requestparameter.CheckAdRequestPara;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
 import com.round.aside.server.module.ModuleObjectPool;
+import com.round.aside.server.module.accountmanager.IAccountManager;
 import com.round.aside.server.module.admanager.IAdvertisementManager;
 import com.round.aside.server.util.StringUtil;
 
@@ -94,9 +95,19 @@ public class CheckAdServlet extends BaseApiServlet {
 
         BaseResultBean.Builder mResultBuilder = new BaseResultBean.Builder();
 
+        IAccountManager mAccManager = ModuleObjectPool.getModuleObject(
+                IAccountManager.class, null);
+        StatusCodeBean mSCB = mAccManager.verifyAdminPermission(mCheckAdRP
+                .getUserID());
+        if (mSCB.getStatusCode() != S1000) {
+            mResultBuilder.setStatusCodeBean(mSCB);
+            writeResponse(response, mResultBuilder.build());
+            return;
+        }
+
         IAdvertisementManager mAdMana = ModuleObjectPool.getModuleObject(
                 IAdvertisementManager.class, null);
-        StatusCodeBean mSCB = mAdMana.checkAD(mCheckAdRP.getAdID(),
+        mSCB = mAdMana.checkAD(mCheckAdRP.getAdID(),
                 mCheckAdRP.getAdFinalState());
 
         mResultBuilder.setStatusCodeBean(mSCB);

@@ -90,6 +90,17 @@ public interface IAccountManager extends IModule {
     StatusCodeBean verifyToken(int userId, String token);
 
     /**
+     * 根据提供的用户ID，检查对应的用户是否为管理员权限。<br>
+     * 用于执行一些管理员权限操作时进行检查
+     * 
+     * @param mUserID
+     *            带检查权限的用户ID
+     * @return 结果状态码，有且仅有一下几种，分别为{@link #S1000}确认为管理员权限；{@link #ER5001}调用参数非法；
+     *         {@link #EX2010}数据库操作异常，请重试。
+     */
+    StatusCodeBean verifyAdminPermission(int mUserID);
+
+    /**
      * 向指定UserID对应的用户注册邮箱发送邮箱验证邮件
      * 
      * @param mUserID

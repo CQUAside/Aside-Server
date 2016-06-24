@@ -24,6 +24,7 @@ import com.round.aside.server.entity.InformUsersEntity;
 import com.round.aside.server.entity.PersonalCollectionEntity;
 import com.round.aside.server.enumeration.AdStatusEnum;
 import com.round.aside.server.enumeration.UserEmailStatusEnum;
+import com.round.aside.server.enumeration.UserGroupEnum;
 import com.round.aside.server.module.IModuleFactoryRecycleCallback;
 import com.round.aside.server.util.StringUtil;
 
@@ -337,6 +338,51 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
         }
 
         return mBuilder.build();
+    }
+
+    private static final String QUERY_USERGROUP = "SELECT usergroup FROM aside_user WHERE userid = ?";
+
+    @Override
+    public StatusCodeBean adminPermissionCheck(int mUserID) {
+        StatusCodeBean.Builder mResultBuilder = new StatusCodeBean.Builder();
+
+        if (mUserID < 0) {
+            mResultBuilder.setStatusCode(ER5001).setMsg("UserID参数非法");
+            return mResultBuilder.build();
+        }
+
+        try {
+            mPreState = mConnection.prepareStatement(QUERY_USERGROUP);
+            mPreState.setInt(1, mUserID);
+            mResultSet = mPreState.executeQuery();
+
+            int mUserGroupType = 0;
+            while (mResultSet.next()) {
+                mUserGroupType = mResultSet.getInt(1);
+                break;
+            }
+
+            if (mUserGroupType == 0) {
+                mResultBuilder.setStatusCode(R6008).setMsg("无此UserID用户");
+            } else {
+                UserGroupEnum mUserGroup = UserGroupEnum
+                        .valueOf(mUserGroupType);
+                if (mUserGroup == UserGroupEnum.ADMIN) {
+                    mResultBuilder.setStatusCode(S1000).setMsg("验证通过");
+                } else {
+                    mResultBuilder.setStatusCode(ER5011).setMsg("越权操作");
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            mResultBuilder.setStatusCode(EX2016).setMsg("数据库查询异常");
+        } finally {
+            closeMemberResultSet();
+            closeMemberPreparedStatement();
+        }
+
+        return mResultBuilder.build();
     }
 
     private static final String INSERT_PIC_FORMAT = "INSERT into aside_pic(picid) values(?)";

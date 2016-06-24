@@ -10,14 +10,18 @@ package com.round.aside.server.bean.requestparameter;
 public class PicUploadRequestPara extends UserIDTokenRequestPara {
 
     public PicUploadRequestPara(Builder mTBuilder) {
-        super(mTBuilder);
+        super(mTBuilder.mUserIDTokenRPBuilder);
     }
 
     public static class Builder extends
-            UserIDTokenRequestPara.Builder<PicUploadRequestPara> {
+            AbsRequestPara.AbsBuilder<PicUploadRequestPara> {
+
+        private final UserIDTokenRequestPara.Builder mUserIDTokenRPBuilder;
 
         public Builder() {
             super();
+
+            mUserIDTokenRPBuilder = new UserIDTokenRequestPara.Builder();
         }
 
         @Override

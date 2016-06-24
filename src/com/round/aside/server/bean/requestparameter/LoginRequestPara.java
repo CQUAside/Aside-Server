@@ -38,7 +38,7 @@ public final class LoginRequestPara extends AbsRequestPara {
      * 
      */
     public static class Builder extends
-            AbsRequestPara.Builder<LoginRequestPara> {
+            AbsRequestPara.AbsBuilder<LoginRequestPara> {
 
         private String mAccount;
         private String mPassword;

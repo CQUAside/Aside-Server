@@ -28,7 +28,7 @@ public class PublishAdRequestPara extends UserIDTokenRequestPara {
     private final boolean carousel; // 是否轮播
 
     public PublishAdRequestPara(Builder mTBuilder) {
-        super(mTBuilder);
+        super(mTBuilder.mUserIDTokenRPBuilder);
 
         adTitle = mTBuilder.adTitle;
         adLogoImgID = mTBuilder.adLogoImgID;
@@ -85,7 +85,9 @@ public class PublishAdRequestPara extends UserIDTokenRequestPara {
      * 
      */
     public static class Builder extends
-            UserIDTokenRequestPara.Builder<PublishAdRequestPara> {
+            AbsRequestPara.AbsBuilder<PublishAdRequestPara> {
+
+        private final UserIDTokenRequestPara.Builder mUserIDTokenRPBuilder;
 
         private String adTitle;
         private String adLogoImgID;
@@ -100,6 +102,8 @@ public class PublishAdRequestPara extends UserIDTokenRequestPara {
         public Builder() {
             super();
 
+            mUserIDTokenRPBuilder = new UserIDTokenRequestPara.Builder();
+
             adImgIDSet = new ArrayList<String>();
             adAreaSet = new ArrayList<String>();
 
@@ -111,6 +115,8 @@ public class PublishAdRequestPara extends UserIDTokenRequestPara {
         protected void onFillFieldKey(RequestParameterSet mParaSet) {
             super.onFillFieldKey(mParaSet);
 
+            mUserIDTokenRPBuilder.onFillFieldKey(mParaSet);
+
             mParaSet.addKey("adTitle", true).addKey("adLogoImgID", true)
                     .addKey("adImgIDSetStr", true)
                     .addKey("adDescription", true).addKey("adAreaSetStr", true)
@@ -121,6 +127,11 @@ public class PublishAdRequestPara extends UserIDTokenRequestPara {
         @Override
         protected String onFillField(RequestParameterSet mParaSet) {
             String error = super.onFillField(mParaSet);
+            if (!StringUtil.isEmpty(error)) {
+                return error;
+            }
+
+            error = mUserIDTokenRPBuilder.onFillField(mParaSet);
             if (!StringUtil.isEmpty(error)) {
                 return error;
             }
@@ -166,6 +177,35 @@ public class PublishAdRequestPara extends UserIDTokenRequestPara {
             carousel = mParaSet.getValueAsBoolean("carousel");
 
             return null;
+        }
+
+        @Override
+        protected void setInitialized() {
+            super.setInitialized();
+
+            mUserIDTokenRPBuilder.setInitialized();
+        }
+
+        @Override
+        protected String checkAfterFillField() {
+            String error = super.checkAfterFillField();
+            if (!StringUtil.isEmpty(error)) {
+                return error;
+            }
+
+            error = mUserIDTokenRPBuilder.checkAfterFillField();
+            if (!StringUtil.isEmpty(error)) {
+                return error;
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void checkBeforeBuild() throws IllegalStateException {
+            super.checkBeforeBuild();
+
+            mUserIDTokenRPBuilder.checkBeforeBuild();
         }
 
         @Override

@@ -8,7 +8,9 @@ import com.round.aside.server.util.StringUtil;
 /**
  * HttpServlet的基础请求参数集类<br>
  * 此类为标记类。<br>
- * 善用有限制通配符。
+ * 善用有限制通配符。<br>
+ * {@link AbsRequestPara}的扩展类，采用继承方式扩展；{@link AbsRequestPara.AbsBuilder}
+ * 的扩展类采用组合形式扩展。即在需要里氏替换原则(上溯造型)时可采用【继承】扩展，除此之外一般尽量采用【组合】方式扩展。
  * 
  * @author A Shuai
  * @date 2016-6-21
@@ -25,19 +27,21 @@ public abstract class AbsRequestPara {
      * 2，调用{@link #readParameterFromRequest(HttpServletRequest)}方法读取客户端发送的参数；<br>
      * 3，调用{@link #fillField()}填充真实的字段域；<br>
      * 4，最后调用{@link #build()}方法得到客户端发送的参数集。
+     * <p>
+     * 本类提供了完备的周期回调方法，可使用【组合】形式进行扩展。
      * 
      * @author A Shuai
      * @date 2016-6-22
      * 
      * @param <P>
      */
-    public static abstract class Builder<P extends AbsRequestPara> {
+    public static abstract class AbsBuilder<P extends AbsRequestPara> {
 
         private boolean init;
 
         private final RequestParameterSet mParaSet;
 
-        public Builder() {
+        public AbsBuilder() {
             init = false;
             mParaSet = new RequestParameterSet();
         }
@@ -100,7 +104,7 @@ public abstract class AbsRequestPara {
                 return error;
             }
 
-            init = true;
+            setInitialized();
             return null;
         }
 
@@ -126,6 +130,14 @@ public abstract class AbsRequestPara {
         protected String checkAfterFillField() {
 
             return null;
+        }
+
+        /**
+         * 设置初始化完毕<br>
+         * 供组合形式的RequestPara子类调用。
+         */
+        protected void setInitialized() {
+            init = true;
         }
 
         /**

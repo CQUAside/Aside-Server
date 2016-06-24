@@ -19,7 +19,7 @@ public class CheckAdRequestPara extends UserIDTokenRequestPara {
     private final AdStatusEnum adFinalState;
 
     public CheckAdRequestPara(Builder mTBuilder) {
-        super(mTBuilder);
+        super(mTBuilder.mUserIDTokenRPBuilder);
 
         adID = mTBuilder.mAdID;
         adOpe = mTBuilder.mAdOpe;
@@ -46,7 +46,9 @@ public class CheckAdRequestPara extends UserIDTokenRequestPara {
      * 
      */
     public static class Builder extends
-            UserIDTokenRequestPara.Builder<CheckAdRequestPara> {
+            AbsRequestPara.AbsBuilder<CheckAdRequestPara> {
+
+        private final UserIDTokenRequestPara.Builder mUserIDTokenRPBuilder;
 
         private int mAdID;
         private AdStatusOpeEnum mAdOpe;
@@ -54,11 +56,15 @@ public class CheckAdRequestPara extends UserIDTokenRequestPara {
 
         public Builder() {
             super();
+
+            mUserIDTokenRPBuilder = new UserIDTokenRequestPara.Builder();
         }
 
         @Override
         protected void onFillFieldKey(RequestParameterSet mParaSet) {
             super.onFillFieldKey(mParaSet);
+
+            mUserIDTokenRPBuilder.onFillFieldKey(mParaSet);
 
             mParaSet.addKey("adID", true).addKey("adOpe", true);
             mParaSet.addKey("adFinalState", true);
@@ -67,6 +73,11 @@ public class CheckAdRequestPara extends UserIDTokenRequestPara {
         @Override
         protected String onFillField(RequestParameterSet mParaSet) {
             String error = super.onFillField(mParaSet);
+            if (!StringUtil.isEmpty(error)) {
+                return error;
+            }
+
+            error = mUserIDTokenRPBuilder.onFillField(mParaSet);
             if (!StringUtil.isEmpty(error)) {
                 return error;
             }
@@ -98,8 +109,20 @@ public class CheckAdRequestPara extends UserIDTokenRequestPara {
         }
 
         @Override
+        protected void setInitialized() {
+            super.setInitialized();
+
+            mUserIDTokenRPBuilder.setInitialized();
+        }
+
+        @Override
         protected String checkAfterFillField() {
             String error = super.checkAfterFillField();
+            if (!StringUtil.isEmpty(error)) {
+                return error;
+            }
+
+            error = mUserIDTokenRPBuilder.checkAfterFillField();
             if (!StringUtil.isEmpty(error)) {
                 return error;
             }
@@ -114,6 +137,13 @@ public class CheckAdRequestPara extends UserIDTokenRequestPara {
             }
 
             return null;
+        }
+
+        @Override
+        protected void checkBeforeBuild() throws IllegalStateException {
+            super.checkBeforeBuild();
+
+            mUserIDTokenRPBuilder.checkBeforeBuild();
         }
 
         @Override

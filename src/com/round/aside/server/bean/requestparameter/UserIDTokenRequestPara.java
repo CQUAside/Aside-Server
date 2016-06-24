@@ -10,13 +10,12 @@ import com.round.aside.server.util.StringUtil;
  * @date 2016-6-21
  * 
  */
-public abstract class UserIDTokenRequestPara extends AbsRequestPara {
+public class UserIDTokenRequestPara extends AbsRequestPara {
 
     private final int userID;
     private final String token;
 
-    public UserIDTokenRequestPara(
-            Builder<? extends UserIDTokenRequestPara> mTBuilder) {
+    public UserIDTokenRequestPara(Builder mTBuilder) {
         super();
 
         userID = mTBuilder.mUserID;
@@ -38,8 +37,8 @@ public abstract class UserIDTokenRequestPara extends AbsRequestPara {
      * @date 2016-6-22
      * 
      */
-    public static abstract class Builder<P extends UserIDTokenRequestPara>
-            extends AbsRequestPara.Builder<P> {
+    public static class Builder extends
+            AbsRequestPara.AbsBuilder<UserIDTokenRequestPara> {
 
         private int mUserID;
         private String mToken;
@@ -72,6 +71,11 @@ public abstract class UserIDTokenRequestPara extends AbsRequestPara {
             mToken = mParaSet.getValue("token");
 
             return null;
+        }
+
+        @Override
+        protected UserIDTokenRequestPara buildInstance() {
+            return new UserIDTokenRequestPara(this);
         }
 
     }

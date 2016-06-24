@@ -91,8 +91,6 @@ public class CheckAdServlet extends BaseApiServlet {
             return;
         }
 
-        // 检查登陆的账号权限是不是Admin权限
-
         BaseResultBean.Builder mResultBuilder = new BaseResultBean.Builder();
 
         IAccountManager mAccManager = ModuleObjectPool.getModuleObject(

@@ -50,7 +50,7 @@ public class RegisterAccountRequestPara extends AbsRequestPara {
      * 
      */
     public static class Builder extends
-            AbsRequestPara.Builder<RegisterAccountRequestPara> {
+            AbsRequestPara.AbsBuilder<RegisterAccountRequestPara> {
 
         private String mAccount;
         private String mPassword;

@@ -148,24 +148,22 @@ public class PublishAdRequestPara extends UserIDTokenRequestPara {
                 }
             }
 
-            String adStartTimeStr = mParaSet.getValue("adStartTime");
             try {
-                adStartDate.setTime(Long.parseLong(adStartTimeStr));
-            } catch (Exception e) {
+                adStartDate.setTime(mParaSet.getValueAsLong("adStartTime"));
+            } catch (NumberFormatException e) {
                 e.printStackTrace();
                 return "广告开始时间参数非法";
             }
 
-            String adEndTimeStr = mParaSet.getValue("adEndTime");
             try {
-                adEndDate.setTime(Long.parseLong(adEndTimeStr));
-            } catch (Exception e) {
+                adEndDate.setTime(mParaSet.getValueAsLong("adEndTime"));
+            } catch (NumberFormatException e) {
                 e.printStackTrace();
                 return "广告结束时间参数非法";
             }
 
-            listPriority = "true".equals(mParaSet.getValue("listPriority"));
-            carousel = "true".equals(mParaSet.getValue("carousel"));
+            listPriority = mParaSet.getValueAsBoolean("listPriority");
+            carousel = mParaSet.getValueAsBoolean("carousel");
 
             return null;
         }

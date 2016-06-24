@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import com.round.aside.server.util.StringUtil;
 
 /**
- * Servlet请求参数集
+ * Servlet请求原始参数集
  * 
  * @author A Shuai
  * @date 2016-6-11
@@ -100,6 +100,25 @@ public final class RequestParameterSet {
     public int getValueAsInt(String key) throws NumberFormatException {
         String mValueStr = mKeyValueMap.get(key);
         return Integer.parseInt(mValueStr);
+    }
+
+    public long getValueAsLong(String key) throws NumberFormatException {
+        String mValueStr = mKeyValueMap.get(key);
+        return Long.parseLong(mValueStr);
+    }
+
+    public float getValueAsFloat(String key) throws NumberFormatException {
+        String mValueStr = mKeyValueMap.get(key);
+        return Float.parseFloat(mValueStr);
+    }
+
+    public double getValueAsDouble(String key) throws NumberFormatException {
+        String mValueStr = mKeyValueMap.get(key);
+        return Double.parseDouble(mValueStr);
+    }
+
+    public boolean getValueAsBoolean(String key) {
+        return "true".equals(mKeyValueMap.get(key));
     }
 
     /**

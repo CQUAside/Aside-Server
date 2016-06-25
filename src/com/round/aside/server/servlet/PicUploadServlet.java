@@ -12,7 +12,7 @@ import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 
 import com.round.aside.server.bean.jsonbean.result.PicUploadResult;
-import com.round.aside.server.bean.requestparameter.PicUploadRequestPara;
+import com.round.aside.server.bean.requestparameter.UserIDTokenRequestPara;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
 import com.round.aside.server.module.ModuleObjectPool;
 import com.round.aside.server.module.dbmanager.IDatabaseManager;
@@ -92,27 +92,27 @@ public class PicUploadServlet extends BaseApiServlet {
             return;
         }
 
-        PicUploadRequestPara.Builder mPicUploadRPBuilder = new PicUploadRequestPara.Builder();
-        mPicUploadRPBuilder.fillFieldKey();
-        String error = mPicUploadRPBuilder.readParameterFromRequest(request);
+        UserIDTokenRequestPara.Builder mIDTokenRPBuilder = new UserIDTokenRequestPara.Builder();
+        mIDTokenRPBuilder.fillFieldKey();
+        String error = mIDTokenRPBuilder.readParameterFromRequest(request);
         if (!StringUtil.isEmpty(error)) {
             writeErrorResponse(response, ER5001, error);
             return;
         }
-        error = mPicUploadRPBuilder.fillField();
+        error = mIDTokenRPBuilder.fillField();
         if (!StringUtil.isEmpty(error)) {
             writeErrorResponse(response, ER5001, error);
             return;
         }
-        PicUploadRequestPara mPicUploadRP = mPicUploadRPBuilder.build();
+        UserIDTokenRequestPara mIDTokenRP = mIDTokenRPBuilder.build();
 
-        if (!doVerifyTokenInPost(response, mPicUploadRP)) {
+        if (!doVerifyTokenInPost(response, mIDTokenRP)) {
             return;
         }
 
         StatusCodeBean mStatusCodeBean;
 
-        int mUserID = mPicUploadRP.getUserID();
+        int mUserID = mIDTokenRP.getUserID();
 
         if (!mRequestDecorator.isMultipartContent()) {
             writeErrorResponse(response, ER5007, "图片上传未使用multipart");

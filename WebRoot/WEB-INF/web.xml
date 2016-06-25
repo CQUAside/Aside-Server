@@ -80,6 +80,10 @@
         <servlet-name>CheckAdServlet</servlet-name>
         <servlet-class>com.round.aside.server.servlet.CheckAdServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>ViewAdDetailsServlet</servlet-name>
+        <servlet-class>com.round.aside.server.servlet.ViewAdDetailsServlet</servlet-class>
+    </servlet>
 
 
     <servlet-mapping>
@@ -122,6 +126,10 @@
     <servlet-mapping>
         <servlet-name>CheckAdServlet</servlet-name>
         <url-pattern>/servlet/CheckAdServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ViewAdDetailsServlet</servlet-name>
+        <url-pattern>/servlet/ViewAdDetailsServlet</url-pattern>
     </servlet-mapping>
 
 

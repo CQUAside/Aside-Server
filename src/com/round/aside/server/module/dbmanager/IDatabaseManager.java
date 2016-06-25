@@ -3,6 +3,7 @@ package com.round.aside.server.module.dbmanager;
 import com.round.aside.server.bean.RequestInfoBean;
 import com.round.aside.server.bean.entity.AdStatusEntity;
 import com.round.aside.server.bean.entity.PublishAdEntity;
+import com.round.aside.server.bean.statuscode.AdDetailsStatusCodeBean;
 import com.round.aside.server.bean.statuscode.AdStatusCodeBean;
 import com.round.aside.server.bean.statuscode.AuthCodeStatusCodeBean;
 import com.round.aside.server.bean.statuscode.EmailStatusCodeBean;
@@ -240,6 +241,16 @@ public interface IDatabaseManager extends IModule,
      *         {@link #ER5001}参数非法等
      */
     StatusCodeBean deleteCollecion(int adID, int userID);
+
+    /**
+     * 根据广告ID查询出一条广告的所有详情信息
+     * 
+     * @param mAdID
+     *            广告ID
+     * @return 广告详情结果状态码，分别为{@link #S1000}查询成功；{@link #EX2016}数据库查询异常，请重试；
+     *         {@link #R6008}无此数据。
+     */
+    AdDetailsStatusCodeBean queryAdDetailsByAdID(int mAdID);
 
     /**
      * 用户举报广告时，插入一个举报广告记录

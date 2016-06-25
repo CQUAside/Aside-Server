@@ -13,6 +13,7 @@ import com.round.aside.server.DB.DataSource;
 import com.round.aside.server.bean.RequestInfoBean;
 import com.round.aside.server.bean.entity.AdStatusEntity;
 import com.round.aside.server.bean.entity.PublishAdEntity;
+import com.round.aside.server.bean.statuscode.AdDetailsStatusCodeBean;
 import com.round.aside.server.bean.statuscode.AdStatusCodeBean;
 import com.round.aside.server.bean.statuscode.AuthCodeStatusCodeBean;
 import com.round.aside.server.bean.statuscode.EmailStatusCodeBean;
@@ -710,6 +711,70 @@ public final class RecyclableDatabaseManagerImpl implements IDatabaseManager {
             closeMemberPreparedStatement();
         }
         return mResultBuilder.build();
+    }
+
+    private static final String QUERY_ADDETAILS = "SELECT a.AdID,a.Title,a.Content,a.StartTime,a.DeadTime,a.ClickCount,a.CollectCount,u.userid"
+            + ",u.nickname, l.picid, l.originalpath from aside_advertisement a INNER JOIN aside_user u ON a.UserID = u.userid INNER JOIN "
+            + "aside_logopic l ON a.AdID = l.adid AND a.AdID=?;";
+    private static final String QUERY_ADDETAILS_PICSET = "SELECT p.picid, p.originalpath,p.thumbpath FROM aside_pic p WHERE p.adid = ? ORDER BY p.ordinal";
+
+    @Override
+    public AdDetailsStatusCodeBean queryAdDetailsByAdID(int mAdID) {
+        AdDetailsStatusCodeBean.Builder mAdDetailsSCBBuilder = new AdDetailsStatusCodeBean.Builder();
+
+        try {
+            mPreState = mConnection.prepareStatement(QUERY_ADDETAILS);
+            mPreState.setInt(1, mAdID);
+            mResultSet = mPreState.executeQuery();
+
+            boolean find = false;
+            while (mResultSet.next()) {
+
+                mAdDetailsSCBBuilder.setAdID(mResultSet.getInt(1));
+                mAdDetailsSCBBuilder.setTitle(mResultSet.getString(2));
+                mAdDetailsSCBBuilder.setContent(mResultSet.getString(3));
+                mAdDetailsSCBBuilder.setStartTime(mResultSet.getTimestamp(4));
+                mAdDetailsSCBBuilder.setEndTime(mResultSet.getTimestamp(5));
+                mAdDetailsSCBBuilder.setClickCount(mResultSet.getInt(6));
+                mAdDetailsSCBBuilder.setCollectCount(mResultSet.getInt(7));
+
+                mAdDetailsSCBBuilder.setUserID(mResultSet.getInt(8));
+                mAdDetailsSCBBuilder.setNickName(mResultSet.getString(9));
+
+                mAdDetailsSCBBuilder.setLogoPicID(mResultSet.getString(10));
+                mAdDetailsSCBBuilder.setLogoPicPath(mResultSet.getString(11));
+
+                find = true;
+                break;
+            }
+            closeMemberResultSet();
+            closeMemberPreparedStatement();
+
+            if (!find) {
+                mAdDetailsSCBBuilder.setStatusCode(R6008).setMsg("无此广告");
+                return mAdDetailsSCBBuilder.build();
+            }
+
+            mPreState = mConnection.prepareStatement(QUERY_ADDETAILS_PICSET);
+            mPreState.setInt(1, mAdID);
+            mResultSet = mPreState.executeQuery();
+            while (mResultSet.next()) {
+                mAdDetailsSCBBuilder.addPicID(mResultSet.getString(1));
+                mAdDetailsSCBBuilder.addOriPicPath(mResultSet.getString(2));
+                mAdDetailsSCBBuilder.addThuPicPath(mResultSet.getString(3));
+            }
+
+            mAdDetailsSCBBuilder.setStatusCode(S1000).setMsg("查询成功");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            mAdDetailsSCBBuilder.setStatusCode(EX2016).setMsg("数据库查询异常，请重试");
+        } finally {
+            closeMemberResultSet();
+            closeMemberPreparedStatement();
+        }
+
+        return mAdDetailsSCBBuilder.build();
     }
 
     // 用户举报广告时，向举报广告表插入一个举报记录

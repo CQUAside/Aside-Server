@@ -25,7 +25,6 @@ public class StatusCodeBean {
         return msg;
     }
 
-
     /**
      * 建造者
      * 
@@ -60,7 +59,8 @@ public class StatusCodeBean {
 
         /**
          * 检查函数<br>
-         * 各子类根据情况进行覆写，完成新增字段的检查。最后在调用build方法完成构建之前请务必调用此方法进行一次检查。
+         * 各子类根据情况进行覆写，完成新增字段的检查。最后在调用build方法完成构建之前请务必调用此方法进行一次检查。<br>
+         * 子类覆写时请务必向上调用父类的方法体，保证父类的检查。
          */
         protected void check() {
             if (statusCode == 0) {

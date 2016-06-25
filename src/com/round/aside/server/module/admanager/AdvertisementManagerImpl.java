@@ -5,6 +5,7 @@ import static com.round.aside.server.enumeration.AdStatusEnum.*;
 
 import com.round.aside.server.bean.entity.AdStatusEntity;
 import com.round.aside.server.bean.entity.PublishAdEntity;
+import com.round.aside.server.bean.statuscode.AdDetailsStatusCodeBean;
 import com.round.aside.server.bean.statuscode.AdStatusCodeBean;
 import com.round.aside.server.bean.statuscode.IncrementSumStatusCodeBean;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
@@ -409,6 +410,29 @@ public class AdvertisementManagerImpl implements IAdvertisementManager {
         }
 
         return mResultBuilder.build();
+    }
+
+    @Override
+    public AdDetailsStatusCodeBean getAdDetails(int mAdID) {
+
+        IDatabaseManager mDBManager = ModuleObjectPool.getModuleObject(
+                IDatabaseManager.class, null);
+        AdDetailsStatusCodeBean mAdDetailsSCB = mDBManager
+                .queryAdDetailsByAdID(mAdID);
+        mDBManager.release();
+        switch (mAdDetailsSCB.getStatusCode()) {
+            case EX2016:
+                AdDetailsStatusCodeBean.Builder mBuilder = new AdDetailsStatusCodeBean.Builder();
+                mBuilder.setStatusCode(EX2010).setMsg("");
+                return mBuilder.build();
+            case S1000:
+            case R6008:
+                break;
+            default:
+                throw new IllegalStateException("Illegal status code!");
+        }
+
+        return mAdDetailsSCB;
     }
 
 }

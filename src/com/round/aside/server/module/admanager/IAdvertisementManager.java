@@ -1,6 +1,7 @@
 package com.round.aside.server.module.admanager;
 
 import com.round.aside.server.bean.entity.PublishAdEntity;
+import com.round.aside.server.bean.statuscode.AdDetailsStatusCodeBean;
 import com.round.aside.server.bean.statuscode.IncrementSumStatusCodeBean;
 import com.round.aside.server.bean.statuscode.StatusCodeBean;
 import com.round.aside.server.enumeration.AdStatusEnum;
@@ -74,6 +75,7 @@ public interface IAdvertisementManager extends IModule {
      * @return 为删除成功 合法的结果值只有六种，分别为{@link #S1000}广告删除成功； {@link #EX2010}
      *         数据库操作异常，请重试以及{@link #ER5001}参数非法，其他返回值均为非法值。
      */
+    @Deprecated
     StatusCodeBean deleteAD(int adID);
 
     /**
@@ -111,4 +113,15 @@ public interface IAdvertisementManager extends IModule {
      *         无此adID对应的广告数据；{@link #ER5001}参数非法；{@link #EX2010}数据库操作异常，请重试。
      */
     IncrementSumStatusCodeBean addAdClickCount(int adID, int increaseCount);
+
+    /**
+     * 根据广告ID查询广告详情
+     * 
+     * @param mAdID
+     *            待查询广告详情的广告ID
+     * @return 广告详情结果状态码，分别为{@link #S1000}查询成功；{@link #EX2016}数据库查询异常，请重试；
+     *         {@link #R6008}无此数据。
+     */
+    AdDetailsStatusCodeBean getAdDetails(int mAdID);
+
 }

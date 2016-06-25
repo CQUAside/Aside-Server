@@ -134,7 +134,8 @@ public abstract class AbsRequestPara {
 
         /**
          * 设置初始化完毕<br>
-         * 供组合形式的RequestPara子类调用。
+         * 供组合形式的RequestPara子类调用，非组合形式的扩展可无需覆写本方法。<br>
+         * 此外如覆写了本方法，请务必保证super父类调用。
          */
         protected void setInitialized() {
             init = true;

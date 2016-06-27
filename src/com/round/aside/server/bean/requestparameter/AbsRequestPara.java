@@ -1,5 +1,8 @@
 package com.round.aside.server.bean.requestparameter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 
 import com.round.aside.server.datastruct.RequestParameterSet;
@@ -29,6 +32,8 @@ public abstract class AbsRequestPara {
      * 4，最后调用{@link #build()}方法得到客户端发送的参数集。
      * <p>
      * 本类提供了完备的周期回调方法，可使用【组合】形式进行扩展。
+     * <p>
+     * 所有以on开头的方法均为事件回调方法，请务必保证super向上调用。
      * 
      * @author A Shuai
      * @date 2016-6-22
@@ -41,9 +46,12 @@ public abstract class AbsRequestPara {
 
         private final RequestParameterSet mParaSet;
 
+        private final List<AbsBuilder<? extends AbsRequestPara>> mCombinationList;
+
         public AbsBuilder() {
             init = false;
             mParaSet = new RequestParameterSet();
+            mCombinationList = new ArrayList<AbsRequestPara.AbsBuilder<? extends AbsRequestPara>>();
         }
 
         /**
@@ -87,7 +95,7 @@ public abstract class AbsRequestPara {
 
         /**
          * 填充字段，供外部类使用时调用。<br>
-         * 不可覆写。子类填充扩展字段时应覆写{@link #checkAfterFillField()}方法
+         * 不可覆写。子类填充扩展字段时应覆写{@link #onCheckAfterFillField()}方法
          * 
          * @param mParaSet
          *            参数集
@@ -99,12 +107,17 @@ public abstract class AbsRequestPara {
                 return error;
             }
 
-            error = checkAfterFillField();
+            error = onCheckAfterFillField();
             if (!StringUtil.isEmpty(error)) {
                 return error;
             }
 
             setInitialized();
+            mCombinationList.clear();
+            onFillCombinationBuilder(mCombinationList);
+            for (AbsBuilder<? extends AbsRequestPara> mBuilder : mCombinationList) {
+                mBuilder.setInitialized();
+            }
             return null;
         }
 
@@ -127,7 +140,7 @@ public abstract class AbsRequestPara {
          * 
          * @return 成功返回null，失败返回错误信息
          */
-        protected String checkAfterFillField() {
+        protected String onCheckAfterFillField() {
 
             return null;
         }
@@ -136,8 +149,30 @@ public abstract class AbsRequestPara {
          * 设置初始化完毕<br>
          * 供组合形式的RequestPara子类调用，非组合形式的扩展可无需覆写本方法。<br>
          * 此外如覆写了本方法，请务必保证super父类调用。
+         * <p>
+         * 该方法已弃用，不再保证逻辑有效，请不要覆写。
          */
-        protected void setInitialized() {
+        @Deprecated
+        protected void onSetInitialized() {
+            setInitialized();
+        }
+
+        /**
+         * 使用组合代替继承的子类，可覆写本方法。用于告知父类，子类所有的组合类。<br>
+         * 无组合扩展的子类可无需覆写本方法
+         * 
+         * @param mTCombinationList
+         *            供子类填充组合扩展的Builder
+         */
+        protected void onFillCombinationBuilder(
+                List<AbsBuilder<? extends AbsRequestPara>> mTCombinationList) {
+
+        }
+
+        /**
+         * 对子类提供一个修改‘初始化完毕状态’的不可覆写方法。
+         */
+        private final void setInitialized() {
             init = true;
         }
 
@@ -148,7 +183,7 @@ public abstract class AbsRequestPara {
          * @return RequestPara实例对象
          */
         public final P build() {
-            checkBeforeBuild();
+            onCheckBeforeBuild();
             P mInstance = buildInstance();
             if (mInstance == null) {
                 throw new NullPointerException(
@@ -163,7 +198,7 @@ public abstract class AbsRequestPara {
          * 
          * @throws IllegalStateException
          */
-        protected void checkBeforeBuild() throws IllegalStateException {
+        protected void onCheckBeforeBuild() throws IllegalStateException {
             if (!init) {
                 throw new IllegalStateException("the builder must be inited!");
             }

@@ -1,5 +1,7 @@
 package com.round.aside.server.bean.requestparameter;
 
+import java.util.List;
+
 import com.round.aside.server.datastruct.RequestParameterSet;
 import com.round.aside.server.util.StringUtil;
 
@@ -56,20 +58,20 @@ public class GetLocateCityRequestPara extends UserIDTokenRequestPara {
         }
 
         @Override
-        protected void setInitialized() {
-            super.setInitialized();
-
-            mUserIDTokenRPBuilder.setInitialized();
+        protected void onFillCombinationBuilder(
+                List<AbsBuilder<? extends AbsRequestPara>> mTCombinationList) {
+            super.onFillCombinationBuilder(mTCombinationList);
+            mTCombinationList.add(mUserIDTokenRPBuilder);
         }
 
         @Override
-        protected String checkAfterFillField() {
-            String error = super.checkAfterFillField();
+        protected String onCheckAfterFillField() {
+            String error = super.onCheckAfterFillField();
             if (!StringUtil.isEmpty(error)) {
                 return error;
             }
 
-            error = mUserIDTokenRPBuilder.checkAfterFillField();
+            error = mUserIDTokenRPBuilder.onCheckAfterFillField();
             if (!StringUtil.isEmpty(error)) {
                 return error;
             }
@@ -78,10 +80,10 @@ public class GetLocateCityRequestPara extends UserIDTokenRequestPara {
         }
 
         @Override
-        protected void checkBeforeBuild() throws IllegalStateException {
-            super.checkBeforeBuild();
+        protected void onCheckBeforeBuild() throws IllegalStateException {
+            super.onCheckBeforeBuild();
 
-            mUserIDTokenRPBuilder.checkBeforeBuild();
+            mUserIDTokenRPBuilder.onCheckBeforeBuild();
         }
 
         @Override

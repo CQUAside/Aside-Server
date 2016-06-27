@@ -180,20 +180,20 @@ public class PublishAdRequestPara extends UserIDTokenRequestPara {
         }
 
         @Override
-        protected void setInitialized() {
-            super.setInitialized();
-
-            mUserIDTokenRPBuilder.setInitialized();
+        protected void onFillCombinationBuilder(
+                List<AbsBuilder<? extends AbsRequestPara>> mTCombinationList) {
+            super.onFillCombinationBuilder(mTCombinationList);
+            mTCombinationList.add(mUserIDTokenRPBuilder);
         }
 
         @Override
-        protected String checkAfterFillField() {
-            String error = super.checkAfterFillField();
+        protected String onCheckAfterFillField() {
+            String error = super.onCheckAfterFillField();
             if (!StringUtil.isEmpty(error)) {
                 return error;
             }
 
-            error = mUserIDTokenRPBuilder.checkAfterFillField();
+            error = mUserIDTokenRPBuilder.onCheckAfterFillField();
             if (!StringUtil.isEmpty(error)) {
                 return error;
             }
@@ -202,10 +202,10 @@ public class PublishAdRequestPara extends UserIDTokenRequestPara {
         }
 
         @Override
-        protected void checkBeforeBuild() throws IllegalStateException {
-            super.checkBeforeBuild();
+        protected void onCheckBeforeBuild() throws IllegalStateException {
+            super.onCheckBeforeBuild();
 
-            mUserIDTokenRPBuilder.checkBeforeBuild();
+            mUserIDTokenRPBuilder.onCheckBeforeBuild();
         }
 
         @Override

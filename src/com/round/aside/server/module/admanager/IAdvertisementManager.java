@@ -119,7 +119,7 @@ public interface IAdvertisementManager extends IModule {
      * 
      * @param mAdID
      *            待查询广告详情的广告ID
-     * @return 广告详情结果状态码，分别为{@link #S1000}查询成功；{@link #EX2016}数据库查询异常，请重试；
+     * @return 广告详情结果状态码，分别为{@link #S1000}查询成功；{@link #EX2010}数据库操作异常，请重试；
      *         {@link #R6008}无此数据。
      */
     AdDetailsStatusCodeBean getAdDetails(int mAdID);

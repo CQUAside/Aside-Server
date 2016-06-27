@@ -74,6 +74,15 @@ public class UserIDTokenRequestPara extends AbsRequestPara {
         }
 
         @Override
+        protected String onCheckAfterFillField() {
+            if (mUserID < 0) {
+                return "UserID参数非法";
+            }
+
+            return null;
+        }
+
+        @Override
         protected UserIDTokenRequestPara buildInstance() {
             return new UserIDTokenRequestPara(this);
         }

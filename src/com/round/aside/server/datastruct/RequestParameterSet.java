@@ -30,12 +30,34 @@ public final class RequestParameterSet {
         mKeyValueMap = new HashMap<String, String>();
     }
 
+    /**
+     * 增加一个待读取键值对的键Key<br>
+     * 如果一个必读项未读到，则返回错误，不再继续执行下去；如若可选项未读取到， 程序将默认忽略，继续向下执行。
+     * 
+     * @param mKey
+     *            待读取数据对应的Key
+     * @param mNecessary
+     *            是否必读项，true为必须项；false为可选项。
+     * @return 调用方自己，便于串起构造
+     */
     public RequestParameterSet addKey(String mKey, boolean mNecessary) {
         mKeyList.add(new KeyEntry(mKey, mNecessary));
         mKeyIndexMap.put(mKey, mIndex++);
         return this;
     }
 
+    /**
+     * 增加一个待读取键值对的键Key<br>
+     * 如果一个必读项未读到，则返回错误，不再继续执行下去；如若可选项未读取到， 程序将默认忽略，继续向下执行。
+     * 
+     * @param mKey
+     *            待读取数据对应的Key
+     * @param mNecessary
+     *            是否必读项，true为必须项；false为可选项。
+     * @param mRely
+     *            带读取键值的依赖键，即必须在依赖键读取到的前提条件下才读本键。
+     * @return 用方自己，便于串起构造
+     */
     public RequestParameterSet addKey(String mKey, boolean mNecessary,
             String mRely) {
         mKeyList.add(new KeyEntry(mKey, mNecessary, mRely));
